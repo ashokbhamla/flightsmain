@@ -2,7 +2,6 @@
 const nextConfig = {
   experimental: {
     optimizePackageImports: ['@mui/material', '@mui/icons-material'],
-    optimizeCss: true,
     turbo: {
       rules: {
         '*.svg': {
@@ -136,64 +135,6 @@ const nextConfig = {
     if (!dev) {
       config.optimization.usedExports = true;
       config.optimization.sideEffects = false;
-      
-      // CSS minification
-      const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-      const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
-      
-      // Add CSS minification
-      config.optimization.minimizer = [
-        ...config.optimization.minimizer,
-        new CssMinimizerPlugin({
-          minimizerOptions: {
-            preset: [
-              'default',
-              {
-                discardComments: { removeAll: true },
-                normalizeWhitespace: true,
-                normalizeUnicode: true,
-                minifySelectors: true,
-                minifyGradients: true,
-                minifyFontValues: true,
-                minifyParams: true,
-                minifyTimingFunctions: true,
-                minifyTransforms: true,
-                minifyBorderRadius: true,
-                minifyFilter: true,
-                minifyCalc: true,
-                minifyColor: true,
-                minifyMultibyteCharacterValues: true,
-                minifyTrbl: true,
-                minifyFontWeight: true,
-                minifyGradient: true,
-                minifyKeyframes: true,
-                minifyZ: true,
-                minifyDisplayValues: true,
-                minifyLonghand: true,
-                minifyShorthand: true,
-                minifySelectors: true,
-                minifyFontValues: true,
-                minifyParams: true,
-                minifyTimingFunctions: true,
-                minifyTransforms: true,
-                minifyBorderRadius: true,
-                minifyFilter: true,
-                minifyCalc: true,
-                minifyColor: true,
-                minifyMultibyteCharacterValues: true,
-                minifyTrbl: true,
-                minifyFontWeight: true,
-                minifyGradient: true,
-                minifyKeyframes: true,
-                minifyZ: true,
-                minifyDisplayValues: true,
-                minifyLonghand: true,
-                minifyShorthand: true,
-              },
-            ],
-          },
-        }),
-      ];
     }
     
     return config;

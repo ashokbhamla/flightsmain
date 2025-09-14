@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/minify-css.js",
+    "build:no-minify": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx || true",
     "clean": "rm -rf node_modules package-lock.json && npm install",
-    "analyze": "ANALYZE=true npm run build"
+    "analyze": "ANALYZE=true npm run build",
+    "minify-css": "node scripts/minify-css.js"
   },
   "dependencies": {
     "@emotion/cache": "^11.13.1",
@@ -34,8 +36,11 @@
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
+    "css-minimizer-webpack-plugin": "^7.0.2",
+    "csso": "^5.0.5",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.5",
+    "mini-css-extract-plugin": "^2.9.4",
     "typescript": "^5.5.4"
   }
 }
