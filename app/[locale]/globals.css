@@ -1,0 +1,104 @@
+:root { 
+  --maxw: 100%; 
+  --container-padding: 0;
+}
+
+* { 
+  box-sizing: border-box; 
+}
+
+a { 
+  color: inherit; 
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.full-width {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.full-width-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+/* Override Material-UI default Toolbar min-height */
+.MuiToolbar-root {
+  min-height: auto !important;
+}
+
+/* Override specific Material-UI breakpoint min-height rules */
+@media (min-width: 600px) {
+  .MuiToolbar-root {
+    min-height: auto !important;
+  }
+}
+
+@media (orientation: landscape) {
+  .MuiToolbar-root {
+    min-height: auto !important;
+  }
+}
+
+/* Override Material-UI default padding for testimonials slider */
+.css-1vljf70 {
+  padding-top: 32px !important;
+  padding-bottom: 32px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+@media (min-width: 600px) {
+  .css-1vljf70 {
+    padding-top: 32px !important;
+    padding-bottom: 32px !important;
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+}
+
+@media (min-width: 960px) {
+  .css-1vljf70 {
+    padding-top: 32px !important;
+    padding-bottom: 32px !important;
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+}
+
+/* Override css-1u3apqo margins for content sections */
+.css-1u3apqo {
+  margin-top: 18px !important;
+  margin-bottom: 12px !important;
+}
+
+/* Override css-lt9x39 padding for content sections */
+.css-lt9x39 {
+  padding-left: 18px !important;
+  padding-right: 12px !important;
+}
+
+/* Override css-8qb8m4 bottom margin for content sections */
+.css-8qb8m4 {
+  margin-bottom: 18px !important;
+}
+
+/* Override css-1wop0i8 padding for card content */
+.css-1wop0i8 {
+  padding-top: 10px !important;
+  padding-bottom: 2px !important;
+}
+
+/* Override css-127evc8-MuiCardContent-root:last-child padding */
+.css-127evc8-MuiCardContent-root:last-child {
+  padding-bottom: 10px !important;
+}

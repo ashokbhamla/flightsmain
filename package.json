@@ -1,0 +1,41 @@
+{
+  "name": "nextjs-i18n-travel-mui",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --ext .ts,.tsx || true",
+    "clean": "rm -rf node_modules package-lock.json && npm install",
+    "analyze": "ANALYZE=true npm run build"
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.13.1",
+    "@emotion/react": "^11.13.0",
+    "@emotion/server": "^11.11.0",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.5.0",
+    "@mui/material": "^6.5.0",
+    "@mui/x-date-pickers": "^8.11.1",
+    "@mui/x-date-pickers-pro": "^8.11.1",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.12",
+    "next": "14.2.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "recharts": "^3.1.2",
+    "web-vitals": "^5.1.0"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "^14.2.5",
+    "@types/node": "^20.11.30",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@typescript-eslint/eslint-plugin": "^8.39.1",
+    "@typescript-eslint/parser": "^8.39.1",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.5",
+    "typescript": "^5.5.4"
+  }
+}

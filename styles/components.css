@@ -1,0 +1,185 @@
+/* Component Styles */
+
+/* Header Styles */
+.header-container {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-toolbar {
+  min-height: 55px !important;
+}
+
+.header-logo {
+  font-family: 'Arial', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.header-logo-flight {
+  color: #1e3a8a;
+}
+
+.header-logo-search {
+  color: #10b981;
+}
+
+.header-nav-button {
+  color: #1e3a8a !important;
+  padding: 6px 12px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  transition: none !important;
+  border-radius: 0 !important;
+}
+
+.header-nav-button:hover {
+  background-color: rgba(30, 58, 138, 0.1) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.header-nav-button:focus {
+  box-shadow: none !important;
+}
+
+/* Hero Section */
+.hero-section {
+  background: #1e3a8a;
+  color: white;
+  padding: 40px 0 60px 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.hero-heading {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: left;
+  margin-bottom: 16px;
+  font-family: sans-serif;
+}
+
+.hero-subheading {
+  text-align: left;
+  opacity: 0.9;
+  max-width: 800px;
+  margin: 0 0 32px 0;
+  font-family: sans-serif;
+  font-size: 1rem;
+}
+
+/* Flight Search Box */
+.flight-search-container {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 24px;
+}
+
+/* Content Sections */
+.content-section {
+  margin-bottom: 48px;
+}
+
+.content-section-heading {
+  text-align: left;
+  margin-bottom: 24px;
+  color: #333;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.content-info {
+  margin: 24px 0 8px 0;
+}
+
+.content-info-heading {
+  color: #1a1a1a;
+  margin-bottom: 8px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.content-info-text {
+  color: #666666;
+  line-height: 1.4;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+/* FAQ Accordion */
+.faq-accordion-container {
+  box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);
+}
+
+.faq-question {
+  font-size: 1rem;
+  color: #333;
+}
+
+.faq-answer {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* Flight Tabs */
+.flight-tabs {
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 24px;
+}
+
+.tab-description {
+  color: #666;
+  font-style: italic;
+  margin-bottom: 24px;
+  min-height: 40px;
+}
+
+/* Price Graphs Grid */
+.price-graphs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .price-graphs-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-heading {
+    font-size: 2rem;
+  }
+  
+  .flight-search-container {
+    padding: 16px;
+  }
+  
+  .content-section {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-heading {
+    font-size: 1.5rem;
+  }
+  
+  .hero-subheading {
+    font-size: 0.9rem;
+  }
+  
+  .flight-search-container {
+    padding: 12px;
+  }
+}
