@@ -15,6 +15,7 @@ import ServiceWorker from '@/components/ServiceWorker';
 import { Locale, localeFromParam } from '@/lib/i18n';
 import { orgSchema, websiteSchema } from '@/lib/schema';
 import ClientThemeProvider from '@/components/ClientThemeProvider';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 // Removed unused imports for performance
 import { envConfig } from '@/lib/envConfig';
 import { getTranslations } from '@/lib/translations';
@@ -126,6 +127,7 @@ export default async function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body>
+        <GoogleAnalytics />
         <ClientThemeProvider>
           <FontLoader />
           <InlineCriticalCSS />
