@@ -144,6 +144,37 @@ export interface Translations {
     support: string;
     refresh: string;
   };
+  flightPage: {
+    pricePrediction: string;
+    roundTrip: string;
+    oneWay: string;
+    oneWayFlight: string;
+    cheapestDay: string;
+    cheapestMonth: string;
+    popularIn: string;
+    highestDemand: string;
+    priceTrends: string;
+    weeklyTrends: string;
+    monthlyTrends: string;
+    popularDestinations: string;
+    airlines: string;
+    faqs: string;
+    availableFlights: string;
+    viewFlights: string;
+    from: string;
+    flightsPerWeek: string;
+    airline: string;
+    avg: string;
+    stops: string;
+    stop: string;
+    totalDestinations: string;
+    flights: string;
+    to: string;
+    findBest: string;
+    flightDeals: string;
+    comparePricesBookTrip: string;
+    destinationsWorldwide: string;
+  };
 }
 
 const translations: Record<Locale, Translations> = {
@@ -290,6 +321,37 @@ const translations: Record<Locale, Translations> = {
       help: 'Help',
       support: 'Support',
       refresh: 'Refresh Page'
+    },
+    flightPage: {
+      pricePrediction: 'Price prediction Flights to {cityName}',
+      roundTrip: 'Round-trip from:',
+      oneWay: 'One-way from:',
+      oneWayFlight: 'One-way flight from {from} {code} to {to}',
+      cheapestDay: 'Cheapest day:',
+      cheapestMonth: 'Cheapest month:',
+      popularIn: 'Popular In:',
+      highestDemand: 'Highest demand for flights to {cityName} this month. Book now to get the best prices.',
+      priceTrends: 'Price Trends & Analysis',
+      weeklyTrends: 'Weekly Price Trends',
+      monthlyTrends: 'Monthly Price Trends',
+      popularDestinations: 'Popular Destinations',
+      airlines: 'Airlines',
+      faqs: 'Frequently Asked Questions',
+      availableFlights: 'Available Flights',
+      viewFlights: 'View Flights',
+      from: 'From',
+      flightsPerWeek: 'flights/week',
+      airline: 'Airline:',
+      avg: 'avg',
+      stops: 'stops',
+      stop: 'stop',
+      totalDestinations: 'Total Destinations',
+      flights: 'flights',
+      to: 'to',
+      findBest: 'Find the best',
+      flightDeals: 'flight deals',
+      comparePricesBookTrip: 'Compare prices, book your next trip',
+      destinationsWorldwide: 'destinations worldwide'
     }
   },
   es: {
@@ -435,6 +497,37 @@ const translations: Record<Locale, Translations> = {
       help: 'Ayuda',
       support: 'Soporte',
       refresh: 'Actualizar Página'
+    },
+    flightPage: {
+      pricePrediction: 'Predicción de precios Vuelos a {cityName}',
+      roundTrip: 'Ida y vuelta desde:',
+      oneWay: 'Solo ida desde:',
+      oneWayFlight: 'Vuelo solo ida desde {from} {code} a {to}',
+      cheapestDay: 'Día más barato:',
+      cheapestMonth: 'Mes más barato:',
+      popularIn: 'Popular en:',
+      highestDemand: 'Mayor demanda de vuelos a {cityName} este mes. Reserva ahora para obtener los mejores precios.',
+      priceTrends: 'Tendencias de Precios y Análisis',
+      weeklyTrends: 'Tendencias de Precios Semanales',
+      monthlyTrends: 'Tendencias de Precios Mensuales',
+      popularDestinations: 'Destinos Populares',
+      airlines: 'Aerolíneas',
+      faqs: 'Preguntas Frecuentes',
+      availableFlights: 'Vuelos Disponibles',
+      viewFlights: 'Ver Vuelos',
+      from: 'Desde',
+      flightsPerWeek: 'vuelos/semana',
+      airline: 'Aerolínea:',
+      avg: 'promedio',
+      stops: 'escalas',
+      stop: 'escala',
+      totalDestinations: 'Total de Destinos',
+      flights: 'vuelos',
+      to: 'a',
+      findBest: 'Encuentra las mejores',
+      flightDeals: 'ofertas de vuelos',
+      comparePricesBookTrip: 'Compara precios, reserva tu próximo viaje',
+      destinationsWorldwide: 'destinos en todo el mundo'
     }
   },
   ru: {
@@ -580,6 +673,37 @@ const translations: Record<Locale, Translations> = {
       help: 'Помощь',
       support: 'Поддержка',
       refresh: 'Обновить Страницу'
+    },
+    flightPage: {
+      pricePrediction: 'Прогноз цен Рейсы в {cityName}',
+      roundTrip: 'Туда и обратно от:',
+      oneWay: 'В одну сторону от:',
+      oneWayFlight: 'Рейс в одну сторону из {from} {code} в {to}',
+      cheapestDay: 'Самый дешевый день:',
+      cheapestMonth: 'Самый дешевый месяц:',
+      popularIn: 'Популярно в:',
+      highestDemand: 'Наибольший спрос на рейсы в {cityName} в этом месяце. Забронируйте сейчас, чтобы получить лучшие цены.',
+      priceTrends: 'Тенденции цен и анализ',
+      weeklyTrends: 'Еженедельные тенденции цен',
+      monthlyTrends: 'Ежемесячные тенденции цен',
+      popularDestinations: 'Популярные направления',
+      airlines: 'Авиакомпании',
+      faqs: 'Часто задаваемые вопросы',
+      availableFlights: 'Доступные рейсы',
+      viewFlights: 'Посмотреть рейсы',
+      from: 'От',
+      flightsPerWeek: 'рейсов/неделя',
+      airline: 'Авиакомпания:',
+      avg: 'среднее',
+      stops: 'остановки',
+      stop: 'остановка',
+      totalDestinations: 'Всего направлений',
+      flights: 'рейсы',
+      to: 'в',
+      findBest: 'Найдите лучшие',
+      flightDeals: 'предложения рейсов',
+      comparePricesBookTrip: 'Сравните цены, забронируйте следующую поездку',
+      destinationsWorldwide: 'направления по всему миру'
     }
   },
   fr: {
@@ -725,6 +849,37 @@ const translations: Record<Locale, Translations> = {
       help: 'Aide',
       support: 'Support',
       refresh: 'Actualiser la Page'
+    },
+    flightPage: {
+      pricePrediction: 'Prédiction de prix Vols vers {cityName}',
+      roundTrip: 'Aller-retour depuis:',
+      oneWay: 'Aller simple depuis:',
+      oneWayFlight: 'Vol aller simple de {from} {code} à {to}',
+      cheapestDay: 'Jour le moins cher:',
+      cheapestMonth: 'Mois le moins cher:',
+      popularIn: 'Populaire en:',
+      highestDemand: 'Plus forte demande de vols vers {cityName} ce mois-ci. Réservez maintenant pour obtenir les meilleurs prix.',
+      priceTrends: 'Tendances des Prix et Analyse',
+      weeklyTrends: 'Tendances des Prix Hebdomadaires',
+      monthlyTrends: 'Tendances des Prix Mensuelles',
+      popularDestinations: 'Destinations Populaires',
+      airlines: 'Compagnies Aériennes',
+      faqs: 'Questions Fréquemment Posées',
+      availableFlights: 'Vols Disponibles',
+      viewFlights: 'Voir les Vols',
+      from: 'De',
+      flightsPerWeek: 'vols/semaine',
+      airline: 'Compagnie:',
+      avg: 'moyenne',
+      stops: 'escales',
+      stop: 'escale',
+      totalDestinations: 'Total des Destinations',
+      flights: 'vols',
+      to: 'à',
+      findBest: 'Trouvez les meilleures',
+      flightDeals: 'offres de vols',
+      comparePricesBookTrip: 'Comparez les prix, réservez votre prochain voyage',
+      destinationsWorldwide: 'destinations dans le monde entier'
     }
   }
 };

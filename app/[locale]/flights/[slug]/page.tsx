@@ -8,7 +8,7 @@ import { breadcrumbSchema } from '@/lib/schema';
 import { fetchFlightContent, fetchFlightData, fetchDestinationFlightContent, fetchDestinationFlightData } from '@/lib/api';
 import { normalizeFlights } from '@/lib/flightUtils';
 import DynamicTemplateSelector from '@/app/[locale]/templates/DynamicTemplateSelector';
-import { getLanguageId } from '@/lib/translations';
+import { getLanguageId, getTranslations } from '@/lib/translations';
 import FlightSearchBox from '@/components/FlightSearchBox';
 // import FlightListWithFilters from '@/components/FlightListWithFilters';
 
@@ -123,6 +123,7 @@ function getLangId(locale: string): 1 | 2 {
 
 export async function generateMetadata({ params }: { params: { locale: string; slug: string } }): Promise<Metadata> {
   const locale = localeFromParam(params.locale);
+  const t = getTranslations(locale);
   
   // Check if slug is a single airport code and handle metadata differently
   if (isAirportCode(params.slug)) {
@@ -141,8 +142,8 @@ export async function generateMetadata({ params }: { params: { locale: string; s
       console.error('Error fetching metadata for airport page:', error);
     }
 
-    const title = contentData?.title || `Flights from ${cityName} (${airportCode})`;
-    const fullDescription = contentData?.description || `Find cheap flights from ${cityName} to destinations worldwide.`;
+    const title = contentData?.title || `${t.flightPage.flights} ${t.flightPage.from} ${cityName} (${airportCode})`;
+    const fullDescription = contentData?.description || `${t.flightPage.findBest} ${t.flightPage.flightDeals} ${t.flightPage.from} ${cityName} ${t.flightPage.to} ${t.flightPage.destinationsWorldwide}.`;
     const metaDescription = truncateDescription(fullDescription, 158);
 
     return {
@@ -178,16 +179,16 @@ export async function generateMetadata({ params }: { params: { locale: string; s
     const contentData = await fetchFlightContent(arrivalIata, departureIata, getLangId(locale));
     
     return {
-      title: contentData?.title || `Flights from ${getCityName(departureIata)} (${departureIata}) to ${getCityName(arrivalIata)} (${arrivalIata})`,
-      description: contentData?.description || `Find the best flight deals from ${getCityName(departureIata)} to ${getCityName(arrivalIata)}. Compare prices, airlines, and book your next trip.`,
+      title: contentData?.title || `${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)} (${departureIata}) ${t.flightPage.to} ${getCityName(arrivalIata)} (${arrivalIata})`,
+      description: contentData?.description || `${t.flightPage.findBest} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}. ${t.flightPage.comparePricesBookTrip}.`,
       keywords: contentData?.meta?.keywords?.join(', ') || `flights ${departureIata} ${arrivalIata}, ${getCityName(departureIata)} to ${getCityName(arrivalIata)} flights`,
       alternates: {
         canonical: canonicalUrl,
         languages: alternateUrls,
       },
       openGraph: {
-        title: contentData?.title || `Flights from ${getCityName(departureIata)} to ${getCityName(arrivalIata)}`,
-        description: contentData?.description || `Find the best flight deals from ${getCityName(departureIata)} to ${getCityName(arrivalIata)}.`,
+        title: contentData?.title || `${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}`,
+        description: contentData?.description || `${t.flightPage.findBest} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}.`,
         type: 'website',
         url: canonicalUrl,
         siteName: process.env.NEXT_PUBLIC_COMPANY_NAME || 'flightsearchs',
@@ -195,15 +196,15 @@ export async function generateMetadata({ params }: { params: { locale: string; s
       },
       twitter: {
         card: 'summary',
-        title: contentData?.title || `Flights from ${getCityName(departureIata)} to ${getCityName(arrivalIata)}`,
-        description: contentData?.description || `Find the best flight deals from ${getCityName(departureIata)} to ${getCityName(arrivalIata)}.`,
+        title: contentData?.title || `${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}`,
+        description: contentData?.description || `${t.flightPage.findBest} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}.`,
       },
     };
   } catch (error) {
     console.error('Error fetching metadata for flight page:', error);
     return {
-      title: `Flights from ${getCityName(departureIata)} (${departureIata}) to ${getCityName(arrivalIata)} (${arrivalIata})`,
-      description: `Find the best flight deals from ${getCityName(departureIata)} to ${getCityName(arrivalIata)}.`,
+      title: `${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)} (${departureIata}) ${t.flightPage.to} ${getCityName(arrivalIata)} (${arrivalIata})`,
+      description: `${t.flightPage.findBest} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}.`,
       alternates: {
         canonical: canonicalUrl,
         languages: alternateUrls,
@@ -214,6 +215,7 @@ export async function generateMetadata({ params }: { params: { locale: string; s
 
 export default async function FlightBySlug({ params }: { params: { locale: string; slug: string } }) {
   const locale = localeFromParam(params.locale);
+  const t = getTranslations(locale);
   
   // Check if slug is a single airport code and handle it directly
   if (isAirportCode(params.slug)) {
@@ -222,21 +224,21 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
     const cityName = getCityName(airportCode);
     
     // Fetch content for single airport
-    let contentData = null;
-    let flightData = null;
+  let contentData = null;
+  let flightData = null;
     let normalizedFlights: any[] = [];
-    
-    try {
-      [contentData, flightData] = await Promise.all([
+  
+  try {
+    [contentData, flightData] = await Promise.all([
         fetchDestinationFlightContent(airportCode, getLanguageId(locale) as 1 | 2),
         fetchDestinationFlightData(airportCode)
-      ]);
+    ]);
       
       // Normalize the flight data for display
       if (flightData && Array.isArray(flightData)) {
         normalizedFlights = enhanceFlightData(normalizeFlights(flightData));
       }
-    } catch (error) {
+  } catch (error) {
       console.error('Error fetching airport data:', error);
     }
 
@@ -304,7 +306,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                 color: '#1a1a1a'
               }}
             >
-              Price prediction Flights to {cityName}
+{t.flightPage.pricePrediction.replace('{cityName}', cityName)}
             </Typography>
             
             <Grid container spacing={3}>
@@ -432,7 +434,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                         mb: 2
                       }}
                     >
-                      One-way from:
+{t.flightPage.oneWay}
                     </Typography>
                     <Typography 
                       variant="h3" 
@@ -454,7 +456,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                         fontSize: '0.9rem'
                       }}
                     >
-                      One-way flight from {cityName} {airportCode} to {getRandomDestination()}
+{t.flightPage.oneWayFlight.replace('{from}', cityName).replace('{code}', airportCode).replace('{to}', getRandomDestination())}
                     </Typography>
                     <Button 
                       variant="contained" 
@@ -516,7 +518,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                         mb: 2
                       }}
                     >
-                      Cheapest day:
+{t.flightPage.cheapestDay}
                     </Typography>
                     <Typography 
                       variant="h3" 
@@ -685,8 +687,8 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                       >
                         <MenuItem value="all">All stops</MenuItem>
                         <MenuItem value="0">Non-stop</MenuItem>
-                        <MenuItem value="1">1 stop</MenuItem>
-                        <MenuItem value="2+">2+ stops</MenuItem>
+                        <MenuItem value="1">1 {t.flightPage.stop}</MenuItem>
+                        <MenuItem value="2+">2+ {t.flightPage.stops}</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
@@ -771,18 +773,18 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                         </Typography>
                         
                         <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
-                          {flight.city} • {flight.duration} avg
+                          {flight.city} • {flight.duration} {t.flightPage.avg}
                           {flight.stops !== undefined && (
-                            <span> • {flight.stops === 0 ? 'Non-stop' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}</span>
+                            <span> • {flight.stops === 0 ? 'Non-stop' : `${flight.stops} ${flight.stops > 1 ? t.flightPage.stops : t.flightPage.stop}`}</span>
                           )}
                         </Typography>
                         
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                           <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a1a1a' }}>
-                            From {flight.price}
+{t.flightPage.from} {flight.price}
                           </Typography>
                           <Typography variant="body2" sx={{ color: '#666' }}>
-                            {flight.flightsPerWeek} flights/week
+                            {flight.flightsPerWeek} {t.flightPage.flightsPerWeek}
                           </Typography>
                         </Box>
 
@@ -790,7 +792,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                         {flight.airline && (
                           <Box sx={{ mb: 2 }}>
                             <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
-                              Airline: {flight.airline}
+{t.flightPage.airline} {flight.airline}
                             </Typography>
                           </Box>
                         )}
@@ -807,7 +809,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                           }}
                           href={`/flights/${flight.from.toLowerCase()}-${flight.to.toLowerCase()}`}
                         >
-                          View Flights
+{t.flightPage.viewFlights}
                         </Button>
                       </CardContent>
                     </Card>
@@ -829,7 +831,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                 color: '#1a1a1a'
               }}
             >
-              Price Trends & Analysis
+{t.flightPage.priceTrends}
             </Typography>
             
             <Grid container spacing={3}>
@@ -848,7 +850,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                       mb: 2,
                       color: '#1a1a1a'
                     }}>
-                      Weekly Price Trends
+{t.flightPage.weeklyTrends}
                     </Typography>
                     
                     <Typography 
@@ -973,7 +975,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                       mb: 2,
                       color: '#1a1a1a'
                     }}>
-                      Monthly Price Trends
+{t.flightPage.monthlyTrends}
                     </Typography>
                     
                     <Typography 
@@ -1098,7 +1100,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                   color: '#1a1a1a'
                 }}
               >
-                Popular Destinations
+{t.flightPage.popularDestinations}
               </Typography>
               
               <Typography 
@@ -1173,7 +1175,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                   color: '#1a1a1a'
                 }}
               >
-                Airlines
+{t.flightPage.airlines}
               </Typography>
               
               <Typography 
@@ -1203,7 +1205,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                   color: '#1a1a1a'
                 }}
               >
-                Frequently Asked Questions
+{t.flightPage.faqs}
               </Typography>
               
               {contentData.faqs.map((faq: any, index: number) => (

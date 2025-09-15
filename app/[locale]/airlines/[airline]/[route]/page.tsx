@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { Typography, Box, Container, Grid, Card, CardContent, Button, Tabs, Tab, Chip } from '@mui/material';
 import { localeFromParam } from '@/lib/i18n';
+import { getTranslations } from '@/lib/translations';
 import { generateAirlineCanonicalUrl, generateAlternateUrls } from '@/lib/canonical';
 import SchemaOrg from '@/components/SchemaOrg';
 import { breadcrumbSchema } from '@/lib/schema';
@@ -202,6 +203,7 @@ function decodeHtmlEntities(html: string): string {
 
 export async function generateMetadata({ params }: { params: { locale: string; airline: string; route: string } }): Promise<Metadata> {
   const locale = localeFromParam(params.locale);
+  const t = getTranslations(locale);
   const { departureIata, arrivalIata } = parseFlightSlug(params.route);
   const airlineCode = params.airline;
   
@@ -236,21 +238,22 @@ export async function generateMetadata({ params }: { params: { locale: string; a
       return cleanText.length > 158 ? cleanText.substring(0, 155) + '...' : cleanText;
     };
     
-    const title = contentData?.title ? 
+    // Use fallback translations when API content is not translated or is in English
+    const title = (contentData?.title && locale === 'en') ? 
       stripHtml(contentData.title) : 
       (arrivalIata ? 
-        `${getAirlineName(airlineCode, contentData)} flights from ${getCityName(departureIata)} to ${getCityName(arrivalIata)}` :
-        `${getAirlineName(airlineCode, contentData)} flights from ${getCityName(departureIata)}`
+        `${getAirlineName(airlineCode, contentData)} ${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}` :
+        `${getAirlineName(airlineCode, contentData)} ${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)}`
       );
 
-    // Use meta_description if available, otherwise fall back to description
-    const description = contentData?.meta_description ? 
+    // Use fallback translations when API content is not translated or is in English
+    const description = (contentData?.meta_description && locale === 'en') ? 
       stripHtml(contentData.meta_description) : 
-      (contentData?.description ? 
+      ((contentData?.description && locale === 'en') ? 
         stripHtml(contentData.description) : 
         (arrivalIata ?
-          `Find the best ${getAirlineName(airlineCode, contentData)} flight deals from ${getCityName(departureIata)} to ${getCityName(arrivalIata)}. Compare prices, book your next trip.` :
-          `Find the best ${getAirlineName(airlineCode, contentData)} flight deals from ${getCityName(departureIata)}. Compare prices, book your next trip.`
+          `${t.flightPage.findBest} ${getAirlineName(airlineCode, contentData)} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}. ${t.flightPage.comparePricesBookTrip}.` :
+          `${t.flightPage.findBest} ${getAirlineName(airlineCode, contentData)} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)}. ${t.flightPage.comparePricesBookTrip}.`
         )
       );
     
@@ -282,12 +285,12 @@ export async function generateMetadata({ params }: { params: { locale: string; a
   } catch (error) {
     console.error('Error fetching metadata for airline page:', error);
     const title = arrivalIata ? 
-      `${getAirlineName(airlineCode, null)} flights from ${getCityName(departureIata)} to ${getCityName(arrivalIata)}` :
-      `${getAirlineName(airlineCode, null)} flights from ${getCityName(departureIata)}`;
+      `${getAirlineName(airlineCode, null)} ${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}` :
+      `${getAirlineName(airlineCode, null)} ${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)}`;
     
     const description = arrivalIata ?
-      `Find the best ${getAirlineName(airlineCode, null)} flight deals from ${getCityName(departureIata)} to ${getCityName(arrivalIata)}.` :
-      `Find the best ${getAirlineName(airlineCode, null)} flight deals from ${getCityName(departureIata)}.`;
+      `${t.flightPage.findBest} ${getAirlineName(airlineCode, null)} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}.` :
+      `${t.flightPage.findBest} ${getAirlineName(airlineCode, null)} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)}.`;
     
     return {
       title,
