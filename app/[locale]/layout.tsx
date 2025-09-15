@@ -13,7 +13,7 @@ import CriticalResourceLoader from '@/components/CriticalResourceLoader';
 import AboveTheFoldOptimizer from '@/components/AboveTheFoldOptimizer';
 import ServiceWorker from '@/components/ServiceWorker';
 import { Locale, localeFromParam } from '@/lib/i18n';
-import { orgSchema, websiteSchema } from '@/lib/schema';
+import { orgSchema, websiteSchema, localBusinessSchema } from '@/lib/schema';
 import ClientThemeProvider from '@/components/ClientThemeProvider';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 // Removed unused imports for performance
@@ -140,7 +140,7 @@ export default async function RootLayout({
           <Header locale={locale} />
           {children}
           <Footer data={footer} locale={locale} />
-          <SchemaOrg data={[orgSchema(header), websiteSchema(header)].filter(Boolean)} />
+          <SchemaOrg data={[orgSchema(header), websiteSchema(header), localBusinessSchema()].filter(Boolean)} />
         </ClientThemeProvider>
       </body>
     </html>

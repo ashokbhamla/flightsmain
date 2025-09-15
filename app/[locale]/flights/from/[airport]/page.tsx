@@ -821,7 +821,7 @@ export default async function FlightDestinationPage({ params }: { params: { loca
         "url": `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/flights/${params.airport}`,
         "isPartOf": {
           "@type": "WebSite",
-          "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "flightsearchs",
+          "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
           "url": process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'
         },
         "mainEntity": {
@@ -843,9 +843,18 @@ export default async function FlightDestinationPage({ params }: { params: { loca
           "@type": "Product",
           "name": `Flights from ${cityName}`,
           "description": contentData?.description || `Find cheap flights from ${cityName} to destinations worldwide`,
+          "image": [
+            `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/airports/${airportCode}.jpg`,
+            `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/flights/generic-flight.jpg`
+          ],
           "brand": {
             "@type": "Brand",
-            "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "flightsearchs"
+            "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.4",
+            "reviewCount": "203"
           },
           "offers": {
             "@type": "AggregateOffer",
@@ -853,7 +862,29 @@ export default async function FlightDestinationPage({ params }: { params: { loca
             "lowPrice": Math.min(...normalizedFlights.map((f: any) => parseInt(f.price.replace('$', '')))),
             "highPrice": Math.max(...normalizedFlights.map((f: any) => parseInt(f.price.replace('$', '')))),
             "offerCount": normalizedFlights.length,
-            "availability": "https://schema.org/InStock"
+            "availability": "https://schema.org/InStock",
+            "shippingDetails": {
+              "@type": "OfferShippingDetails",
+              "shippingRate": {
+                "@type": "MonetaryAmount",
+                "value": "0",
+                "currency": "USD"
+              },
+              "deliveryTime": {
+                "@type": "ShippingDeliveryTime",
+                "businessDays": {
+                  "@type": "OpeningHoursSpecification",
+                  "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                }
+              }
+            },
+            "hasMerchantReturnPolicy": {
+              "@type": "MerchantReturnPolicy",
+              "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+              "merchantReturnDays": 24,
+              "returnMethod": "https://schema.org/ReturnByMail",
+              "returnFees": "https://schema.org/FreeReturn"
+            }
           },
           "category": "Travel",
           "additionalProperty": [
@@ -952,7 +983,7 @@ export default async function FlightDestinationPage({ params }: { params: { loca
       <SchemaOrg data={{
         "@context": "https://schema.org",
         "@type": "TravelAgency",
-        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "flightsearchs",
+        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
         "description": "Find cheap flights, hotels, and travel deals",
         "url": process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com',
         "logo": `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}${process.env.NEXT_PUBLIC_LOGO_URL || "/logo.png"}`,

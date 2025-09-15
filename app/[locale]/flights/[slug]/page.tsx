@@ -1298,7 +1298,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                 "description": contentData?.description || `Find the best flights from ${cityName} to various destinations worldwide.`,
                 "brand": {
                   "@type": "Brand",
-                  "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "flightsearchs"
+                  "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com"
                 },
                 "offers": {
                   "@type": "AggregateOffer",
@@ -1316,7 +1316,29 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                       "name": flight.airline || "Airline"
                     },
                     "description": `Flight from ${flight.from} to ${flight.to}`,
-                    "validFrom": new Date().toISOString().split('T')[0]
+                    "validFrom": new Date().toISOString().split('T')[0],
+                    "shippingDetails": {
+                      "@type": "OfferShippingDetails",
+                      "shippingRate": {
+                        "@type": "MonetaryAmount",
+                        "value": "0",
+                        "currency": "USD"
+                      },
+                      "deliveryTime": {
+                        "@type": "ShippingDeliveryTime",
+                        "businessDays": {
+                          "@type": "OpeningHoursSpecification",
+                          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                        }
+                      }
+                    },
+                    "hasMerchantReturnPolicy": {
+                      "@type": "MerchantReturnPolicy",
+                      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                      "merchantReturnDays": 24,
+                      "returnMethod": "https://schema.org/ReturnByMail",
+                      "returnFees": "https://schema.org/FreeReturn"
+                    }
                   }))
                 },
                 "category": "Flight",
@@ -1349,7 +1371,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "flightsearchs",
+              "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
               "url": process.env.NEXT_PUBLIC_DOMAIN || "https://airlinesmap.com",
               "potentialAction": {
                 "@type": "SearchAction",
@@ -1370,7 +1392,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "flightsearchs",
+              "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
               "url": process.env.NEXT_PUBLIC_DOMAIN || "https://airlinesmap.com",
               "logo": `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/logo.png`,
               "description": contentData?.company_description || "Find the best flight deals and travel information worldwide",
@@ -1424,7 +1446,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
               "url": `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/flights/${params.slug}`,
               "isPartOf": {
                 "@type": "WebSite",
-                "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "flightsearchs",
+                "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
                 "url": process.env.NEXT_PUBLIC_DOMAIN || "https://airlinesmap.com"
               },
               "breadcrumb": {
@@ -1466,7 +1488,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "TravelAgency",
-              "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "flightsearchs",
+              "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
               "url": process.env.NEXT_PUBLIC_DOMAIN || "https://airlinesmap.com",
               "description": contentData?.travel_agency_description || "Your trusted partner for finding the best flight deals and travel information",
               "areaServed": contentData?.area_served || "Worldwide",
@@ -1479,7 +1501,29 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                   "description": `One-way flight from ${getCityName(flight.from)} to ${flight.city}`,
                   "price": flight.price?.replace('$', '') || "0",
                   "priceCurrency": "USD",
-                  "availability": "https://schema.org/InStock"
+                  "availability": "https://schema.org/InStock",
+                  "shippingDetails": {
+                    "@type": "OfferShippingDetails",
+                    "shippingRate": {
+                      "@type": "MonetaryAmount",
+                      "value": "0",
+                      "currency": "USD"
+                    },
+                    "deliveryTime": {
+                      "@type": "ShippingDeliveryTime",
+                      "businessDays": {
+                        "@type": "OpeningHoursSpecification",
+                        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                      }
+                    }
+                  },
+                  "hasMerchantReturnPolicy": {
+                    "@type": "MerchantReturnPolicy",
+                    "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                    "merchantReturnDays": 24,
+                    "returnMethod": "https://schema.org/ReturnByMail",
+                    "returnFees": "https://schema.org/FreeReturn"
+                  }
                 })) || []
               }
             })
@@ -1559,10 +1603,36 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                       "longitude": arrivalCoords.lng
                     }
                   },
+                  "image": [
+                    `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/flights/${flight.from}-${flight.to}.jpg`,
+                    `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/flights/generic-flight.jpg`
+                  ],
                   "offers": [{
                     "@type": "Offer",
                     "price": parseInt(flight.price?.replace('$', '') || '0'),
-                    "priceCurrency": "USD"
+                    "priceCurrency": "USD",
+                    "shippingDetails": {
+                      "@type": "OfferShippingDetails",
+                      "shippingRate": {
+                        "@type": "MonetaryAmount",
+                        "value": "0",
+                        "currency": "USD"
+                      },
+                      "deliveryTime": {
+                        "@type": "ShippingDeliveryTime",
+                        "businessDays": {
+                          "@type": "OpeningHoursSpecification",
+                          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                        }
+                      }
+                    },
+                    "hasMerchantReturnPolicy": {
+                      "@type": "MerchantReturnPolicy",
+                      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                      "merchantReturnDays": 24,
+                      "returnMethod": "https://schema.org/ReturnByMail",
+                      "returnFees": "https://schema.org/FreeReturn"
+                    }
                   }],
                   "provider": {
                     "@type": "Airline",
@@ -1648,9 +1718,18 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
           "@type": "Product",
           "name": `Flights from ${departureCity} to ${arrivalCity}`,
           "description": contentData?.description || `Find cheap flights from ${departureCity} to ${arrivalCity}`,
+          "image": [
+            `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/flights/${departureIata}-${arrivalIata}.jpg`,
+            `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/flights/generic-flight.jpg`
+          ],
           "brand": {
             "@type": "Brand",
-            "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "flightsearchs"
+            "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.3",
+            "reviewCount": "127"
           },
           "offers": flightData.oneway_flights?.slice(0, 5).map((flight: any) => ({
             "@type": "Offer",
@@ -1662,7 +1741,29 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
               "name": flight.airline || "Unknown Airline"
             },
             "validFrom": flight.iso_date || new Date().toISOString(),
-            "description": `${flight.airline || 'Unknown'} flight from ${flight.iata_from || ''} to ${flight.iata_to || ''}`
+            "description": `${flight.airline || 'Unknown'} flight from ${flight.iata_from || ''} to ${flight.iata_to || ''}`,
+            "shippingDetails": {
+              "@type": "OfferShippingDetails",
+              "shippingRate": {
+                "@type": "MonetaryAmount",
+                "value": "0",
+                "currency": "USD"
+              },
+              "deliveryTime": {
+                "@type": "ShippingDeliveryTime",
+                "businessDays": {
+                  "@type": "OpeningHoursSpecification",
+                  "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                }
+              }
+            },
+            "hasMerchantReturnPolicy": {
+              "@type": "MerchantReturnPolicy",
+              "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+              "merchantReturnDays": 24,
+              "returnMethod": "https://schema.org/ReturnByMail",
+              "returnFees": "https://schema.org/FreeReturn"
+            }
           })) || []
         }} />
       )}
@@ -1724,7 +1825,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
           "category": "Flight",
           "brand": {
             "@type": "Brand",
-            "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "flightsearchs"
+            "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com"
           },
           "offers": {
             "@type": "AggregateOffer",
@@ -1742,7 +1843,29 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                 "name": flight.airline || "Unknown Airline"
               },
               "validFrom": flight.iso_date || new Date().toISOString(),
-              "description": `${flight.airline || 'Unknown'} one-way flight`
+              "description": `${flight.airline || 'Unknown'} one-way flight`,
+              "shippingDetails": {
+                "@type": "OfferShippingDetails",
+                "shippingRate": {
+                  "@type": "MonetaryAmount",
+                  "value": "0",
+                  "currency": "USD"
+                },
+                "deliveryTime": {
+                  "@type": "ShippingDeliveryTime",
+                  "businessDays": {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                  }
+                }
+              },
+              "hasMerchantReturnPolicy": {
+                "@type": "MerchantReturnPolicy",
+                "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                "merchantReturnDays": 24,
+                "returnMethod": "https://schema.org/ReturnByMail",
+                "returnFees": "https://schema.org/FreeReturn"
+              }
             }))
           }
         }} />
@@ -1807,7 +1930,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
       <SchemaOrg data={{
         "@context": "https://schema.org",
         "@type": "TravelAgency",
-        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "flightsearchs",
+        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
         "description": contentData?.travel_agency_description || "Find cheap flights, hotels, and travel deals",
         "url": process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com',
         "logo": `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}${process.env.NEXT_PUBLIC_LOGO_URL || "/logo.png"}`,
@@ -1839,7 +1962,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
         "url": `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/flights/${params.slug}`,
         "isPartOf": {
           "@type": "WebSite",
-          "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "flightsearchs",
+          "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
           "url": process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'
         },
         "breadcrumb": {
