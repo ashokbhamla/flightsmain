@@ -10,7 +10,9 @@
     "lint": "eslint . --ext .ts,.tsx || true",
     "clean": "rm -rf node_modules package-lock.json && npm install",
     "analyze": "ANALYZE=true npm run build",
-    "minify-css": "node scripts/minify-css.js"
+    "minify-css": "node scripts/minify-css.js",
+    "sitemap:status": "curl https://airlinesmap.com/api/sitemap/status",
+    "sitemap:update": "curl -H \"Authorization: Bearer airlinesmap-sitemap-secret-2024\" https://airlinesmap.com/api/cron/sitemap-update"
   },
   "dependencies": {
     "@emotion/cache": "^11.13.1",
