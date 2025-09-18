@@ -44,7 +44,8 @@ export async function GET(request: NextRequest) {
           console.log(`❌ Failed to update sitemap for ${category}: ${response.status}`);
         }
       } catch (error) {
-        results.push({ category, status: 'error', error: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        results.push({ category, status: 'error', error: errorMessage });
         console.error(`❌ Error updating ${category}:`, error);
       }
     }
@@ -68,10 +69,11 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('❌ Error during weekly sitemap update:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       { 
         error: 'Failed to update sitemaps',
-        message: error.message,
+        message: errorMessage,
         timestamp: new Date().toISOString()
       },
       { status: 500 }

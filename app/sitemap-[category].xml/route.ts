@@ -29,7 +29,7 @@ export async function GET(
   }
 }
 
-async function fetchSitemapData(category: string, page: number, locale: string) {
+async function fetchSitemapData(category: string, page: number, _locale: string) {
   const limit = 1000; // Smaller chunks for edge functions
   const offset = (page - 1) * limit;
   

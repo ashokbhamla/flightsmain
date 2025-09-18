@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const categories = [
       'flightsone_pages',
@@ -29,10 +29,11 @@ export async function GET(request: NextRequest) {
           lastChecked: new Date().toISOString()
         });
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         statusChecks.push({
           category,
           status: 'error',
-          error: error.message,
+          error: errorMessage,
           lastChecked: new Date().toISOString()
         });
       }
@@ -54,10 +55,11 @@ export async function GET(request: NextRequest) {
       sitemaps: statusChecks
     });
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       { 
         error: 'Failed to check sitemap status',
-        message: error.message,
+        message: errorMessage,
         timestamp: new Date().toISOString()
       },
       { status: 500 }
