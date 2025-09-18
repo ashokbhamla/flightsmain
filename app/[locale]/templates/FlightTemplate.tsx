@@ -140,13 +140,22 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
   const arrivalCity = getCityName(arrivalIata);
   const content = getFlightContent(locale, departureCity, arrivalCity, departureIata, arrivalIata);
 
-  // Sample data for demonstration (replace with actual API data)
-  const sampleFlightDeals = [
+  // Get flight data from API
+  const flightData = pageData || {};
+  const departureCityName = flightData.departure_city || departureCity;
+  const arrivalCityName = flightData.arrival_city || arrivalCity;
+  
+
+  // Price cards data from API
+  const priceCards = [
     {
       id: 1,
-      type: 'round-trip',
-      price: '$189',
-      description: `${departureCity} ${departureIata} to ${arrivalCity} ${arrivalIata}`,
+      type: 'average',
+      price: flightData.oneway_trip_start || '$189',
+      title: locale === 'es' ? 'Precio promedio desde:' : 
+             locale === 'ru' ? 'Средняя цена от:' :
+             locale === 'fr' ? 'Prix moyen à partir de:' : '🚀 UPDATED: Average price start from:',
+      description: `${departureCityName} to ${arrivalCityName}`,
       buttonText: locale === 'es' ? 'Buscar Ofertas' : 
                   locale === 'ru' ? 'Поиск Предложений' :
                   locale === 'fr' ? 'Rechercher des Offres' : 'Search Deals',
@@ -154,12 +163,12 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     },
     {
       id: 2,
-      type: 'one-way',
-      price: '$122',
-      description: locale === 'es' ? `Vuelo de ida de ${departureCity} ${departureIata} a ${arrivalCity} ${arrivalIata}` :
-                  locale === 'ru' ? `Прямой рейс из ${departureCity} ${departureIata} в ${arrivalCity} ${arrivalIata}` :
-                  locale === 'fr' ? `Vol aller simple de ${departureCity} ${departureIata} à ${arrivalCity} ${arrivalIata}` :
-                  `One-way flight from ${departureCity} ${departureIata} to ${arrivalCity} ${arrivalIata}`,
+      type: 'oneway',
+      price: flightData.oneway_trip_start || '$122',
+      title: locale === 'es' ? 'Solo ida desde:' : 
+             locale === 'ru' ? 'В одну сторону от:' :
+             locale === 'fr' ? 'Aller simple depuis:' : '🚀 UPDATED: One-way from:',
+      description: `${departureCityName} to ${arrivalCityName}`,
       buttonText: locale === 'es' ? 'Buscar Ofertas' : 
                   locale === 'ru' ? 'Поиск Предложений' :
                   locale === 'fr' ? 'Rechercher des Offres' : 'Search Deals',
@@ -167,33 +176,71 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     },
     {
       id: 3,
-      type: 'popular',
-      month: locale === 'es' ? 'Diciembre' : 
-             locale === 'ru' ? 'Декабрь' :
-             locale === 'fr' ? 'Décembre' : 'December',
-      description: locale === 'es' ? `Mayor demanda de vuelos a ${arrivalCity} este mes. Reserva ahora para obtener los mejores precios.` :
-                  locale === 'ru' ? `Наибольший спрос на рейсы в ${arrivalCity} в этом месяце. Забронируйте сейчас, чтобы получить лучшие цены.` :
-                  locale === 'fr' ? `Plus forte demande pour les vols vers ${arrivalCity} ce mois-ci. Réservez maintenant pour obtenir les meilleurs prix.` :
-                  `Highest demand for flights to ${arrivalCity} this month. Book now to get the best prices.`,
-      buttonText: locale === 'es' ? 'Ver Popular' : 
-                  locale === 'ru' ? 'Популярное' :
-                  locale === 'fr' ? 'Voir Populaire' : 'View Popular',
-      buttonColor: '#ff6b35'
-    },
-    {
-      id: 4,
-      type: 'cheapest',
-      month: locale === 'es' ? 'Enero' : 
-             locale === 'ru' ? 'Январь' :
-             locale === 'fr' ? 'Janvier' : 'January',
-      description: locale === 'es' ? `Precios más baratos para vuelos a ${arrivalCity} este mes. Encuentra ofertas ahora.` :
-                  locale === 'ru' ? `Самые дешевые цены на рейсы в ${arrivalCity} в этом месяце. Найдите предложения сейчас.` :
-                  locale === 'fr' ? `Prix les moins chers pour les vols vers ${arrivalCity} ce mois-ci. Trouvez des offres maintenant.` :
-                  `Cheapest prices for flights to ${arrivalCity} this month. Find deals now.`,
+      type: 'cheapest-day',
+      month: flightData.cheapest_day || (locale === 'es' ? 'Miércoles' :
+             locale === 'ru' ? 'Среда' :
+             locale === 'fr' ? 'Mercredi' : 'Wednesday'),
+      title: locale === 'es' ? 'Día más barato:' : 
+             locale === 'ru' ? 'Самый дешевый день:' :
+             locale === 'fr' ? 'Jour le moins cher:' : 'Cheapest day:',
+      description: locale === 'es' ? `Vuelos más baratos a ${arrivalCityName} este día` :
+                  locale === 'ru' ? `Самые дешевые рейсы в ${arrivalCityName} в этот день` :
+                  locale === 'fr' ? `Vols les moins chers vers ${arrivalCityName} ce jour` :
+                  `Cheapest flights to ${arrivalCityName} on this day`,
       buttonText: locale === 'es' ? 'Encontrar Ofertas' : 
                   locale === 'ru' ? 'Найти Предложения' :
                   locale === 'fr' ? 'Trouver des Offres' : 'Find Deals',
-      buttonColor: '#10b981'
+      buttonColor: '#f59e0b'
+    },
+    {
+      id: 4,
+      type: 'cheapest-month',
+      month: flightData.cheapest_month || (locale === 'es' ? 'Enero' :
+             locale === 'ru' ? 'Январь' :
+             locale === 'fr' ? 'Janvier' : 'January'),
+      title: locale === 'es' ? 'Más barato en:' : 
+             locale === 'ru' ? 'Дешевле в:' :
+             locale === 'fr' ? 'Moins cher en:' : 'Cheapest In:',
+      description: locale === 'es' ? `Precios más baratos para vuelos a ${arrivalCityName} este mes` :
+                  locale === 'ru' ? `Самые дешевые цены на рейсы в ${arrivalCityName} в этом месяце` :
+                  locale === 'fr' ? `Prix les moins chers pour les vols vers ${arrivalCityName} ce mois` :
+                  `Cheapest prices for flights to ${arrivalCityName} this month`,
+      buttonText: locale === 'es' ? 'Encontrar Ofertas' : 
+                  locale === 'ru' ? 'Найти Предложения' :
+                  locale === 'fr' ? 'Trouver des Offres' : 'Find Deals',
+      buttonColor: '#ef4444'
+    }
+  ];
+
+  // Flight tabs data
+  const flightTabs = [
+    {
+      id: 'oneway_flights',
+      label: locale === 'es' ? 'Vuelos de Ida' : 
+             locale === 'ru' ? 'Рейсы в одну сторону' :
+             locale === 'fr' ? 'Vols Aller Simple' : 'One-way Flights',
+      flights: flightData.oneway_flights || []
+    },
+    {
+      id: 'last_minute_flights',
+      label: locale === 'es' ? 'Vuelos de Último Minuto' : 
+             locale === 'ru' ? 'Рейсы в последнюю минуту' :
+             locale === 'fr' ? 'Vols de Dernière Minute' : 'Last Minute Flights',
+      flights: flightData.last_minute_flights || []
+    },
+    {
+      id: 'cheap_flights',
+      label: locale === 'es' ? 'Vuelos Baratos' : 
+             locale === 'ru' ? 'Дешевые рейсы' :
+             locale === 'fr' ? 'Vols Pas Chers' : 'Cheap Flights',
+      flights: flightData.cheap_flights || []
+    },
+    {
+      id: 'best_flights',
+      label: locale === 'es' ? 'Mejores Vuelos' : 
+             locale === 'ru' ? 'Лучшие рейсы' :
+             locale === 'fr' ? 'Meilleurs Vols' : 'Best Flights',
+      flights: flightData.best_flights || []
     }
   ];
 
@@ -229,10 +276,20 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     { name: locale === 'es' ? 'Dic' : locale === 'ru' ? 'Дек' : locale === 'fr' ? 'Déc' : 'Dec', value: 267 }
   ];
 
-  const weatherData = pageData?.temperature?.map((temp: any) => ({
-    name: temp.name,
-    value: temp.value
-  })) || [
+  // Helper function to transform weather data
+  const transformWeatherData = (data: any[], fallbackData: any[]) => {
+    if (!data || !Array.isArray(data)) return fallbackData;
+    
+    return data.map((item: any, index: number) => {
+      // Handle different possible API structures
+      const name = item.name || item.month || item.label || item.month_name || `Month ${index + 1}`;
+      const value = item.value || item.temp || item.temperature || item.avg_temp || item.avg_temperature || item.avg || 0;
+      
+      return { name, value: Number(value) || 0 };
+    });
+  };
+
+  const weatherData = transformWeatherData(pageData?.temperature, [
     { name: locale === 'es' ? 'Ene' : locale === 'ru' ? 'Янв' : locale === 'fr' ? 'Jan' : 'Jan', value: 35 },
     { name: locale === 'es' ? 'Feb' : locale === 'ru' ? 'Фев' : locale === 'fr' ? 'Fév' : 'Feb', value: 38 },
     { name: locale === 'es' ? 'Mar' : locale === 'ru' ? 'Мар' : locale === 'fr' ? 'Mar' : 'Mar', value: 47 },
@@ -245,12 +302,9 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     { name: locale === 'es' ? 'Oct' : locale === 'ru' ? 'Окт' : locale === 'fr' ? 'Oct' : 'Oct', value: 61 },
     { name: locale === 'es' ? 'Nov' : locale === 'ru' ? 'Ноя' : locale === 'fr' ? 'Nov' : 'Nov', value: 50 },
     { name: locale === 'es' ? 'Dic' : locale === 'ru' ? 'Дек' : locale === 'fr' ? 'Déc' : 'Dec', value: 40 }
-  ];
+  ]);
 
-  const rainfallData = pageData?.rainfall?.map((rain: any) => ({
-    name: rain.name,
-    value: rain.value
-  })) || [
+  const rainfallData = transformWeatherData(pageData?.rainfall, [
     { name: locale === 'es' ? 'Ene' : locale === 'ru' ? 'Янв' : locale === 'fr' ? 'Jan' : 'Jan', value: 2.8 },
     { name: locale === 'es' ? 'Feb' : locale === 'ru' ? 'Фев' : locale === 'fr' ? 'Fév' : 'Feb', value: 2.6 },
     { name: locale === 'es' ? 'Mar' : locale === 'ru' ? 'Мар' : locale === 'fr' ? 'Mar' : 'Mar', value: 3.4 },
@@ -263,7 +317,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     { name: locale === 'es' ? 'Oct' : locale === 'ru' ? 'Окт' : locale === 'fr' ? 'Oct' : 'Oct', value: 3.2 },
     { name: locale === 'es' ? 'Nov' : locale === 'ru' ? 'Ноя' : locale === 'fr' ? 'Nov' : 'Nov', value: 2.9 },
     { name: locale === 'es' ? 'Dic' : locale === 'ru' ? 'Дек' : locale === 'fr' ? 'Déc' : 'Dec', value: 2.7 }
-  ];
+  ]);
 
   return (
     <Box sx={{ width: '100%', maxWidth: '100%' }}>
@@ -340,7 +394,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
           </Typography>
           
           <Grid container spacing={3}>
-            {sampleFlightDeals.map((deal) => (
+            {priceCards.map((deal) => (
               <Grid item xs={12} sm={6} md={3} key={deal.id}>
                 <Card sx={{ 
                   borderRadius: '8px',
@@ -356,21 +410,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
                   <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a1a1a', mr: 1 }}>
-                        {deal.type === 'round-trip' ? 
-                          (locale === 'es' ? 'Ida y vuelta desde:' : 
-                           locale === 'ru' ? 'Туда и обратно от:' :
-                           locale === 'fr' ? 'Aller-retour depuis:' : 'Round-trip from:') : 
-                         deal.type === 'one-way' ? 
-                          (locale === 'es' ? 'Solo ida desde:' : 
-                           locale === 'ru' ? 'В одну сторону от:' :
-                           locale === 'fr' ? 'Aller simple depuis:' : 'One-way from:') :
-                         deal.type === 'popular' ? 
-                          (locale === 'es' ? 'Popular En:' : 
-                           locale === 'ru' ? 'Популярно В:' :
-                           locale === 'fr' ? 'Populaire En:' : 'Popular In:') : 
-                          (locale === 'es' ? 'Más Barato En:' : 
-                           locale === 'ru' ? 'Дешевле В:' :
-                           locale === 'fr' ? 'Moins Cher En:' : 'Cheapest In:')}
+                        {deal.title}
                       </Typography>
                       <Box sx={{ 
                         width: 16, 
@@ -480,7 +520,12 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
-                title={content.weeklyTitle}
+                title={flightData.cheapest_day ? 
+                  (locale === 'es' ? `Precio más barato el ${flightData.cheapest_day}` :
+                   locale === 'ru' ? `Самая дешевая цена в ${flightData.cheapest_day}` :
+                   locale === 'fr' ? `Prix le moins cher le ${flightData.cheapest_day}` :
+                   `Cheapest price on ${flightData.cheapest_day}`) : 
+                  content.weeklyTitle}
                 description={pageData?.weekly || content.weeklyDescription}
                 data={weeklyPriceData}
                 yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
@@ -492,7 +537,12 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
             </Grid>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
-                title={content.monthlyTitle}
+                title={flightData.cheapest_month ? 
+                  (locale === 'es' ? `Precio más barato en ${flightData.cheapest_month}` :
+                   locale === 'ru' ? `Самая дешевая цена в ${flightData.cheapest_month}` :
+                   locale === 'fr' ? `Prix le moins cher en ${flightData.cheapest_month}` :
+                   `Cheapest price in ${flightData.cheapest_month}`) : 
+                  content.monthlyTitle}
                 description={pageData?.monthly || content.monthlyDescription}
                 data={monthlyPriceData}
                 yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
@@ -522,7 +572,9 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
-                title={content.weatherDescription.split(' ').slice(0, 3).join(' ')}
+                title={locale === 'es' ? 'Temperatura' : 
+                       locale === 'ru' ? 'Температура' :
+                       locale === 'fr' ? 'Température' : 'Temperature'}
                 description={pageData?.temperature || content.weatherDescription}
                 data={weatherData}
                 yAxisLabel={locale === 'es' ? 'Temperatura (°F)' : 
@@ -534,7 +586,9 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
             </Grid>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
-                title={content.rainfallTitle}
+                title={locale === 'es' ? 'Precipitación' : 
+                       locale === 'ru' ? 'Осадки' :
+                       locale === 'fr' ? 'Précipitations' : 'Rainfall'}
                 description={pageData?.rainfall || content.rainfallDescription}
                 data={rainfallData}
                 yAxisLabel={locale === 'es' ? 'Precipitación (pulgadas)' : 

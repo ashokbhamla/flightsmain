@@ -13,10 +13,10 @@ import FlightSearchBox from '@/components/FlightSearchBox';
 // import FlightListWithFilters from '@/components/FlightListWithFilters';
 
 // Helper function to check if slug is a valid airport code
-// All single codes are treated as airport codes for dynamic pages
+// Single codes (like aad, hyd) are airport codes, route pairs (like jfk-agp) are not
 function isAirportCode(slug: string): boolean {
-  // For dynamic pages, treat any single code as a valid airport code
-  return true;
+  // If slug contains a hyphen, it's a route pair (like jfk-agp), not a single airport
+  return !slug.includes('-');
 }
 
 // Helper function to parse slug and extract IATA codes
@@ -1700,6 +1700,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
   // Determine template type based on whether it's a single airport or route pair
   // Single codes (like aad, hyd) use airport template, route pairs (like lax-was) use flight template
   const templateType = arrivalIata ? "flight" : "airport";
+  
 
   return (
     <Box sx={{ width: '100%', maxWidth: '100%' }}>
