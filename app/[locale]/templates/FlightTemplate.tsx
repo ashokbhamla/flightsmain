@@ -358,21 +358,33 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     { name: locale === 'es' ? 'Dic' : locale === 'ru' ? 'Дек' : locale === 'fr' ? 'Déc' : 'Dec', value: 40 }
   ];
 
-  // Create hardcoded temperature data to fix [object Object] issue
-  const weatherData = [
-    { name: 'Jan', value: 35 },
-    { name: 'Feb', value: 38 },
-    { name: 'Mar', value: 47 },
-    { name: 'Apr', value: 58 },
-    { name: 'May', value: 68 },
-    { name: 'Jun', value: 77 },
-    { name: 'Jul', value: 82 },
-    { name: 'Aug', value: 80 },
-    { name: 'Sep', value: 73 },
-    { name: 'Oct', value: 61 },
-    { name: 'Nov', value: 50 },
-    { name: 'Dec', value: 40 }
-  ];
+  // Get temperature data from content API
+  const temperatureData = pageData?.temperature || [];
+  const rainfallData = pageData?.rainfall || [];
+  
+  console.log('Content API temperature data:', temperatureData);
+  console.log('Content API rainfall data:', rainfallData);
+  
+  // Transform temperature data from content API
+  const weatherData = Array.isArray(temperatureData) && temperatureData.length > 0 
+    ? temperatureData.map((item: any, index: number) => ({
+        name: item.name || item.month || item.label || `Month ${index + 1}`,
+        value: Number(item.value || item.temp || item.temperature || 0)
+      }))
+    : [
+        { name: 'Jan', value: 35 },
+        { name: 'Feb', value: 38 },
+        { name: 'Mar', value: 47 },
+        { name: 'Apr', value: 58 },
+        { name: 'May', value: 68 },
+        { name: 'Jun', value: 77 },
+        { name: 'Jul', value: 82 },
+        { name: 'Aug', value: 80 },
+        { name: 'Sep', value: 73 },
+        { name: 'Oct', value: 61 },
+        { name: 'Nov', value: 50 },
+        { name: 'Dec', value: 40 }
+      ];
 
   // Fallback rainfall data
   const fallbackRainfallData = [
@@ -390,21 +402,26 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     { name: locale === 'es' ? 'Dic' : locale === 'ru' ? 'Дек' : locale === 'fr' ? 'Déc' : 'Dec', value: 2.7 }
   ];
 
-  // Create hardcoded rainfall data to fix [object Object] issue
-  const rainfallDataTransformed = [
-    { name: 'Jan', value: 2.8 },
-    { name: 'Feb', value: 2.6 },
-    { name: 'Mar', value: 3.4 },
-    { name: 'Apr', value: 3.1 },
-    { name: 'May', value: 3.8 },
-    { name: 'Jun', value: 3.4 },
-    { name: 'Jul', value: 3.7 },
-    { name: 'Aug', value: 3.9 },
-    { name: 'Sep', value: 3.6 },
-    { name: 'Oct', value: 3.2 },
-    { name: 'Nov', value: 2.9 },
-    { name: 'Dec', value: 2.7 }
-  ];
+  // Transform rainfall data from content API
+  const rainfallDataTransformed = Array.isArray(rainfallData) && rainfallData.length > 0 
+    ? rainfallData.map((item: any, index: number) => ({
+        name: item.name || item.month || item.label || `Month ${index + 1}`,
+        value: Number(item.value || item.rainfall || item.precipitation || 0)
+      }))
+    : [
+        { name: 'Jan', value: 2.8 },
+        { name: 'Feb', value: 2.6 },
+        { name: 'Mar', value: 3.4 },
+        { name: 'Apr', value: 3.1 },
+        { name: 'May', value: 3.8 },
+        { name: 'Jun', value: 3.4 },
+        { name: 'Jul', value: 3.7 },
+        { name: 'Aug', value: 3.9 },
+        { name: 'Sep', value: 3.6 },
+        { name: 'Oct', value: 3.2 },
+        { name: 'Nov', value: 2.9 },
+        { name: 'Dec', value: 2.7 }
+      ];
 
   return (
     <Box sx={{ width: '100%', maxWidth: '100%' }}>
@@ -658,26 +675,26 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
           
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <ClientPriceGraph
-                title={locale === 'es' ? 'Temperatura' : 
-                       locale === 'ru' ? 'Температура' :
-                       locale === 'fr' ? 'Température' : 'Temperature'}
-                description={pageData?.temperature || content.weatherDescription}
-                data={weatherData}
-                yAxisLabel={locale === 'es' ? 'Temperatura (°F)' : 
-                            locale === 'ru' ? 'Температура (°F)' :
-                            locale === 'fr' ? 'Température (°F)' : 'Temperature (°F)'}
-                showPrices={false}
-                height={300}
-              />
+                <ClientPriceGraph
+                  title={locale === 'es' ? 'Temperatura' : 
+                         locale === 'ru' ? 'Температура' :
+                         locale === 'fr' ? 'Température' : 'Temperature'}
+                  description={pageData?.temperature_description || content.weatherDescription}
+                  data={weatherData}
+                  yAxisLabel={locale === 'es' ? 'Temperatura (°F)' : 
+                              locale === 'ru' ? 'Температура (°F)' :
+                              locale === 'fr' ? 'Température (°F)' : 'Temperature (°F)'}
+                  showPrices={false}
+                  height={300}
+                />
             </Grid>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
                 title={locale === 'es' ? 'Precipitación' : 
                        locale === 'ru' ? 'Осадки' :
                        locale === 'fr' ? 'Précipitations' : 'Rainfall'}
-                description={pageData?.rainfall || content.rainfallDescription}
-                     data={rainfallDataTransformed}
+                description={pageData?.rainfall_description || content.rainfallDescription}
+                data={rainfallDataTransformed}
                 yAxisLabel={locale === 'es' ? 'Precipitación (pulgadas)' : 
                             locale === 'ru' ? 'Осадки (дюймы)' :
                             locale === 'fr' ? 'Précipitations (pouces)' : 'Rainfall (inches)'}

@@ -65,10 +65,13 @@ export default function ClientPriceGraph({
     );
   }
 
-  // Sort data by value to determine colors
-  const sortedData = [...data].sort((a, b) => a.value - b.value);
+  // Ensure data is properly formatted
+  const validData = data.filter(item => item && typeof item === 'object' && item.name && typeof item.value === 'number');
   
-  const processedData = data.map((item, index) => {
+  // Sort data by value to determine colors
+  const sortedData = [...validData].sort((a, b) => a.value - b.value);
+  
+  const processedData = validData.map((item, index) => {
     const sortedIndex = sortedData.findIndex(d => d.name === item.name);
     let color = item.color;
     
@@ -83,7 +86,8 @@ export default function ClientPriceGraph({
     }
     
     return {
-      ...item,
+      name: String(item.name || 'Unknown'),
+      value: Number(item.value) || 0,
       color,
       price: showPrices ? `$${item.value}` : item.value
     };
