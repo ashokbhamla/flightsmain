@@ -14,10 +14,18 @@ import FlightSearchBox from '@/components/FlightSearchBox';
 
 // Helper function to check if slug is a valid airport code
 function isAirportCode(slug: string): boolean {
+  // Check if it's a 3-letter IATA code (most airport codes are 3 letters)
+  if (slug.length === 3 && /^[A-Z]{3}$/i.test(slug)) {
+    return true;
+  }
+  
+  // Also check against known major airport codes
   const validAirportCodes = [
     'DEL', 'BOM', 'HYD', 'BLR', 'CCU', 'MAA', 'AMD', 'PNQ', 'COK', 'GOI', 'IXZ',
     'LAX', 'WAS', 'BWI', 'IAD', 'DCA', 'JFK', 'ORD', 'DFW', 'ATL', 'BOS',
-    'MIA', 'SFO', 'SEA', 'DEN', 'LAS', 'PHX', 'MCO', 'CLT', 'IAH', 'DTW'
+    'MIA', 'SFO', 'SEA', 'DEN', 'LAS', 'PHX', 'MCO', 'CLT', 'IAH', 'DTW',
+    'AAD', 'AAN', 'AAQ', 'AAR', 'AAT', 'AAX', 'ABA', 'ABB', 'ABD', 'ABI',
+    'ABJ', 'ABM', 'ABQ', 'ABR', 'ABT', 'ABU', 'ABY', 'ABZ', 'ACA', 'ACC'
   ];
   return validAirportCodes.includes(slug.toUpperCase());
 }
@@ -31,6 +39,12 @@ function parseFlightSlug(slug: string): { departureIata: string; arrivalIata: st
       arrivalIata: parts[1].toUpperCase()
     };
   }
+  
+  // If it's a single code, check if it's an airport code
+  if (isAirportCode(slug)) {
+    return { departureIata: slug.toUpperCase(), arrivalIata: '' };
+  }
+  
   return { departureIata: 'LAX', arrivalIata: 'WAS' }; // fallback
 }
 
@@ -1697,11 +1711,14 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
     normalizedFlights
   };
 
+  // Determine template type based on whether it's a single airport or route pair
+  const templateType = arrivalIata ? "flight" : "airport";
+
   return (
     <Box sx={{ width: '100%', maxWidth: '100%' }}>
       <DynamicTemplateSelector
         locale={locale}
-        templateType="flight"
+        templateType={templateType}
         pageData={combinedPageData}
         params={{ departureIata, arrivalIata }}
         onAction={() => {}}
