@@ -145,6 +145,11 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
   const departureCityName = flightData.departure_city || departureCity;
   const arrivalCityName = flightData.arrival_city || arrivalCity;
   
+  // Debug: Check what data we're getting
+  console.log('PageData keys:', Object.keys(pageData || {}));
+  console.log('Temperature data:', pageData?.temperature);
+  console.log('Rainfall data:', pageData?.rainfall);
+  
 
   // Price cards data from API
   const priceCards = [
@@ -280,10 +285,15 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
   const transformWeatherData = (data: any[], fallbackData: any[]) => {
     if (!data || !Array.isArray(data)) return fallbackData;
     
+    console.log('Raw API data:', data);
+    console.log('First item structure:', data[0]);
+    
     return data.map((item: any, index: number) => {
       // Handle different possible API structures
       const name = item.name || item.month || item.label || item.month_name || `Month ${index + 1}`;
       const value = item.value || item.temp || item.temperature || item.avg_temp || item.avg_temperature || item.avg || 0;
+      
+      console.log(`Transforming item ${index}:`, { original: item, name, value });
       
       return { name, value: Number(value) || 0 };
     });
