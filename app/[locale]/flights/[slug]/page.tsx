@@ -13,13 +13,10 @@ import FlightSearchBox from '@/components/FlightSearchBox';
 // import FlightListWithFilters from '@/components/FlightListWithFilters';
 
 // Helper function to check if slug is a valid airport code
+// All single codes are treated as airport codes for dynamic pages
 function isAirportCode(slug: string): boolean {
-  const validAirportCodes = [
-    'DEL', 'BOM', 'HYD', 'BLR', 'CCU', 'MAA', 'AMD', 'PNQ', 'COK', 'GOI', 'IXZ',
-    'LAX', 'WAS', 'BWI', 'IAD', 'DCA', 'JFK', 'ORD', 'DFW', 'ATL', 'BOS',
-    'MIA', 'SFO', 'SEA', 'DEN', 'LAS', 'PHX', 'MCO', 'CLT', 'IAH', 'DTW'
-  ];
-  return validAirportCodes.includes(slug.toUpperCase());
+  // For dynamic pages, treat any single code as a valid airport code
+  return true;
 }
 
 // Helper function to parse slug and extract IATA codes
