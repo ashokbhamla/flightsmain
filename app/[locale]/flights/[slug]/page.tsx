@@ -14,18 +14,10 @@ import FlightSearchBox from '@/components/FlightSearchBox';
 
 // Helper function to check if slug is a valid airport code
 function isAirportCode(slug: string): boolean {
-  // Check if it's a 3-letter IATA code (most airport codes are 3 letters)
-  if (slug.length === 3 && /^[A-Z]{3}$/i.test(slug)) {
-    return true;
-  }
-  
-  // Also check against known major airport codes
   const validAirportCodes = [
     'DEL', 'BOM', 'HYD', 'BLR', 'CCU', 'MAA', 'AMD', 'PNQ', 'COK', 'GOI', 'IXZ',
     'LAX', 'WAS', 'BWI', 'IAD', 'DCA', 'JFK', 'ORD', 'DFW', 'ATL', 'BOS',
-    'MIA', 'SFO', 'SEA', 'DEN', 'LAS', 'PHX', 'MCO', 'CLT', 'IAH', 'DTW',
-    'AAD', 'AAN', 'AAQ', 'AAR', 'AAT', 'AAX', 'ABA', 'ABB', 'ABD', 'ABI',
-    'ABJ', 'ABM', 'ABQ', 'ABR', 'ABT', 'ABU', 'ABY', 'ABZ', 'ACA', 'ACC'
+    'MIA', 'SFO', 'SEA', 'DEN', 'LAS', 'PHX', 'MCO', 'CLT', 'IAH', 'DTW'
   ];
   return validAirportCodes.includes(slug.toUpperCase());
 }
@@ -40,12 +32,9 @@ function parseFlightSlug(slug: string): { departureIata: string; arrivalIata: st
     };
   }
   
-  // If it's a single code, check if it's an airport code
-  if (isAirportCode(slug)) {
-    return { departureIata: slug.toUpperCase(), arrivalIata: '' };
-  }
-  
-  return { departureIata: 'LAX', arrivalIata: 'WAS' }; // fallback
+  // For single codes, treat them as airport codes (like aad, hyd, etc.)
+  // These are dynamic route pages that can serve multiple airports
+  return { departureIata: slug.toUpperCase(), arrivalIata: '' };
 }
 
 // Helper function to generate canonical URL for flights from airport
@@ -1712,6 +1701,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
   };
 
   // Determine template type based on whether it's a single airport or route pair
+  // Single codes (like aad, hyd) use airport template, route pairs (like lax-was) use flight template
   const templateType = arrivalIata ? "flight" : "airport";
 
   return (
