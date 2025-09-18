@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <sitemap>
+    <loc>https://airlinesmap.com/sitemaps/sitemap-flightsone.xml</loc>
+    <lastmod>2025-09-18T15:13:21.290Z</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://airlinesmap.com/sitemaps/sitemap-flightsround.xml</loc>
+    <lastmod>2025-09-18T15:13:21.290Z</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://airlinesmap.com/sitemaps/sitemap-airlinesround.xml</loc>
+    <lastmod>2025-09-18T15:13:21.290Z</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://airlinesmap.com/sitemaps/sitemap-airlinesone.xml</loc>
+    <lastmod>2025-09-18T15:13:21.290Z</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://airlinesmap.com/sitemaps/sitemap-airports.xml</loc>
+    <lastmod>2025-09-18T15:13:21.290Z</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://airlinesmap.com/sitemaps/sitemap-airlines.xml</loc>
+    <lastmod>2025-09-18T15:13:21.290Z</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://airlinesmap.com/sitemaps/sitemap-airport-hotels.xml</loc>
+    <lastmod>2025-09-18T15:13:21.290Z</lastmod>
+  </sitemap>
+</sitemapindex>

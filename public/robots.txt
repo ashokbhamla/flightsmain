@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://airlinesmap.com/sitemap.xml

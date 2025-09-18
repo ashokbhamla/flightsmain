@@ -11,8 +11,9 @@
     "clean": "rm -rf node_modules package-lock.json && npm install",
     "analyze": "ANALYZE=true npm run build",
     "minify-css": "node scripts/minify-css.js",
-    "sitemap:status": "curl https://airlinesmap.com/api/sitemap/status",
-    "sitemap:update": "curl -H \"Authorization: Bearer airlinesmap-sitemap-secret-2024\" https://airlinesmap.com/api/cron/sitemap-update"
+    "sitemap:static": "node scripts/generate-static-sitemap.js",
+    "sitemap:dynamic": "node scripts/generate-dynamic-sitemaps.js",
+    "sitemap:all": "node scripts/generate-all-sitemaps.js"
   },
   "dependencies": {
     "@emotion/cache": "^11.13.1",
