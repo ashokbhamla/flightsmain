@@ -214,12 +214,19 @@ export async function fetchDestinationFlightContent(iataFrom: string, lang: 1 | 
   const isServer = typeof window === 'undefined';
   
   if (isServer) {
-    const url = `${process.env.NEXT_PUBLIC_API_CONTENT || 'https://api.triposia.com'}/content/flights?iata_from=${iataFrom}&lang_id=${lang}&domain_id=${domain}`;
+    const url = `${process.env.NEXT_PUBLIC_API_CONTENT || 'https://api.triposia.com'}/content/flights?iata_from=${iataFrom}&lang=${lang}&domain_id=${domain}`;
+    console.log('API URL:', url);
     const res = await fetch(url, { 
       next: { revalidate: 300 }
     });
-    if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+    console.log('API Response status:', res.status);
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('API Error:', errorText);
+      throw new Error(`API error ${res.status}: ${errorText}`);
+    }
     const data = await res.json() as any[];
+    console.log('API Data received:', data);
     return data[0] || null;
   } else {
     const data = await fetchJSON<any[]>(`api/destination-flight-content?iata_from=${iataFrom}&lang_id=${lang}&domain_id=${domain}`);

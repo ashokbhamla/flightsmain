@@ -8,6 +8,11 @@ interface FlightTemplateProps {
   locale: Locale;
   pageData: any;
   params: any;
+  flightData?: any;
+  departureCityName?: string;
+  arrivalCityName?: string;
+  departureIata?: string;
+  arrivalIata?: string;
   onAction?: (searchData: any) => void;
 }
 
@@ -95,9 +100,17 @@ const getFlightContent = (locale: Locale, departureCity: string, arrivalCity: st
   return content[locale] || content.en;
 };
 
-export default function FlightTemplate({ locale, pageData, params, onAction }: FlightTemplateProps) {
-  const { departureIata, arrivalIata } = params;
-  
+export default function FlightTemplate({ 
+  locale, 
+  pageData, 
+  params, 
+  flightData, 
+  departureCityName, 
+  arrivalCityName, 
+  departureIata, 
+  arrivalIata, 
+  onAction 
+}: FlightTemplateProps) {
   // Helper function to get city name from IATA code
   const getCityName = (iataCode: string): string => {
     const cityMap: { [key: string]: string } = {
@@ -134,18 +147,33 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
       'IXZ': 'Port Blair'
     };
     return cityMap[iataCode] || iataCode;
-  };
+}
+
+  // Use passed props or fallback to params
+  const finalDepartureIata = departureIata || params.departureIata || params.slug;
+  const finalArrivalIata = arrivalIata || params.arrivalIata || '';
+  const finalDepartureCityName = departureCityName || getCityName(finalDepartureIata);
+  const finalArrivalCityName = arrivalCityName || getCityName(finalArrivalIata);
 
   // Get city names from pageData (passed from the parent component) or fallback to IATA lookup
-  const departureCity = pageData.departureCity || getCityName(departureIata);
-  const arrivalCity = pageData.arrivalCity || getCityName(arrivalIata);
+  const departureCity = pageData?.departureCity || finalDepartureCityName;
+  const arrivalCity = pageData?.arrivalCity || finalArrivalCityName;
   
-  const content = getFlightContent(locale, departureCity, arrivalCity, departureIata, arrivalIata);
+  const content = getFlightContent(locale, departureCity, arrivalCity, finalDepartureIata, finalArrivalIata);
 
   // Get flight data from API
-  const flightData = pageData || {};
-  const departureCityName = flightData.departure_city || departureCity;
-  const arrivalCityName = flightData.arrival_city || arrivalCity;
+  const actualFlightData = flightData || pageData || {};
+  
+  // Debug: Log the data being used
+  console.log('FlightTemplate Data:', { 
+    pageData, 
+    flightData, 
+    actualFlightData,
+    departureCity, 
+    arrivalCity,
+    finalDepartureCityName,
+    finalArrivalCityName
+  });
   
   
 
@@ -158,7 +186,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
       title: locale === 'es' ? 'Precio promedio desde:' : 
              locale === 'ru' ? 'Средняя цена от:' :
              locale === 'fr' ? 'Prix moyen à partir de:' : 'Average price start from:',
-      description: `${departureCityName} to ${arrivalCityName}`,
+      description: `${finalDepartureCityName} to ${finalArrivalCityName}`,
       buttonText: locale === 'es' ? 'Buscar Ofertas' : 
                   locale === 'ru' ? 'Поиск Предложений' :
                   locale === 'fr' ? 'Rechercher des Offres' : 'Search Deals',
@@ -171,7 +199,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
       title: locale === 'es' ? 'Solo ida desde:' : 
              locale === 'ru' ? 'В одну сторону от:' :
              locale === 'fr' ? 'Aller simple depuis:' : 'One-way from:',
-      description: `${departureCityName} to ${arrivalCityName}`,
+      description: `${finalDepartureCityName} to ${finalArrivalCityName}`,
       buttonText: locale === 'es' ? 'Buscar Ofertas' : 
                   locale === 'ru' ? 'Поиск Предложений' :
                   locale === 'fr' ? 'Rechercher des Offres' : 'Search Deals',
@@ -180,16 +208,16 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     {
       id: 3,
       type: 'cheapest-day',
-      month: pageData?.cheapest_day || (locale === 'es' ? 'Miércoles' :
+      day: pageData?.cheapest_day || (locale === 'es' ? 'Miércoles' :
              locale === 'ru' ? 'Среда' :
              locale === 'fr' ? 'Mercredi' : 'Wednesday'),
       title: locale === 'es' ? 'Día más barato:' : 
              locale === 'ru' ? 'Самый дешевый день:' :
              locale === 'fr' ? 'Jour le moins cher:' : 'Cheapest day:',
-      description: locale === 'es' ? `Vuelos más baratos a ${arrivalCityName} este día` :
-                  locale === 'ru' ? `Самые дешевые рейсы в ${arrivalCityName} в этот день` :
-                  locale === 'fr' ? `Vols les moins chers vers ${arrivalCityName} ce jour` :
-                  `Cheapest flights to ${arrivalCityName} on this day`,
+      description: locale === 'es' ? `Vuelos más baratos a ${finalArrivalCityName} este día` :
+                  locale === 'ru' ? `Самые дешевые рейсы в ${finalArrivalCityName} в этот день` :
+                  locale === 'fr' ? `Vols les moins chers vers ${finalArrivalCityName} ce jour` :
+                  `Cheapest flights to ${finalArrivalCityName} on this day`,
       buttonText: locale === 'es' ? 'Encontrar Ofertas' : 
                   locale === 'ru' ? 'Найти Предложения' :
                   locale === 'fr' ? 'Trouver des Offres' : 'Find Deals',
@@ -204,16 +232,51 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
       title: locale === 'es' ? 'Más barato en:' : 
              locale === 'ru' ? 'Дешевле в:' :
              locale === 'fr' ? 'Moins cher en:' : 'Cheapest In:',
-      description: locale === 'es' ? `Precios más baratos para vuelos a ${arrivalCityName} este mes` :
-                  locale === 'ru' ? `Самые дешевые цены на рейсы в ${arrivalCityName} в этом месяце` :
-                  locale === 'fr' ? `Prix les moins chers pour les vols vers ${arrivalCityName} ce mois` :
-                  `Cheapest prices for flights to ${arrivalCityName} this month`,
+      description: locale === 'es' ? `Precios más baratos para vuelos a ${finalArrivalCityName} este mes` :
+                  locale === 'ru' ? `Самые дешевые цены на рейсы в ${finalArrivalCityName} в этом месяце` :
+                  locale === 'fr' ? `Prix les moins chers pour les vols vers ${finalArrivalCityName} ce mois` :
+                  `Cheapest prices for flights to ${finalArrivalCityName} this month`,
       buttonText: locale === 'es' ? 'Encontrar Ofertas' : 
                   locale === 'ru' ? 'Найти Предложения' :
                   locale === 'fr' ? 'Trouver des Offres' : 'Find Deals',
       buttonColor: '#ef4444'
     }
   ];
+
+  // Transform API flight data to the expected format
+  const transformApiFlightData = (apiData: any[]) => {
+    if (!Array.isArray(apiData)) return [];
+    
+    return apiData.map((flight, index) => ({
+      id: index + 1,
+      iata_from: flight.iata_from,
+      iata_to: flight.iata_to,
+      departure_time: '09:00', // Default time since not in API
+      arrival_time: '10:00', // Default time since not in API
+      stops: 0, // Default non-stop
+      date: new Date().toISOString().split('T')[0], // Today's date
+      iso_date: new Date().toISOString(),
+      duration: `${flight.common_duration || 60} min`,
+      price: parseInt(flight.price) || 0,
+      currency: 'USD',
+      localized_price: `$${flight.price}`,
+      airline: flight.airlineroutes?.[0]?.carrier_name || 'Unknown',
+      airline_iata: flight.airlineroutes?.[0]?.carrier || 'XX',
+      city_name_en: flight.city_name_en || flight.airport?.city_name || 'Unknown City'
+    }));
+  };
+
+  // Get flight data from API and transform it
+  const apiFlightData = Array.isArray(flightData) ? flightData : (flightData?.flights || []);
+  const transformedFlights = transformApiFlightData(apiFlightData);
+  
+  // Debug: Log the flight data
+  console.log('FlightTemplate Flight Data Debug:', {
+    flightData,
+    apiFlightData,
+    transformedFlights,
+    hasFlights: transformedFlights.length > 0
+  });
 
   // Flight tabs data - Updated to use API data with proper translations
   const flightTabs = [
@@ -222,7 +285,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
       label: locale === 'es' ? 'Vuelos de Ida' : 
              locale === 'ru' ? 'Рейсы в одну сторону' :
              locale === 'fr' ? 'Vols Aller Simple' : 'One-way Flights',
-      flights: flightData.oneway_flights || [],
+      flights: transformedFlights,
       description: pageData?.cheapest_flights || (locale === 'es' ? 'Vuelos baratos desde' : 
                    locale === 'ru' ? 'Дешевые рейсы из' :
                    locale === 'fr' ? 'Vols pas chers depuis' : 'Cheap flights from')
@@ -232,7 +295,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
       label: locale === 'es' ? 'Vuelos de Último Minuto' : 
              locale === 'ru' ? 'Рейсы в последнюю минуту' :
              locale === 'fr' ? 'Vols de Dernière Minute' : 'Last Minute Flights',
-      flights: flightData.last_minute_flights || [],
+      flights: transformedFlights,
       description: locale === 'es' ? 'Vuelos de último minuto' : 
                    locale === 'ru' ? 'Рейсы в последнюю минуту' :
                    locale === 'fr' ? 'Vols de dernière minute' : 'Last minute flights'
@@ -242,7 +305,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
       label: locale === 'es' ? 'Vuelos Baratos' : 
              locale === 'ru' ? 'Дешевые рейсы' :
              locale === 'fr' ? 'Vols Pas Chers' : 'Cheap Flights',
-      flights: flightData.cheap_flights || [],
+      flights: transformedFlights,
       description: locale === 'es' ? 'Los vuelos más baratos' : 
                    locale === 'ru' ? 'Самые дешевые рейсы' :
                    locale === 'fr' ? 'Les vols les moins chers' : 'The cheapest flights'
@@ -252,7 +315,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
       label: locale === 'es' ? 'Mejores Vuelos' : 
              locale === 'ru' ? 'Лучшие рейсы' :
              locale === 'fr' ? 'Meilleurs Vols' : 'Best Flights',
-      flights: flightData.best_flights || [],
+      flights: transformedFlights,
       description: locale === 'es' ? 'Los mejores vuelos' : 
                    locale === 'ru' ? 'Лучшие рейсы' :
                    locale === 'fr' ? 'Les meilleurs vols' : 'The best flights'
@@ -453,16 +516,16 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
           <FlightSearchBox 
             locale={locale}
             defaultFrom={{ 
-              code: departureIata, 
-              name: `${departureIata} - ${departureCity}`, 
+              code: finalDepartureIata, 
+              name: `${finalDepartureIata} - ${departureCity}`, 
               city_name: departureCity,
               country_name: '',
               country_code: '',
               type: 'airport' as const
             }}
             defaultTo={{ 
-              code: arrivalIata, 
-              name: `${arrivalIata} - ${arrivalCity}`, 
+              code: finalArrivalIata, 
+              name: `${finalArrivalIata} - ${arrivalCity}`, 
               city_name: arrivalCity,
               country_name: '',
               country_code: '',
@@ -583,13 +646,18 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
         </Box>
 
         {/* Flight Deals Section with Tabs */}
-        {pageData && (
+        {transformedFlights.length > 0 && (
           <FlightTabs 
-            flightData={pageData}
+            flightData={{
+              oneway_flights: transformedFlights,
+              last_minute_flights: transformedFlights,
+              cheap_flights: transformedFlights,
+              best_flights: transformedFlights
+            }}
             departureCity={departureCity}
             arrivalCity={arrivalCity}
-            departureIata={departureIata}
-            arrivalIata={arrivalIata}
+            departureIata={departureIata || ''}
+            arrivalIata={arrivalIata || ''}
             tabDescriptions={pageData?.tab_descriptions}
             locale={locale}
           />
@@ -761,9 +829,9 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
                 color: '#1a1a1a'
               }}
             >
-              {locale === 'es' ? `Lugares para Visitar en ${arrivalCityName}` : 
-               locale === 'ru' ? `Места для посещения в ${arrivalCityName}` :
-               locale === 'fr' ? `Lieux à Visiter à ${arrivalCityName}` : `Places to Visit in ${arrivalCityName}`}
+              {locale === 'es' ? `Lugares para Visitar en ${finalArrivalCityName}` : 
+               locale === 'ru' ? `Места для посещения в ${finalArrivalCityName}` :
+               locale === 'fr' ? `Lieux à Visiter à ${finalArrivalCityName}` : `Places to Visit in ${finalArrivalCityName}`}
             </Typography>
             
             <div 
@@ -789,9 +857,9 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
                 color: '#1a1a1a'
               }}
             >
-              {locale === 'es' ? `Aerolíneas en ${arrivalCityName}` : 
-               locale === 'ru' ? `Авиакомпании в ${arrivalCityName}` :
-               locale === 'fr' ? `Compagnies Aériennes à ${arrivalCityName}` : `Airlines at ${arrivalCityName}`}
+              {locale === 'es' ? `Aerolíneas en ${finalArrivalCityName}` : 
+               locale === 'ru' ? `Авиакомпании в ${finalArrivalCityName}` :
+               locale === 'fr' ? `Compagnies Aériennes à ${finalArrivalCityName}` : `Airlines at ${finalArrivalCityName}`}
             </Typography>
             
             <div 
@@ -817,9 +885,9 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
                 color: '#1a1a1a'
               }}
             >
-              {locale === 'es' ? `Mejor Época para Visitar ${arrivalCityName}` : 
-               locale === 'ru' ? `Лучшее время для посещения ${arrivalCityName}` :
-               locale === 'fr' ? `Meilleure Période pour Visiter ${arrivalCityName}` : `Best Time to Visit ${arrivalCityName}`}
+              {locale === 'es' ? `Mejor Época para Visitar ${finalArrivalCityName}` : 
+               locale === 'ru' ? `Лучшее время для посещения ${finalArrivalCityName}` :
+               locale === 'fr' ? `Meilleure Période pour Visiter ${finalArrivalCityName}` : `Best Time to Visit ${finalArrivalCityName}`}
             </Typography>
             
             <div 
