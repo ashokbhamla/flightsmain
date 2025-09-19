@@ -111,15 +111,6 @@ function enhanceFlightData(flights: any[]): any[] {
   });
 }
 
-// Helper function to get language ID for API calls
-function getLangId(locale: string): 1 | 2 {
-  switch (locale) {
-    case 'es': return 2;
-    case 'ru': return 1; // Fallback to English for Russian
-    case 'fr': return 1; // Fallback to English for French
-    default: return 1; // English
-  }
-}
 
 export async function generateMetadata({ params }: { params: { locale: string; slug: string } }): Promise<Metadata> {
   const locale = localeFromParam(params.locale);
@@ -137,7 +128,7 @@ export async function generateMetadata({ params }: { params: { locale: string; s
     let contentData: any = null;
     
     try {
-      contentData = await fetchDestinationFlightContent(airportCode, getLangId(locale));
+      contentData = await fetchDestinationFlightContent(airportCode, getLanguageId(locale));
     } catch (error) {
       console.error('Error fetching metadata for airport page:', error);
     }
@@ -176,7 +167,7 @@ export async function generateMetadata({ params }: { params: { locale: string; s
   const alternateUrls = generateAlternateUrls(`/flights/${params.slug}`);
   
   try {
-    const contentData = await fetchFlightContent(arrivalIata, departureIata, getLangId(locale));
+    const contentData = await fetchFlightContent(arrivalIata, departureIata, getLanguageId(locale));
     
     return {
       title: contentData?.title || `${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)} (${departureIata}) ${t.flightPage.to} ${getCityName(arrivalIata)} (${arrivalIata})`,
@@ -216,6 +207,11 @@ export async function generateMetadata({ params }: { params: { locale: string; s
 export default async function FlightBySlug({ params }: { params: { locale: string; slug: string } }) {
   const locale = localeFromParam(params.locale);
   const t = getTranslations(locale);
+  
+  // Parse slug to get departure and arrival info early
+  const { departureIata, arrivalIata } = parseFlightSlug(params.slug);
+  const departureCity = getCityName(departureIata);
+  const arrivalCity = getCityName(arrivalIata);
   
   // Check if slug is a single airport code and handle it directly
   if (isAirportCode(params.slug)) {
@@ -1366,26 +1362,44 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
           />
         )}
 
-        {/* Flight Search Schema */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
-              "url": process.env.NEXT_PUBLIC_DOMAIN || "https://airlinesmap.com",
-              "potentialAction": {
-                "@type": "SearchAction",
-                "target": {
-                  "@type": "EntryPoint",
-                  "urlTemplate": `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/search?q={search_term_string}`
-                },
-                "query-input": "required name=search_term_string"
-              }
-            })
-          }}
-        />
+      {/* Flight Search Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
+            "url": process.env.NEXT_PUBLIC_DOMAIN || "https://airlinesmap.com",
+            "description": contentData?.description || `Find the best flight deals from ${departureCity} to ${arrivalCity}`,
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/search?q={search_term_string}`
+              },
+              "query-input": "required name=search_term_string"
+            },
+            "mainEntity": {
+              "@type": "ItemList",
+              "name": `Flights from ${departureCity} to ${arrivalCity}`,
+              "description": contentData?.description || `Available flights from ${departureCity} to ${arrivalCity}`,
+              "numberOfItems": flightData?.oneway_flights?.length || 0,
+              "itemListElement": (flightData?.oneway_flights || []).slice(0, 5).map((flight: any, index: number) => ({
+                "@type": "ListItem",
+                "position": index + 1,
+                "item": {
+                  "@type": "Flight",
+                  "name": `${flight.airline || 'Airline'} Flight`,
+                  "description": `One-way flight from ${departureCity} to ${arrivalCity}`,
+                  "price": flight.price || "0",
+                  "priceCurrency": "USD"
+                }
+              }))
+            }
+          })
+        }}
+      />
 
         {/* Organization Schema */}
         <script
@@ -1532,8 +1546,52 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
           }}
         />
 
-        {/* Individual Flight Schemas */}
-        {normalizedFlights && normalizedFlights.length > 0 && normalizedFlights.map((flight: any, index: number) => {
+      {/* Flight Route Schema */}
+      {flightData && (
+        <SchemaOrg data={{
+          "@context": "https://schema.org",
+          "@type": "FlightReservation",
+          "reservationId": `FLIGHT-${departureIata}-${arrivalIata}-${Date.now()}`,
+          "reservationStatus": "https://schema.org/ReservationConfirmed",
+          "underName": {
+            "@type": "Person",
+            "name": "Passenger"
+          },
+          "reservationFor": {
+            "@type": "Flight",
+            "flightNumber": `${flightData.oneway_flights?.[0]?.airline_iata || 'AI'}${Math.floor(Math.random() * 1000)}`,
+            "provider": {
+              "@type": "Airline",
+              "name": flightData.oneway_flights?.[0]?.airline || "Airline",
+              "iataCode": flightData.oneway_flights?.[0]?.airline_iata || "AI"
+            },
+            "departureAirport": {
+              "@type": "Airport",
+              "name": `${departureIata} Airport`,
+              "iataCode": departureIata,
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": departureCity
+              }
+            },
+            "arrivalAirport": {
+              "@type": "Airport",
+              "name": `${arrivalIata} Airport`,
+              "iataCode": arrivalIata,
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": arrivalCity
+              }
+            },
+            "estimatedFlightDuration": flightData.oneway_flights?.[0]?.duration || "N/A"
+          },
+          "totalPrice": flightData.oneway_flights?.[0]?.price || "0",
+          "priceCurrency": "USD"
+        }} />
+      )}
+
+      {/* Individual Flight Schemas */}
+      {normalizedFlights && normalizedFlights.length > 0 && normalizedFlights.map((flight: any, index: number) => {
           // Get coordinates from API data or flight data
           const getAirportCoordinates = (airportCode: string, flightData: any) => {
             // Try to get coordinates from flight data first (check various possible structures)
@@ -1650,7 +1708,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
     );
   }
   
-  const { departureIata, arrivalIata } = parseFlightSlug(params.slug);
+  // departureIata, arrivalIata, departureCity, arrivalCity already declared above
   
   // Fetch content and flight data
   let contentData = null;
@@ -1658,15 +1716,12 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
   
   try {
     [contentData, flightData] = await Promise.all([
-      fetchFlightContent(arrivalIata, departureIata, getLanguageId(locale) as 1 | 2),
+      fetchFlightContent(arrivalIata, departureIata, getLanguageId(locale)),
       fetchFlightData(arrivalIata, departureIata)
     ]);
   } catch (error) {
     console.error('Error fetching flight data:', error);
   }
-
-  const departureCity = getCityName(departureIata);
-  const arrivalCity = getCityName(arrivalIata);
 
   // Normalize flight data for consistent display
   let normalizedFlights: any[] = [];
@@ -1723,7 +1778,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
         <SchemaOrg data={{
           "@context": "https://schema.org",
           "@type": "Product",
-          "name": `Flights from ${departureCity} to ${arrivalCity}`,
+          "name": contentData?.title || `Flights from ${departureCity} to ${arrivalCity}`,
           "description": contentData?.description || `Find cheap flights from ${departureCity} to ${arrivalCity}`,
           "image": [
             `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/flights/${departureIata}-${arrivalIata}.jpg`,
@@ -1783,7 +1838,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
           "flightNumber": `${flightData.oneway_flights?.[0]?.airline_iata || 'AI'}${Math.floor(Math.random() * 1000)}`,
           "provider": {
             "@type": "Airline",
-            "name": flightData.oneway_flights?.[0]?.airline || "Air India",
+            "name": flightData.oneway_flights?.[0]?.airline || "Airline",
             "iataCode": flightData.oneway_flights?.[0]?.airline_iata || "AI"
           },
           "departureAirport": {
@@ -1827,8 +1882,8 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
         <SchemaOrg data={{
           "@context": "https://schema.org",
           "@type": "Product",
-          "name": `One-way flights from ${departureCity} to ${arrivalCity}`,
-          "description": `Cheapest one-way flights from ${departureCity} (${departureIata}) to ${arrivalCity} (${arrivalIata})`,
+          "name": contentData?.title || `One-way flights from ${departureCity} to ${arrivalCity}`,
+          "description": contentData?.description || `Cheapest one-way flights from ${departureCity} (${departureIata}) to ${arrivalCity} (${arrivalIata})`,
           "category": "Flight",
           "brand": {
             "@type": "Brand",

@@ -490,28 +490,28 @@ const UnifiedAirportPopup = memo(function UnifiedAirportPopup({
                     </Box>
                   ) : (
                     <>
-                      {/* Recent searches */}
-                      {recentSearches.length > 0 && (
-                        <Box sx={{ p: 2 }}>
-                          <Typography variant="h6" sx={{ mb: 2, color: '#374151', fontWeight: 600 }}>
-                            Recent Searches
-                          </Typography>
-                          <List sx={{ p: 0 }}>
-                            {recentSearches.map((option, index) => renderOption(option, index))}
-                          </List>
-                        </Box>
-                      )}
+                  {/* Recent searches */}
+                  {recentSearches.length > 0 && (
+                    <Box sx={{ p: 2 }}>
+                      <Typography variant="h6" sx={{ mb: 2, color: '#374151', fontWeight: 600 }}>
+                        Recent Searches
+                      </Typography>
+                      <List sx={{ p: 0 }}>
+                        {recentSearches.map((option, index) => renderOption(option, index))}
+                      </List>
+                    </Box>
+                  )}
 
-                      {/* Popular destinations */}
-                      <Box sx={{ p: 2 }}>
-                        <Typography variant="h6" sx={{ mb: 2, color: '#374151', fontWeight: 600 }}>
-                          <Star sx={{ fontSize: '1.2rem', mr: 1, verticalAlign: 'middle', color: '#f59e0b' }} />
-                          Popular Destinations
-                        </Typography>
-                        <List sx={{ p: 0 }}>
-                          {popularDestinations.map((option, index) => renderOption(option, index))}
-                        </List>
-                      </Box>
+                  {/* Popular destinations */}
+                  <Box sx={{ p: 2 }}>
+                    <Typography variant="h6" sx={{ mb: 2, color: '#374151', fontWeight: 600 }}>
+                      <Star sx={{ fontSize: '1.2rem', mr: 1, verticalAlign: 'middle', color: '#f59e0b' }} />
+                      Popular Destinations
+                    </Typography>
+                    <List sx={{ p: 0 }}>
+                      {popularDestinations.map((option, index) => renderOption(option, index))}
+                    </List>
+                  </Box>
                     </>
                   )}
                 </Box>

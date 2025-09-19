@@ -171,17 +171,21 @@ export async function fetchPage(slug: string, lang: 1 | 2, domain: 1 | 2 = 1) {
 }
 
 // New API functions for flight pages
-export async function fetchFlightContent(arrivalIata: string, departureIata: string, lang: 1 | 2, domain: 1 | 2 = 1) {
+export async function fetchFlightContent(arrivalIata: string, departureIata: string, lang: 1 | 2 | 3 | 4, domain: 1 | 2 = 1) {
   const isServer = typeof window === 'undefined';
   
   if (isServer) {
-    const url = `${process.env.NEXT_PUBLIC_API_CONTENT || 'https://api.triposia.com'}/content/flights?arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${lang}&domain_id=${domain}`;
+    // Fetch all language data in one call
+    const url = `${process.env.NEXT_PUBLIC_API_CONTENT || 'https://api.triposia.com'}/content/flights?arrival_iata=${arrivalIata}&departure_iata=${departureIata}&domain_id=${domain}`;
     const res = await fetch(url, { 
       next: { revalidate: 300 }
     });
     if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
     const data = await res.json() as any[];
-    return data[0] || null;
+    
+    // Find the data for the requested language
+    const languageData = data.find(item => item.lang_id === lang);
+    return languageData || data[0] || null; // Fallback to first available language
   } else {
     const data = await fetchJSON<any[]>(`api/flight-content?arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${lang}&domain_id=${domain}`);
     return data[0] || null;
@@ -206,7 +210,7 @@ export async function fetchFlightData(arrivalIata: string, departureIata: string
 }
 
 // New API functions for destination pages (flights from specific airport)
-export async function fetchDestinationFlightContent(iataFrom: string, lang: 1 | 2, domain: 1 | 2 = 1) {
+export async function fetchDestinationFlightContent(iataFrom: string, lang: 1 | 2 | 3 | 4, domain: 1 | 2 = 1) {
   const isServer = typeof window === 'undefined';
   
   if (isServer) {

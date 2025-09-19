@@ -136,8 +136,10 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     return cityMap[iataCode] || iataCode;
   };
 
-  const departureCity = getCityName(departureIata);
-  const arrivalCity = getCityName(arrivalIata);
+  // Get city names from pageData (passed from the parent component) or fallback to IATA lookup
+  const departureCity = pageData.departureCity || getCityName(departureIata);
+  const arrivalCity = pageData.arrivalCity || getCityName(arrivalIata);
+  
   const content = getFlightContent(locale, departureCity, arrivalCity, departureIata, arrivalIata);
 
   // Get flight data from API
@@ -147,15 +149,15 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
   
   
 
-  // Price cards data from API
+  // Price cards data from API - Updated to use API data
   const priceCards = [
     {
       id: 1,
       type: 'average',
-      price: flightData.oneway_trip_start || '$189',
+      price: pageData?.avragefares ? `$${pageData.avragefares}` : '$189',
       title: locale === 'es' ? 'Precio promedio desde:' : 
              locale === 'ru' ? 'Средняя цена от:' :
-             locale === 'fr' ? 'Prix moyen à partir de:' : '🚀 UPDATED: Average price start from:',
+             locale === 'fr' ? 'Prix moyen à partir de:' : 'Average price start from:',
       description: `${departureCityName} to ${arrivalCityName}`,
       buttonText: locale === 'es' ? 'Buscar Ofertas' : 
                   locale === 'ru' ? 'Поиск Предложений' :
@@ -168,7 +170,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
       price: flightData.oneway_trip_start || '$122',
       title: locale === 'es' ? 'Solo ida desde:' : 
              locale === 'ru' ? 'В одну сторону от:' :
-             locale === 'fr' ? 'Aller simple depuis:' : '🚀 UPDATED: One-way from:',
+             locale === 'fr' ? 'Aller simple depuis:' : 'One-way from:',
       description: `${departureCityName} to ${arrivalCityName}`,
       buttonText: locale === 'es' ? 'Buscar Ofertas' : 
                   locale === 'ru' ? 'Поиск Предложений' :
@@ -178,7 +180,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     {
       id: 3,
       type: 'cheapest-day',
-      month: flightData.cheapest_day || (locale === 'es' ? 'Miércoles' :
+      month: pageData?.cheapest_day || (locale === 'es' ? 'Miércoles' :
              locale === 'ru' ? 'Среда' :
              locale === 'fr' ? 'Mercredi' : 'Wednesday'),
       title: locale === 'es' ? 'Día más barato:' : 
@@ -196,7 +198,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     {
       id: 4,
       type: 'cheapest-month',
-      month: flightData.cheapest_month || (locale === 'es' ? 'Enero' :
+      month: pageData?.cheapest_month || (locale === 'es' ? 'Enero' :
              locale === 'ru' ? 'Январь' :
              locale === 'fr' ? 'Janvier' : 'January'),
       title: locale === 'es' ? 'Más barato en:' : 
@@ -213,42 +215,54 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     }
   ];
 
-  // Flight tabs data
+  // Flight tabs data - Updated to use API data with proper translations
   const flightTabs = [
     {
       id: 'oneway_flights',
       label: locale === 'es' ? 'Vuelos de Ida' : 
              locale === 'ru' ? 'Рейсы в одну сторону' :
              locale === 'fr' ? 'Vols Aller Simple' : 'One-way Flights',
-      flights: flightData.oneway_flights || []
+      flights: flightData.oneway_flights || [],
+      description: pageData?.cheapest_flights || (locale === 'es' ? 'Vuelos baratos desde' : 
+                   locale === 'ru' ? 'Дешевые рейсы из' :
+                   locale === 'fr' ? 'Vols pas chers depuis' : 'Cheap flights from')
     },
     {
       id: 'last_minute_flights',
       label: locale === 'es' ? 'Vuelos de Último Minuto' : 
              locale === 'ru' ? 'Рейсы в последнюю минуту' :
              locale === 'fr' ? 'Vols de Dernière Minute' : 'Last Minute Flights',
-      flights: flightData.last_minute_flights || []
+      flights: flightData.last_minute_flights || [],
+      description: locale === 'es' ? 'Vuelos de último minuto' : 
+                   locale === 'ru' ? 'Рейсы в последнюю минуту' :
+                   locale === 'fr' ? 'Vols de dernière minute' : 'Last minute flights'
     },
     {
       id: 'cheap_flights',
       label: locale === 'es' ? 'Vuelos Baratos' : 
              locale === 'ru' ? 'Дешевые рейсы' :
              locale === 'fr' ? 'Vols Pas Chers' : 'Cheap Flights',
-      flights: flightData.cheap_flights || []
+      flights: flightData.cheap_flights || [],
+      description: locale === 'es' ? 'Los vuelos más baratos' : 
+                   locale === 'ru' ? 'Самые дешевые рейсы' :
+                   locale === 'fr' ? 'Les vols les moins chers' : 'The cheapest flights'
     },
     {
       id: 'best_flights',
       label: locale === 'es' ? 'Mejores Vuelos' : 
              locale === 'ru' ? 'Лучшие рейсы' :
              locale === 'fr' ? 'Meilleurs Vols' : 'Best Flights',
-      flights: flightData.best_flights || []
+      flights: flightData.best_flights || [],
+      description: locale === 'es' ? 'Los mejores vuelos' : 
+                   locale === 'ru' ? 'Лучшие рейсы' :
+                   locale === 'fr' ? 'Les meilleurs vols' : 'The best flights'
     }
   ];
 
-  // Use API data for graphs, fallback to sample data if not available
-  const weeklyPriceData = pageData?.weeks?.map((week: any) => ({
-    name: week.name,
-    value: week.value
+  // Use API data for graphs from monthly_fares_graph and weekly_fares_graph
+  const weeklyPriceData = pageData?.weekly_fares_graph?.data?.map((day: any) => ({
+    name: day.day || day.name,
+    value: day.avg_fare || day.value
   })) || [
     { name: locale === 'es' ? 'Lun' : locale === 'ru' ? 'Пн' : locale === 'fr' ? 'Lun' : 'Mon', value: 245 },
     { name: locale === 'es' ? 'Mar' : locale === 'ru' ? 'Вт' : locale === 'fr' ? 'Mar' : 'Tue', value: 189 },
@@ -259,9 +273,9 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
     { name: locale === 'es' ? 'Dom' : locale === 'ru' ? 'Вс' : locale === 'fr' ? 'Dim' : 'Sun', value: 312 }
   ];
 
-  const monthlyPriceData = pageData?.months?.map((month: any) => ({
-    name: month.name,
-    value: month.price
+  const monthlyPriceData = pageData?.monthly_fares_graph?.data?.map((month: any) => ({
+    name: month.month || month.name,
+    value: month.avg_fare || month.value
   })) || [
     { name: locale === 'es' ? 'Ene' : locale === 'ru' ? 'Янв' : locale === 'fr' ? 'Jan' : 'Jan', value: 189 },
     { name: locale === 'es' ? 'Feb' : locale === 'ru' ? 'Фев' : locale === 'fr' ? 'Fév' : 'Feb', value: 198 },
@@ -279,40 +293,18 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
 
   // Helper function to transform weather data
   const transformWeatherData = (data: any[], fallbackData: any[]) => {
-    console.log('=== TRANSFORMING WEATHER DATA ===');
-    console.log('Input data:', data);
-    console.log('Is array:', Array.isArray(data));
-    console.log('Data length:', data?.length);
-    
-    if (!data || !Array.isArray(data)) {
-      console.log('No data or not array, using fallback');
+    if (!data || !Array.isArray(data) || data.length === 0) {
       return fallbackData;
     }
-    
-    if (data.length === 0) {
-      console.log('Empty data array, using fallback');
-      return fallbackData;
-    }
-    
-    console.log('First item:', data[0]);
-    console.log('First item type:', typeof data[0]);
-    console.log('First item keys:', data[0] ? Object.keys(data[0]) : 'No keys');
     
     try {
       const result = data.map((item: any, index: number) => {
-        console.log(`\n--- Processing item ${index} ---`);
-        console.log('Item:', item);
-        console.log('Item type:', typeof item);
-        console.log('Item keys:', Object.keys(item || {}));
-        
         // Try to extract name from various possible properties
         let name = 'Unknown';
         if (typeof item === 'string') {
           name = item;
         } else if (typeof item === 'object' && item !== null) {
           name = item.name || item.month || item.label || item.month_name || item.monthName || 
-                 item.month_name || item.monthName || item.month_name || item.monthName || 
-                 item.month_name || item.monthName || item.month_name || item.monthName || 
                  `Month ${index + 1}`;
         }
         
@@ -328,16 +320,11 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
                   item.temperature_value || item.avg_temp_value || item.avg_temperature_value || 0;
         }
         
-        const result = { name: String(name), value: Number(value) || 0 };
-        console.log('Result:', result);
-        return result;
+        return { name: String(name), value: Number(value) || 0 };
       });
       
-      console.log('Final transformed data:', result);
       return result;
     } catch (error) {
-      console.error('Error transforming weather data:', error);
-      console.log('Using fallback data due to error');
       return fallbackData;
     }
   };
@@ -362,8 +349,9 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
   const temperatureData = pageData?.temperature || [];
   const rainfallData = pageData?.rainfall || [];
   
-  console.log('Content API temperature data:', temperatureData);
-  console.log('Content API rainfall data:', rainfallData);
+  // Debug logging for temperature and rainfall data
+  // console.log('Content API temperature data:', temperatureData);
+  // console.log('Content API rainfall data:', rainfallData);
   
   // Transform temperature data from content API
   const weatherData = Array.isArray(temperatureData) && temperatureData.length > 0 
@@ -421,7 +409,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
         { name: 'Oct', value: 3.2 },
         { name: 'Nov', value: 2.9 },
         { name: 'Dec', value: 2.7 }
-      ];
+  ];
 
   return (
     <Box sx={{ width: '100%', maxWidth: '100%' }}>
@@ -624,13 +612,13 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
-                title={flightData.cheapest_day ? 
-                  (locale === 'es' ? `Precio más barato el ${flightData.cheapest_day}` :
-                   locale === 'ru' ? `Самая дешевая цена в ${flightData.cheapest_day}` :
-                   locale === 'fr' ? `Prix le moins cher le ${flightData.cheapest_day}` :
-                   `Cheapest price on ${flightData.cheapest_day}`) : 
+                title={pageData?.cheapest_day ? 
+                  (locale === 'es' ? `Precio más barato el ${pageData.cheapest_day}` :
+                   locale === 'ru' ? `Самая дешевая цена в ${pageData.cheapest_day}` :
+                   locale === 'fr' ? `Prix le moins cher le ${pageData.cheapest_day}` :
+                   `Cheapest price on ${pageData.cheapest_day}`) : 
                   content.weeklyTitle}
-                description={pageData?.weekly || content.weeklyDescription}
+                description={pageData?.weekly_fares_graph?.paragraph || pageData?.weekly || content.weeklyDescription}
                 data={weeklyPriceData}
                 yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
                             locale === 'ru' ? 'Цена (USD)' :
@@ -641,13 +629,13 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
             </Grid>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
-                title={flightData.cheapest_month ? 
-                  (locale === 'es' ? `Precio más barato en ${flightData.cheapest_month}` :
-                   locale === 'ru' ? `Самая дешевая цена в ${flightData.cheapest_month}` :
-                   locale === 'fr' ? `Prix le moins cher en ${flightData.cheapest_month}` :
-                   `Cheapest price in ${flightData.cheapest_month}`) : 
+                title={pageData?.cheapest_month ? 
+                  (locale === 'es' ? `Precio más barato en ${pageData.cheapest_month}` :
+                   locale === 'ru' ? `Самая дешевая цена в ${pageData.cheapest_month}` :
+                   locale === 'fr' ? `Prix le moins cher en ${pageData.cheapest_month}` :
+                   `Cheapest price in ${pageData.cheapest_month}`) : 
                   content.monthlyTitle}
-                description={pageData?.monthly || content.monthlyDescription}
+                description={pageData?.monthly_fares_graph?.paragraph || pageData?.monthly || content.monthlyDescription}
                 data={monthlyPriceData}
                 yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
                             locale === 'ru' ? 'Цена (USD)' :
@@ -675,18 +663,18 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
           
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-                <ClientPriceGraph
+              <ClientPriceGraph
                   title={locale === 'es' ? 'Temperatura' : 
                          locale === 'ru' ? 'Температура' :
                          locale === 'fr' ? 'Température' : 'Temperature'}
                   description={pageData?.temperature_description || content.weatherDescription}
-                  data={weatherData}
-                  yAxisLabel={locale === 'es' ? 'Temperatura (°F)' : 
-                              locale === 'ru' ? 'Температура (°F)' :
-                              locale === 'fr' ? 'Température (°F)' : 'Temperature (°F)'}
-                  showPrices={false}
-                  height={300}
-                />
+                data={weatherData}
+                yAxisLabel={locale === 'es' ? 'Temperatura (°F)' : 
+                            locale === 'ru' ? 'Температура (°F)' :
+                            locale === 'fr' ? 'Température (°F)' : 'Temperature (°F)'}
+                showPrices={false}
+                height={300}
+              />
             </Grid>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
@@ -705,7 +693,147 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
           </Grid>
         </Box>
 
+        {/* Popular Destinations */}
+        {pageData?.destinations && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 3,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? 'Destinos Populares' : 
+               locale === 'ru' ? 'Популярные направления' :
+               locale === 'fr' ? 'Destinations Populaires' : 'Popular Destinations'}
+            </Typography>
+            
+            <div 
+              dangerouslySetInnerHTML={{ __html: pageData.destinations }} 
+              style={{ 
+                fontSize: '1.1rem',
+                lineHeight: 1.6,
+                color: '#666'
+              }}
+            />
+          </Box>
+        )}
+
+        {/* Destinations Links */}
+        {pageData?.destinations_links && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 3,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? 'Enlaces de Destinos' : 
+               locale === 'ru' ? 'Ссылки на направления' :
+               locale === 'fr' ? 'Liens de Destinations' : 'Destination Links'}
+            </Typography>
+            
+            <div 
+              dangerouslySetInnerHTML={{ __html: pageData.destinations_links }} 
+              style={{ 
+                fontSize: '1.1rem',
+                lineHeight: 1.6,
+                color: '#666'
+              }}
+            />
+          </Box>
+        )}
+
         {/* Places to Visit */}
+        {pageData?.places_to_visit && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 3,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? `Lugares para Visitar en ${arrivalCityName}` : 
+               locale === 'ru' ? `Места для посещения в ${arrivalCityName}` :
+               locale === 'fr' ? `Lieux à Visiter à ${arrivalCityName}` : `Places to Visit in ${arrivalCityName}`}
+            </Typography>
+            
+            <div 
+              dangerouslySetInnerHTML={{ __html: pageData.places_to_visit }} 
+              style={{ 
+                fontSize: '1.1rem',
+                lineHeight: 1.6,
+                color: '#666'
+              }}
+            />
+          </Box>
+        )}
+
+        {/* Airlines at City */}
+        {pageData?.airlines && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 3,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? `Aerolíneas en ${arrivalCityName}` : 
+               locale === 'ru' ? `Авиакомпании в ${arrivalCityName}` :
+               locale === 'fr' ? `Compagnies Aériennes à ${arrivalCityName}` : `Airlines at ${arrivalCityName}`}
+            </Typography>
+            
+            <div 
+              dangerouslySetInnerHTML={{ __html: pageData.airlines }} 
+              style={{ 
+                fontSize: '1.1rem',
+                lineHeight: 1.6,
+                color: '#666'
+              }}
+            />
+          </Box>
+        )}
+
+        {/* Best Time to Visit */}
+        {pageData?.best_time_visit && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 3,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? `Mejor Época para Visitar ${arrivalCityName}` : 
+               locale === 'ru' ? `Лучшее время для посещения ${arrivalCityName}` :
+               locale === 'fr' ? `Meilleure Période pour Visiter ${arrivalCityName}` : `Best Time to Visit ${arrivalCityName}`}
+            </Typography>
+            
+            <div 
+              dangerouslySetInnerHTML={{ __html: pageData.best_time_visit }} 
+              style={{ 
+                fontSize: '1.1rem',
+                lineHeight: 1.6,
+                color: '#666'
+              }}
+            />
+          </Box>
+        )}
+
+        {/* Places to Visit - Legacy support */}
         {pageData?.places && (
           <Box sx={{ mb: 6 }}>
             <Typography 
@@ -722,32 +850,6 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
             
             <div 
               dangerouslySetInnerHTML={{ __html: pageData.places }} 
-              style={{ 
-                fontSize: '1.1rem',
-                lineHeight: 1.6,
-                color: '#666'
-              }}
-            />
-          </Box>
-        )}
-
-        {/* Hotels Section */}
-        {pageData?.hotels && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
-              {content.hotelsTitle}
-            </Typography>
-            
-            <div 
-              dangerouslySetInnerHTML={{ __html: pageData.hotels }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -809,6 +911,32 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
           </Box>
         )}
 
+        {/* Hotels Section */}
+        {pageData?.hotels && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 3,
+                color: '#1a1a1a'
+              }}
+            >
+              {content.hotelsTitle}
+            </Typography>
+            
+            <div 
+              dangerouslySetInnerHTML={{ __html: pageData.hotels }} 
+              style={{ 
+                fontSize: '1.1rem',
+                lineHeight: 1.6,
+                color: '#666'
+              }}
+            />
+          </Box>
+        )}
+
         {/* Frequently Asked Questions */}
         {pageData?.faqs && pageData.faqs.length > 0 && (
           <Box sx={{ mb: 6 }}>
@@ -834,7 +962,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
                     mb: 1,
                     color: '#1a1a1a'
                   }}
-                  dangerouslySetInnerHTML={{ __html: faq.question || '' }}
+                  dangerouslySetInnerHTML={{ __html: faq.q || faq.question || '' }}
                 />
                 <Typography 
                   variant="body1" 
@@ -842,7 +970,7 @@ export default function FlightTemplate({ locale, pageData, params, onAction }: F
                     color: '#666',
                     lineHeight: 1.6
                   }}
-                  dangerouslySetInnerHTML={{ __html: faq.answer || '' }}
+                  dangerouslySetInnerHTML={{ __html: faq.a || faq.answer || '' }}
                 />
               </Box>
             ))}

@@ -533,23 +533,23 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
 
 
         {/* Flight Search Box - Same as other pages */}
-        <FlightSearchBox
-          defaultFrom={{
-            code: departureIata,
-            name: `${departureCity} (${departureIata})`,
-            city_name: departureCity,
-            country_name: '',
-            country_code: '',
-            type: 'airport' as const
-          }}
-          defaultTo={arrivalIata ? {
-            code: arrivalIata,
-            name: `${arrivalCity} (${arrivalIata})`,
-            city_name: arrivalCity,
-            country_name: '',
-            country_code: '',
-            type: 'airport' as const
-          } : undefined}
+          <FlightSearchBox 
+            defaultFrom={{ 
+              code: departureIata, 
+              name: `${departureCity} (${departureIata})`, 
+              city_name: departureCity,
+              country_name: '',
+              country_code: '',
+              type: 'airport' as const
+            }}
+            defaultTo={arrivalIata ? { 
+              code: arrivalIata, 
+              name: `${arrivalCity} (${arrivalIata})`, 
+              city_name: arrivalCity,
+              country_name: '',
+              country_code: '',
+              type: 'airport' as const
+            } : undefined}
           locale={locale}
         />
 
@@ -595,7 +595,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 <Typography variant="body1" sx={{ color: '#4a5568' }}>
                   Hours: 24/7 Customer Support
                 </Typography>
-              </Box>
+        </Box>
             </Grid>
             
             <Grid item xs={12} md={6}>
