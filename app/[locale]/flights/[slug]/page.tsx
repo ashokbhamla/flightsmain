@@ -213,6 +213,9 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
   const departureCity = getCityName(departureIata);
   const arrivalCity = getCityName(arrivalIata);
   
+  // Declare variables for flight data
+  let actualFlightData = null;
+  
   // Check if slug is a single airport code and handle it directly
   if (isAirportCode(params.slug)) {
     // Handle single airport code directly instead of redirecting
@@ -229,6 +232,9 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
         fetchDestinationFlightContent(airportCode, getLanguageId(locale) as 1 | 2),
         fetchDestinationFlightData(airportCode)
     ]);
+    
+    // Set actualFlightData for single airport
+    actualFlightData = Array.isArray(flightData) ? flightData[0] : flightData;
       
       // Normalize the flight data for display
       if (flightData && Array.isArray(flightData)) {
@@ -1384,8 +1390,8 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
               "@type": "ItemList",
               "name": `Flights from ${departureCity} to ${arrivalCity}`,
               "description": contentData?.description || `Available flights from ${departureCity} to ${arrivalCity}`,
-              "numberOfItems": flightData?.oneway_flights?.length || 0,
-              "itemListElement": (flightData?.oneway_flights || []).slice(0, 5).map((flight: any, index: number) => ({
+              "numberOfItems": actualFlightData?.oneway_flights?.length || 0,
+              "itemListElement": (actualFlightData?.oneway_flights || []).slice(0, 5).map((flight: any, index: number) => ({
                 "@type": "ListItem",
                 "position": index + 1,
                 "item": {
@@ -1559,11 +1565,11 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
           },
           "reservationFor": {
             "@type": "Flight",
-            "flightNumber": `${flightData.oneway_flights?.[0]?.airline_iata || 'AI'}${Math.floor(Math.random() * 1000)}`,
+            "flightNumber": `${actualFlightData?.oneway_flights?.[0]?.airline_iata || 'AI'}${Math.floor(Math.random() * 1000)}`,
             "provider": {
               "@type": "Airline",
-              "name": flightData.oneway_flights?.[0]?.airline || "Airline",
-              "iataCode": flightData.oneway_flights?.[0]?.airline_iata || "AI"
+              "name": actualFlightData?.oneway_flights?.[0]?.airline || "Airline",
+              "iataCode": actualFlightData?.oneway_flights?.[0]?.airline_iata || "AI"
             },
             "departureAirport": {
               "@type": "Airport",
@@ -1583,9 +1589,9 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
                 "addressLocality": arrivalCity
               }
             },
-            "estimatedFlightDuration": flightData.oneway_flights?.[0]?.duration || "N/A"
+            "estimatedFlightDuration": actualFlightData?.oneway_flights?.[0]?.duration || "N/A"
           },
-          "totalPrice": flightData.oneway_flights?.[0]?.price || "0",
+          "totalPrice": actualFlightData?.oneway_flights?.[0]?.price || "0",
           "priceCurrency": "USD"
         }} />
       )}
@@ -1719,14 +1725,15 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
       fetchFlightContent(arrivalIata, departureIata, getLanguageId(locale)),
       fetchFlightData(arrivalIata, departureIata)
     ]);
+    actualFlightData = Array.isArray(flightData) ? flightData[0] : flightData;
   } catch (error) {
     console.error('Error fetching flight data:', error);
   }
 
   // Normalize flight data for consistent display
   let normalizedFlights: any[] = [];
-  if (flightData && flightData.oneway_flights && Array.isArray(flightData.oneway_flights)) {
-    normalizedFlights = enhanceFlightData(flightData.oneway_flights.map((flight: any) => ({
+  if (actualFlightData && actualFlightData.oneway_flights && Array.isArray(actualFlightData.oneway_flights)) {
+    normalizedFlights = enhanceFlightData(actualFlightData.oneway_flights.map((flight: any) => ({
       from: flight.iata_from || departureIata,
       to: flight.iata_to || arrivalIata,
       city: arrivalCity,
@@ -1793,7 +1800,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
             "ratingValue": "4.3",
             "reviewCount": "127"
           },
-          "offers": flightData.oneway_flights?.slice(0, 5).map((flight: any) => ({
+          "offers": actualFlightData?.oneway_flights?.slice(0, 5).map((flight: any) => ({
             "@type": "Offer",
             "price": flight.price || "0",
             "priceCurrency": flight.currency || "USD",
@@ -1835,11 +1842,11 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
         <SchemaOrg data={{
           "@context": "https://schema.org",
           "@type": "Flight",
-          "flightNumber": `${flightData.oneway_flights?.[0]?.airline_iata || 'AI'}${Math.floor(Math.random() * 1000)}`,
+          "flightNumber": `${actualFlightData?.oneway_flights?.[0]?.airline_iata || 'AI'}${Math.floor(Math.random() * 1000)}`,
           "provider": {
             "@type": "Airline",
-            "name": flightData.oneway_flights?.[0]?.airline || "Airline",
-            "iataCode": flightData.oneway_flights?.[0]?.airline_iata || "AI"
+            "name": actualFlightData?.oneway_flights?.[0]?.airline || "Airline",
+            "iataCode": actualFlightData?.oneway_flights?.[0]?.airline_iata || "AI"
           },
           "departureAirport": {
             "@type": "Airport",
@@ -1871,14 +1878,14 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
               "longitude": contentData?.arrival_longitude || contentData?.arrival_lng || contentData?.longitude || contentData?.lng || "77.1000"
             }
           },
-          "departureTime": flightData.oneway_flights?.[0]?.iso_date ? `${flightData.oneway_flights[0].iso_date}T${(flightData.oneway_flights[0].departure_time || '').replace(' ', '')}` : undefined,
-          "arrivalTime": flightData.oneway_flights?.[0]?.iso_date ? `${flightData.oneway_flights[0].iso_date}T${(flightData.oneway_flights[0].arrival_time || '').replace(' ', '')}` : undefined,
+          "departureTime": actualFlightData?.oneway_flights?.[0]?.iso_date ? `${actualFlightData.oneway_flights[0].iso_date}T${(actualFlightData.oneway_flights[0].departure_time || '').replace(' ', '')}` : undefined,
+          "arrivalTime": actualFlightData?.oneway_flights?.[0]?.iso_date ? `${actualFlightData.oneway_flights[0].iso_date}T${(actualFlightData.oneway_flights[0].arrival_time || '').replace(' ', '')}` : undefined,
           "flightDistance": contentData?.flight_distance || "1200"
         }} />
       )}
 
       {/* Flight Offers Schema */}
-      {flightData && flightData.oneway_flights && (
+      {actualFlightData && actualFlightData.oneway_flights && (
         <SchemaOrg data={{
           "@context": "https://schema.org",
           "@type": "Product",
@@ -1892,10 +1899,10 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
           "offers": {
             "@type": "AggregateOffer",
             "priceCurrency": "USD",
-            "lowPrice": Math.min(...flightData.oneway_flights.map((f: any) => parseFloat(f.price) || 0)),
-            "highPrice": Math.max(...flightData.oneway_flights.map((f: any) => parseFloat(f.price) || 0)),
-            "offerCount": flightData.oneway_flights.length,
-            "offers": flightData.oneway_flights.slice(0, 10).map((flight: any) => ({
+            "lowPrice": Math.min(...(actualFlightData?.oneway_flights || []).map((f: any) => parseFloat(f.price) || 0)),
+            "highPrice": Math.max(...(actualFlightData?.oneway_flights || []).map((f: any) => parseFloat(f.price) || 0)),
+            "offerCount": actualFlightData?.oneway_flights?.length || 0,
+            "offers": (actualFlightData?.oneway_flights || []).slice(0, 10).map((flight: any) => ({
               "@type": "Offer",
               "price": flight.price || "0",
               "priceCurrency": flight.currency || "USD",
