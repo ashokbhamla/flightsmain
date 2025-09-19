@@ -155,14 +155,14 @@ export default function FlightTemplate({
   const finalDepartureCityName = departureCityName || getCityName(finalDepartureIata);
   const finalArrivalCityName = arrivalCityName || getCityName(finalArrivalIata);
 
-  // Get city names from pageData (passed from the parent component) or fallback to IATA lookup
-  const departureCity = pageData?.departureCity || finalDepartureCityName;
-  const arrivalCity = pageData?.arrivalCity || finalArrivalCityName;
-  
-  const content = getFlightContent(locale, departureCity, arrivalCity, finalDepartureIata, finalArrivalIata);
-
   // Get flight data from API
   const actualFlightData = flightData || pageData || {};
+
+  // Get city names from pageData, flightData API, or fallback to IATA lookup
+  const departureCity = pageData?.departureCity || actualFlightData?.departure_city || finalDepartureCityName;
+  const arrivalCity = pageData?.arrivalCity || actualFlightData?.arrival_city || finalArrivalCityName;
+  
+  const content = getFlightContent(locale, departureCity, arrivalCity, finalDepartureIata, finalArrivalIata);
   
   // Debug: Log the data being used
   console.log('FlightTemplate Data:', { 
@@ -177,16 +177,16 @@ export default function FlightTemplate({
   
   
 
-  // Price cards data from API - Updated to use API data
+  // Price cards data from API - Updated to use correct API fields
   const priceCards = [
     {
       id: 1,
       type: 'average',
-      price: pageData?.avragefares ? `$${pageData.avragefares}` : '$189',
+      price: actualFlightData?.average_fare ? `$${actualFlightData.average_fare}` : '$189',
       title: locale === 'es' ? 'Precio promedio desde:' : 
              locale === 'ru' ? 'Средняя цена от:' :
              locale === 'fr' ? 'Prix moyen à partir de:' : 'Average price start from:',
-      description: `${finalDepartureCityName} to ${finalArrivalCityName}`,
+      description: `${departureCity} to ${arrivalCity}`,
       buttonText: locale === 'es' ? 'Buscar Ofertas' : 
                   locale === 'ru' ? 'Поиск Предложений' :
                   locale === 'fr' ? 'Rechercher des Offres' : 'Search Deals',
@@ -195,11 +195,11 @@ export default function FlightTemplate({
     {
       id: 2,
       type: 'oneway',
-      price: flightData.oneway_trip_start || '$122',
+      price: actualFlightData?.oneway_trip_start ? `$${actualFlightData.oneway_trip_start}` : '$122',
       title: locale === 'es' ? 'Solo ida desde:' : 
              locale === 'ru' ? 'В одну сторону от:' :
              locale === 'fr' ? 'Aller simple depuis:' : 'One-way from:',
-      description: `${finalDepartureCityName} to ${finalArrivalCityName}`,
+      description: `${departureCity} to ${arrivalCity}`,
       buttonText: locale === 'es' ? 'Buscar Ofertas' : 
                   locale === 'ru' ? 'Поиск Предложений' :
                   locale === 'fr' ? 'Rechercher des Offres' : 'Search Deals',
@@ -208,16 +208,16 @@ export default function FlightTemplate({
     {
       id: 3,
       type: 'cheapest-day',
-      day: pageData?.cheapest_day || (locale === 'es' ? 'Miércoles' :
+      day: actualFlightData?.cheapest_day || (locale === 'es' ? 'Miércoles' :
              locale === 'ru' ? 'Среда' :
              locale === 'fr' ? 'Mercredi' : 'Wednesday'),
       title: locale === 'es' ? 'Día más barato:' : 
              locale === 'ru' ? 'Самый дешевый день:' :
              locale === 'fr' ? 'Jour le moins cher:' : 'Cheapest day:',
-      description: locale === 'es' ? `Vuelos más baratos a ${finalArrivalCityName} este día` :
-                  locale === 'ru' ? `Самые дешевые рейсы в ${finalArrivalCityName} в этот день` :
-                  locale === 'fr' ? `Vols les moins chers vers ${finalArrivalCityName} ce jour` :
-                  `Cheapest flights to ${finalArrivalCityName} on this day`,
+      description: locale === 'es' ? `Vuelos más baratos a ${arrivalCity} este día` :
+                  locale === 'ru' ? `Самые дешевые рейсы в ${arrivalCity} в этот день` :
+                  locale === 'fr' ? `Vols les moins chers vers ${arrivalCity} ce jour` :
+                  `Cheapest flights to ${arrivalCity} on this day`,
       buttonText: locale === 'es' ? 'Encontrar Ofertas' : 
                   locale === 'ru' ? 'Найти Предложения' :
                   locale === 'fr' ? 'Trouver des Offres' : 'Find Deals',
@@ -226,16 +226,16 @@ export default function FlightTemplate({
     {
       id: 4,
       type: 'cheapest-month',
-      month: pageData?.cheapest_month || (locale === 'es' ? 'Enero' :
+      month: actualFlightData?.cheapest_month || (locale === 'es' ? 'Enero' :
              locale === 'ru' ? 'Январь' :
              locale === 'fr' ? 'Janvier' : 'January'),
       title: locale === 'es' ? 'Más barato en:' : 
              locale === 'ru' ? 'Дешевле в:' :
              locale === 'fr' ? 'Moins cher en:' : 'Cheapest In:',
-      description: locale === 'es' ? `Precios más baratos para vuelos a ${finalArrivalCityName} este mes` :
-                  locale === 'ru' ? `Самые дешевые цены на рейсы в ${finalArrivalCityName} в этом месяце` :
-                  locale === 'fr' ? `Prix les moins chers pour les vols vers ${finalArrivalCityName} ce mois` :
-                  `Cheapest prices for flights to ${finalArrivalCityName} this month`,
+      description: locale === 'es' ? `Precios más baratos para vuelos a ${arrivalCity} este mes` :
+                  locale === 'ru' ? `Самые дешевые цены на рейсы в ${arrivalCity} в этом месяце` :
+                  locale === 'fr' ? `Prix les moins chers pour les vols vers ${arrivalCity} ce mois` :
+                  `Cheapest prices for flights to ${arrivalCity} this month`,
       buttonText: locale === 'es' ? 'Encontrar Ofertas' : 
                   locale === 'ru' ? 'Найти Предложения' :
                   locale === 'fr' ? 'Trouver des Offres' : 'Find Deals',
@@ -267,15 +267,28 @@ export default function FlightTemplate({
   };
 
   // Get flight data from API and transform it
-  const apiFlightData = Array.isArray(flightData) ? flightData : (flightData?.flights || []);
-  const transformedFlights = transformApiFlightData(apiFlightData);
+  // Handle both single airport (array) and route pair (object with flight categories) data
+  let apiFlightData: any[] = [];
+  let transformedFlights: any[] = [];
+  
+  if (Array.isArray(flightData)) {
+    // Single airport data - array of flights
+    apiFlightData = flightData;
+    transformedFlights = transformApiFlightData(apiFlightData);
+  } else if (flightData && typeof flightData === 'object') {
+    // Route pair data - object with flight categories
+    if (flightData.oneway_flights && Array.isArray(flightData.oneway_flights)) {
+      transformedFlights = transformApiFlightData(flightData.oneway_flights);
+    }
+  }
   
   // Debug: Log the flight data
   console.log('FlightTemplate Flight Data Debug:', {
     flightData,
     apiFlightData,
     transformedFlights,
-    hasFlights: transformedFlights.length > 0
+    hasFlights: transformedFlights.length > 0,
+    isRouteData: !Array.isArray(flightData) && flightData && typeof flightData === 'object'
   });
 
   // Flight tabs data - Updated to use API data with proper translations
@@ -596,6 +609,20 @@ export default function FlightTemplate({
                       </Typography>
                     )}
                     
+                    {deal.day && (
+                      <Typography 
+                        variant="h4" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: deal.buttonColor,
+                          fontSize: '1.5rem',
+                          mb: 1
+                        }}
+                      >
+                        {deal.day}
+                      </Typography>
+                    )}
+                    
                     {deal.month && (
                       <Typography 
                         variant="h4" 
@@ -649,10 +676,10 @@ export default function FlightTemplate({
         {transformedFlights.length > 0 && (
           <FlightTabs 
             flightData={{
-              oneway_flights: transformedFlights,
-              last_minute_flights: transformedFlights,
-              cheap_flights: transformedFlights,
-              best_flights: transformedFlights
+              oneway_flights: Array.isArray(flightData) ? transformedFlights : transformApiFlightData(flightData?.oneway_flights || []),
+              last_minute_flights: Array.isArray(flightData) ? transformedFlights : transformApiFlightData(flightData?.last_minute_flights || []),
+              cheap_flights: Array.isArray(flightData) ? transformedFlights : transformApiFlightData(flightData?.cheap_flights || []),
+              best_flights: Array.isArray(flightData) ? transformedFlights : transformApiFlightData(flightData?.best_flights || [])
             }}
             departureCity={departureCity}
             arrivalCity={arrivalCity}

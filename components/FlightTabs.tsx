@@ -130,7 +130,7 @@ export default function FlightTabs({ flightData, departureCity, arrivalCity, dep
           color: '#1a1a1a'
         }}
       >
-        {t.flightSearch.cheapestFlights} from {departureCity} {departureIata} to {arrivalCity} {arrivalIata}
+        {t.flightSearch.cheapestFlights} from {departureCity} to {arrivalCity}
       </Typography>
       
       {/* Tabs - Only show if there are flights available */}

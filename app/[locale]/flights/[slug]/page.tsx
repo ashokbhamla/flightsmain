@@ -281,13 +281,23 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
   let contentData = null;
   let flightData = null;
   
+  console.log('Route page API calls:', { departureIata, arrivalIata, locale });
+  
   try {
     [contentData, flightData] = await Promise.all([
       fetchFlightContent(arrivalIata, departureIata, getLanguageId(locale)),
       fetchFlightData(arrivalIata, departureIata)
     ]);
-    actualFlightData = Array.isArray(flightData) ? flightData[0] : flightData;
-  } catch (error) {
+    // Pass the full flight data array for route pair pages
+    actualFlightData = flightData;
+    
+    console.log('Route page API results:', { 
+      hasContentData: !!contentData, 
+      hasFlightData: !!flightData,
+      flightDataKeys: flightData ? Object.keys(flightData) : 'null',
+      onewayFlights: flightData?.oneway_flights?.length || 0
+    });
+  } catch (error: any) {
     console.error('Error fetching flight data:', error);
   }
 
