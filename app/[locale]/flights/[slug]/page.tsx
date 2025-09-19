@@ -255,7 +255,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
       if (flightData && Array.isArray(flightData)) {
         normalizedFlights = enhanceFlightData(normalizeFlights(flightData));
       }
-  } catch (error) {
+  } catch (error: any) {
       console.error('Error fetching airport data:', error);
       console.error('Error details:', error.message, error.stack);
     }
