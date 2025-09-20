@@ -5,6 +5,7 @@ import FlightIcon from '@mui/icons-material/Flight';
 import StarIcon from '@mui/icons-material/Star';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import { getAirlineLogoUrl } from '@/lib/cdn';
 
 interface AirlineTemplateProps {
   locale: Locale;
@@ -233,28 +234,72 @@ export default function AirlineTemplate({ locale, pageData, params, onAction }: 
       }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'left', mb: 4 }}>
-            <Typography 
-              variant="h1" 
-              sx={{ 
-                fontSize: { xs: '2.5rem', md: '3.5rem' },
-                fontWeight: 700,
-                mb: 2,
-                textAlign: 'left'
-              }}
-            >
-              {pageData?.title || content.title}
-            </Typography>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                fontSize: { xs: '1.1rem', md: '1.3rem' },
-                opacity: 0.9,
-                textAlign: 'left',
-                mx: 0
-              }}
-            >
-              {pageData?.description || content.description}
-            </Typography>
+            {/* Airline Logo */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 3, 
+              mb: 3,
+              flexDirection: { xs: 'column', sm: 'row' }
+            }}>
+              <Box
+                sx={{
+                  width: { xs: 120, sm: 150, md: 180 },
+                  height: { xs: 120, sm: 150, md: 180 },
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  backgroundImage: `url(${getAirlineLogoUrl(airline.toUpperCase(), 'large')})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  border: '4px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                  position: 'relative',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    zIndex: 1,
+                  }
+                }}
+              >
+                <FlightIcon sx={{ 
+                  fontSize: { xs: '3rem', sm: '4rem', md: '5rem' }, 
+                  color: 'white',
+                  zIndex: 2
+                }} />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography 
+                  variant="h1" 
+                  sx={{ 
+                    fontSize: { xs: '2.5rem', md: '3.5rem' },
+                    fontWeight: 700,
+                    mb: 2,
+                    textAlign: 'left'
+                  }}
+                >
+                  {pageData?.title || content.title}
+                </Typography>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontSize: { xs: '1.1rem', md: '1.3rem' },
+                    opacity: 0.9,
+                    textAlign: 'left',
+                    mx: 0
+                  }}
+                  dangerouslySetInnerHTML={{ __html: pageData?.description || content.description }}
+                />
+              </Box>
+            </Box>
           </Box>
           <FlightSearchBox />
         </Container>

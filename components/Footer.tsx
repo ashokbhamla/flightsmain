@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { pathWithLocale } from '@/lib/routes';
 import { Locale } from '@/lib/i18n';
+import { getTranslations } from '@/lib/translations';
 import Grid from '@mui/material/Grid';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import TwitterIcon from '@mui/icons-material/Twitter';
@@ -14,15 +15,17 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import SearchIcon from '@mui/icons-material/Search';
 
 export default function Footer({ data, locale }: { data: any; locale: Locale }) {
-  // Use environment configuration with fallback to data
+  const t = getTranslations(locale);
+  
+  // Use translations with fallback to environment configuration
   const footer = {
-    copyright: data?.copyright || process.env.NEXT_PUBLIC_FOOTER_COPYRIGHT || '© 2018-2025 FlightSearchs Inc. All rights reserved.',
-    description1: data?.description1 || process.env.NEXT_PUBLIC_FOOTER_DESCRIPTION_1 || 'Helps you find the cheapest flight deals to any destination with ease.',
-    description2: data?.description2 || process.env.NEXT_PUBLIC_FOOTER_DESCRIPTION_2 || 'Browse through the best hotels and find exclusive deals.',
+    copyright: data?.copyright || t.footer.copyright,
+    description1: data?.description1 || t.footer.description1,
+    description2: data?.description2 || t.footer.description2,
     navigation: data?.navigation || {
-      aboutUs: process.env.NEXT_PUBLIC_FOOTER_ABOUT_US || '/about-us',
-      contactUs: process.env.NEXT_PUBLIC_FOOTER_CONTACT_US || '/contact-us',
-      privacyPolicy: process.env.NEXT_PUBLIC_FOOTER_PRIVACY_POLICY || '/privacy-policy'
+      aboutUs: '/about-us',
+      contactUs: '/contact-us',
+      privacyPolicy: '/privacy-policy'
     }
   };
   
@@ -98,7 +101,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                 fontSize: '1.1rem'
               }}
             >
-              About
+              {t.footer.about}
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 1.5 } }}>
               <Link href={pathWithLocale(locale, '/about-us') as any} style={{ textDecoration: 'none' }}>
@@ -110,7 +113,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                   transition: 'color 0.2s ease',
                   cursor: 'pointer'
                 }}>
-                  About Us
+                  {t.footer.aboutUs}
                 </Typography>
               </Link>
               <Link href={pathWithLocale(locale, '/android-app')} style={{ textDecoration: 'none' }}>
@@ -122,7 +125,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                   transition: 'color 0.2s ease',
                   cursor: 'pointer'
                 }}>
-                  Android App
+                  {t.footer.androidApp}
                 </Typography>
               </Link>
               <Link href={pathWithLocale(locale, '/ios-app')} style={{ textDecoration: 'none' }}>
@@ -134,7 +137,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                   transition: 'color 0.2s ease',
                   cursor: 'pointer'
                 }}>
-                  iOS App
+                  {t.footer.iosApp}
                 </Typography>
               </Link>
               <Link href={pathWithLocale(locale, '/blog')} style={{ textDecoration: 'none' }}>
@@ -146,7 +149,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                   transition: 'color 0.2s ease',
                   cursor: 'pointer'
                 }}>
-                  Blog
+                  {t.footer.blog}
                 </Typography>
               </Link>
             </Box>
@@ -163,7 +166,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                 fontSize: '1.1rem'
               }}
             >
-              Explore
+              {t.footer.explore}
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 1.5 } }}>
               <Link href={pathWithLocale(locale, '/flights')} style={{ textDecoration: 'none' }}>
@@ -175,7 +178,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                   transition: 'color 0.2s ease',
                   cursor: 'pointer'
                 }}>
-                  Flights
+                  {t.footer.flights}
                 </Typography>
               </Link>
               <Link href={pathWithLocale(locale, '/hotels')} style={{ textDecoration: 'none' }}>
@@ -187,7 +190,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                   transition: 'color 0.2s ease',
                   cursor: 'pointer'
                 }}>
-                  Hotels
+                  {t.footer.hotels}
                 </Typography>
               </Link>
             </Box>
@@ -204,7 +207,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                 fontSize: '1.1rem'
               }}
             >
-              More
+              {t.footer.more}
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 1.5 } }}>
               <Link href={pathWithLocale(locale, '/contact-us')} style={{ textDecoration: 'none' }}>
@@ -216,7 +219,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                   transition: 'color 0.2s ease',
                   cursor: 'pointer'
                 }}>
-                  Customer Support
+                  {t.footer.customerSupport}
                 </Typography>
               </Link>
               <Link href={pathWithLocale(locale, '/terms-and-conditions')} style={{ textDecoration: 'none' }}>
@@ -228,7 +231,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                   transition: 'color 0.2s ease',
                   cursor: 'pointer'
                 }}>
-                  Terms & Conditions
+                  {t.footer.termsConditions}
                 </Typography>
               </Link>
               <Link href={pathWithLocale(locale, '/privacy-policy')} style={{ textDecoration: 'none' }}>
@@ -240,7 +243,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                   transition: 'color 0.2s ease',
                   cursor: 'pointer'
                 }}>
-                  Privacy Policy
+                  {t.footer.privacyPolicy}
                 </Typography>
               </Link>
               <Link href={pathWithLocale(locale, '/refund-policy')} style={{ textDecoration: 'none' }}>
@@ -252,7 +255,7 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                   transition: 'color 0.2s ease',
                   cursor: 'pointer'
                 }}>
-                  Refund Policy
+                  {t.footer.refundPolicy}
                 </Typography>
               </Link>
               <Link href={pathWithLocale(locale, '/sitemap')} style={{ textDecoration: 'none' }}>

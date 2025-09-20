@@ -22,6 +22,7 @@ import HotelIcon from '@mui/icons-material/Hotel';
 import InfoIcon from '@mui/icons-material/Info';
 import FlightSearchBox from '@/components/FlightSearchBox';
 import ExpandMore from '@mui/icons-material/ExpandMore';
+import { getAirportImageUrl } from '@/lib/cdn';
 
 interface AirportTemplateProps {
   locale: Locale;
@@ -231,26 +232,61 @@ export default function AirportTemplate({ locale, pageData, params, onAction }: 
       >
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'left', mb: 4 }}>
-            <Typography
-              variant="h1"
-              sx={{
-                fontSize: { xs: '2.5rem', md: '3.5rem' },
-                fontWeight: 700,
-                mb: 2,
-                textAlign: 'left'
-              }}
-              dangerouslySetInnerHTML={{ __html: pageData.title || content.title }}
-            />
-            <Typography
-              variant="h6"
-              sx={{
-                fontSize: { xs: '1.1rem', md: '1.3rem' },
-                opacity: 0.9,
-                textAlign: 'left',
-                mx: 0
-              }}
-              dangerouslySetInnerHTML={{ __html: pageData.overview || pageData.meta_description || content.description }}
-            />
+            {/* Airport Image */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 3, 
+              mb: 3,
+              flexDirection: { xs: 'column', sm: 'row' }
+            }}>
+              <Box
+                sx={{
+                  width: { xs: 120, sm: 150, md: 180 },
+                  height: { xs: 120, sm: 150, md: 180 },
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  backgroundImage: `url(${getAirportImageUrl(airportCode, 'large')})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  border: '4px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                  position: 'relative',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    zIndex: 1,
+                  }
+                }}
+              />
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="h1"
+                  sx={{
+                    fontSize: { xs: '2.5rem', md: '3.5rem' },
+                    fontWeight: 700,
+                    mb: 2,
+                    textAlign: 'left'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: pageData.title || content.title }}
+                />
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontSize: { xs: '1.1rem', md: '1.3rem' },
+                    opacity: 0.9,
+                    textAlign: 'left',
+                    mx: 0
+                  }}
+                  dangerouslySetInnerHTML={{ __html: pageData.overview || pageData.meta_description || content.description }}
+                />
+              </Box>
+            </Box>
           </Box>
           
           {/* Flight Search Box */}

@@ -34,7 +34,7 @@ export function getCityImageUrl(cityName: string, size: 'small' | 'medium' | 'la
  * @returns Full CDN URL for airline logo
  */
 export function getAirlineLogoUrl(airlineCode: string, size: 'small' | 'medium' | 'large' = 'medium'): string {
-  return `${CDN_BASE}/airlines/${airlineCode}.webp`;
+  return `${CDN_BASE}/airlines/${airlineCode.toLowerCase()}_${size}.jpg`;
 }
 
 /**

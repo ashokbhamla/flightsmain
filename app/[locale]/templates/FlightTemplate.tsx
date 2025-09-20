@@ -3,6 +3,7 @@ import { Typography, Box, Container, Grid, Card, CardContent, Button } from '@mu
 import FlightSearchBox from '@/components/FlightSearchBox';
 import ClientPriceGraph from '@/components/ClientPriceGraph';
 import FlightTabs from '@/components/FlightTabs';
+import { getAirportImageUrl } from '@/lib/cdn';
 
 interface FlightTemplateProps {
   locale: Locale;
@@ -523,6 +524,124 @@ export default function FlightTemplate({
         >
           {pageData?.description || content.description}
         </Typography>
+
+        {/* Airport Images Hero Section */}
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          gap: 3, 
+          mb: 6,
+          flexDirection: { xs: 'column', sm: 'row' }
+        }}>
+          {/* Departure Airport */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            textAlign: 'center'
+          }}>
+            <Box
+              sx={{
+                width: { xs: 80, sm: 100, md: 120 },
+                height: { xs: 80, sm: 100, md: 120 },
+                borderRadius: '50%',
+                overflow: 'hidden',
+                backgroundImage: `url(${getAirportImageUrl(finalDepartureIata, 'medium')})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                border: '3px solid #10b981',
+                boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)',
+                mb: 2,
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                  zIndex: 1,
+                }
+              }}
+            />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a1a1a', mb: 0.5 }}>
+              {departureCity}
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#666' }}>
+              {finalDepartureIata}
+            </Typography>
+          </Box>
+
+          {/* Arrow */}
+          <Box sx={{ 
+            display: { xs: 'none', sm: 'block' },
+            '&::before': {
+              content: '""',
+              display: 'block',
+              width: 40,
+              height: 2,
+              backgroundColor: '#10b981',
+              position: 'relative',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                right: -6,
+                top: -4,
+                width: 0,
+                height: 0,
+                borderLeft: '8px solid #10b981',
+                borderTop: '5px solid transparent',
+                borderBottom: '5px solid transparent',
+              }
+            }
+          }}>
+            <Typography variant="h4" sx={{ color: '#10b981', fontWeight: 700 }}>
+              →
+            </Typography>
+          </Box>
+
+          {/* Arrival Airport */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            textAlign: 'center'
+          }}>
+            <Box
+              sx={{
+                width: { xs: 80, sm: 100, md: 120 },
+                height: { xs: 80, sm: 100, md: 120 },
+                borderRadius: '50%',
+                overflow: 'hidden',
+                backgroundImage: `url(${getAirportImageUrl(finalArrivalIata, 'medium')})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                border: '3px solid #3b82f6',
+                boxShadow: '0 4px 20px rgba(59, 130, 246, 0.3)',
+                mb: 2,
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                  zIndex: 1,
+                }
+              }}
+            />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a1a1a', mb: 0.5 }}>
+              {arrivalCity}
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#666' }}>
+              {finalArrivalIata}
+            </Typography>
+          </Box>
+        </Box>
 
         {/* Flight Search Box */}
         <Box sx={{ mb: 6 }}>

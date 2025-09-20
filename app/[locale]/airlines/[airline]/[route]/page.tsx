@@ -9,6 +9,7 @@ import { fetchAirlineContent, fetchAirlineData, fetchAirlineAirportContent, fetc
 import dynamic from 'next/dynamic';
 import { toUSD } from '@/utils/currency';
 import { normalizeFlights, NormalizedFlight } from '@/lib/flightNormalizer';
+import { getAirlineLogoUrl } from '@/lib/cdn';
 
 // Dynamic imports for client components with SSR enabled for SEO
 const FlightSearchBox = dynamic(() => import('@/components/FlightSearchBox'), { 
@@ -1719,7 +1720,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           "name": `${airlineName} flights from ${departureCity} to ${arrivalCity}`,
           "description": contentData?.description?.replace(/<[^>]*>/g, '') || `Find cheap ${airlineName} flights from ${departureCity} to ${arrivalCity}`,
           "image": [
-            `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/airlines/${airlineCode}.jpg`,
+            getAirlineLogoUrl(airlineCode, 'large'),
             `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/flights/${departureIata}-${arrivalIata}.jpg`
           ],
           "brand": {
@@ -1898,7 +1899,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               },
               "image": [
                 `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/flights/${flight.from || departureIata}-${flight.to || arrivalIata}.jpg`,
-                `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/airlines/${airlineCode}.jpg`
+                getAirlineLogoUrl(airlineCode, 'medium')
               ],
               "offers": [{
                 "@type": "Offer",

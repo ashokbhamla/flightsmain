@@ -33,6 +33,7 @@ import {
   Star
 } from '@mui/icons-material';
 import { getCountryFlag } from '@/lib/countryFlags';
+import { getAirportImageUrl } from '@/lib/cdn';
 
 interface AirportOption {
   code: string;
@@ -228,9 +229,47 @@ const UnifiedAirportPopup = memo(function UnifiedAirportPopup({
         <ListItemIcon sx={{ minWidth: 48 }}>
           <Box sx={{ position: 'relative' }}>
             {option.type === 'airport' ? (
-              <FlightTakeoff sx={{ color: '#3b82f6', fontSize: '1.5rem' }} />
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  backgroundImage: `url(${getAirportImageUrl(option.code, 'small')})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  border: '2px solid #3b82f6',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    zIndex: 1,
+                  }
+                }}
+              >
+                <FlightTakeoff sx={{ color: '#3b82f6', fontSize: '1.2rem', zIndex: 2 }} />
+              </Box>
             ) : (
-              <LocationOn sx={{ color: '#10b981', fontSize: '1.5rem' }} />
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  backgroundColor: '#10b981',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <LocationOn sx={{ color: 'white', fontSize: '1.2rem' }} />
+              </Box>
             )}
             <Box
               sx={{
@@ -239,6 +278,7 @@ const UnifiedAirportPopup = memo(function UnifiedAirportPopup({
                 right: -8,
                 fontSize: '0.75rem',
                 lineHeight: 1,
+                zIndex: 3,
               }}
             >
               {getCountryFlag(option.country_code)}
