@@ -1,4 +1,92 @@
+# robots.txt — airlinesmap.com (SEO + Chatbot Friendly, Blocks Bad Bots)
+
+# Default rules for all good bots
 User-agent: *
 Allow: /
 
+# Block sensitive/private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+
+# Block raw data endpoints (JSON only)
+Disallow: /*.json$
+
+# Block Next.js build artifacts, but allow static assets needed for rendering
+Disallow: /_next/
+Allow: /_next/static/*.js
+Allow: /_next/static/*.mjs
+Allow: /_next/static/*.css
+Allow: /_next/static/*.woff
+Allow: /_next/static/*.woff2
+Allow: /_next/static/media/
+
+# ✅ Explicitly allow Googlebot
+User-agent: Googlebot
+Allow: /
+
+# ✅ Explicitly allow AI/Chatbots
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# ❌ Block common bad bots / scrapers
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: Sogou
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: crawler4j
+Disallow: /
+
+User-agent: Scrapy
+Disallow: /
+
+User-agent: HTTrack
+Disallow: /
+
+User-agent: archive.org_bot
+Disallow: /
+
+# Optional: slow down heavy bots
+User-agent: Bingbot
+Crawl-delay: 5
+
+User-agent: Yandex
+Crawl-delay: 5
+
+# Sitemap
 Sitemap: https://airlinesmap.com/sitemap.xml
