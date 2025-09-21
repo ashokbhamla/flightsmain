@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import { generateAirlineCanonicalUrl, generateAlternateUrls } from '@/lib/canonical';
 import SchemaOrg from '@/components/SchemaOrg';
 import { breadcrumbSchema } from '@/lib/schema';
-import { fetchAirlineBySlug } from '@/lib/api';
+import { fetchAirlineBySlug, fetchAirlineContactInfo } from '@/lib/api';
 import DynamicTemplateSelector from '@/app/[locale]/templates/DynamicTemplateSelector';
 import { localeFromParam } from '@/lib/i18n';
 
@@ -109,13 +109,18 @@ export default async function AirlinePage({ params }: AirlinePageProps) {
   const { locale, airline } = params;
   const validLocale = localeFromParam(locale);
   
+  // Extract IATA code from airline slug (e.g., "vq" from "vq-dac")
+  const airlineCode = airline.split('-')[0]?.toUpperCase() || airline.toUpperCase();
+  
   let airlineData = null;
   let contentData = null;
+  let contactData = null;
   
   try {
-    [airlineData, contentData] = await Promise.all([
+    [airlineData, contentData, contactData] = await Promise.all([
       fetchAirlineBySlug(airline, getLangId(locale)),
-      fetchAirlineContent(airline, getLangId(locale))
+      fetchAirlineContent(airline, getLangId(locale)),
+      fetchAirlineContactInfo(airlineCode, 1)
     ]);
   } catch (error) {
     console.error('Error fetching airline data:', error);
@@ -139,10 +144,11 @@ export default async function AirlinePage({ params }: AirlinePageProps) {
     airlineData = fallbackData;
   }
 
-  // Combine airline data with content data
+  // Combine airline data with content data and contact information
   const combinedPageData = {
     ...airlineData,
-    ...contentData
+    ...contentData,
+    contactInfo: contactData
   };
 
   const breadcrumbData = breadcrumbSchema([

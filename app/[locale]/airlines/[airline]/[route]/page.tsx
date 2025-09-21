@@ -414,7 +414,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   {
     id: 1,
       type: 'round-trip',
-      price: flightData?.round_trip_start ? `$${flightData.round_trip_start}` : '$189',
+      price: contentData?.avragefares ? `$${contentData.avragefares}` : (flightData?.round_trip_start ? `$${flightData.round_trip_start}` : '$189'),
       description: contentData?.cheap_flights ? stripHtml(contentData.cheap_flights) : `Round-trip ${airlineName} flights from ${departureCity} to ${arrivalCity}`,
       buttonText: 'Search Deals',
       buttonColor: '#10b981'
@@ -422,7 +422,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   {
     id: 2,
       type: 'one-way',
-      price: flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$122',
+      price: contentData?.avragefares ? `$${Math.round(contentData.avragefares * 0.7)}` : (flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$122'),
       description: contentData?.direct_flights ? stripHtml(contentData.direct_flights) : `One-way ${airlineName} flight from ${departureCity} to ${arrivalCity}`,
       buttonText: 'Search Deals',
       buttonColor: '#1e3a8a'
@@ -430,24 +430,27 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   {
     id: 3,
       type: 'popular',
-      month: flightData?.popular_month || 'April',
-      description: `Highest demand for ${airlineName} flights from ${departureCity} to ${arrivalCity} in ${flightData?.popular_month || 'April'}. Book now to get the best prices.`,
+      month: contentData?.cheapest_day || 'Monday',
+      description: `Highest demand for ${airlineName} flights from ${departureCity} to ${arrivalCity} on ${contentData?.cheapest_day || 'Monday'}. Book now to get the best prices.`,
       buttonText: 'View Popular',
       buttonColor: '#ff6b35'
   },
   {
     id: 4,
       type: 'cheapest',
-      month: flightData?.cheapest_month || 'June',
-      description: `Cheapest prices for ${airlineName} flights from ${departureCity} to ${arrivalCity} in ${flightData?.cheapest_month || 'June'}. Find deals now.`,
+      month: contentData?.cheapest_month || 'January',
+      description: `Cheapest prices for ${airlineName} flights from ${departureCity} to ${arrivalCity} in ${contentData?.cheapest_month || 'January'}. Find deals now.`,
       buttonText: 'Find Deals',
       buttonColor: '#10b981'
     }
   ];
 
   // Use actual API data for charts
-  // For weekly data, we'll use sample data since the API doesn't provide weekly breakdown
-  const weeklyPriceData = [
+  // For weekly data, use API data if available
+  const weeklyPriceData = contentData?.weekly_prices_avg?.map((item: any) => ({
+    name: item.day?.substring(0, 3) || 'Mon',
+    value: item.avg_price || 0
+  })) || [
     { name: 'Mon', value: 12 },
     { name: 'Tue', value: 10 },
     { name: 'Wed', value: 12 },
@@ -457,8 +460,11 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     { name: 'Sun', value: 8 }
   ];
 
-  // For monthly data, we'll create a realistic distribution based on the actual prices from the API
-  const monthlyPriceData = [
+  // For monthly data, use API data if available
+  const monthlyPriceData = contentData?.monthly_prices_avg?.map((item: any) => ({
+    name: item.month?.substring(0, 3) || 'Jan',
+    value: item.avg_price || 0
+  })) || [
     { name: 'Jan', value: 150 },
     { name: 'Feb', value: 140 },
     { name: 'Mar', value: 160 },
@@ -903,7 +909,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               <ClientPriceGraph
                 title="Weekly Price Trends"
                 description={
-                  contentData?.weekly || `Track weekly price fluctuations for ${airlineName} flights from ${departureCity} to ${arrivalCity}. With average fares around $${flightData?.average_fare || 'N/A'}, the cheapest day to fly is typically ${flightData?.cheapest_day || 'mid-week'}. Prices typically vary by day of the week, with mid-week flights often offering better deals.`
+                  contentData?.weekly_price_paragraph || `Track weekly price fluctuations for ${airlineName} flights from ${departureCity} to ${arrivalCity}. With average fares around $${contentData?.avragefares || 'N/A'}, the cheapest day to fly is typically ${contentData?.cheapest_day || 'mid-week'}. Prices typically vary by day of the week, with mid-week flights often offering better deals.`
                 }
                 data={weeklyPriceData}
                 yAxisLabel="Price (USD)"
@@ -915,7 +921,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               <ClientPriceGraph
                 title="Monthly Price Trends"
                 description={
-                  contentData?.monthly || `Monitor monthly price patterns to identify the best time to book your ${airlineName} flight from ${departureCity} to ${arrivalCity}. With average fares around $${flightData?.average_fare || 'N/A'}, the cheapest month to fly is typically ${flightData?.cheapest_month || 'off-season'}. Seasonal variations and holiday periods significantly impact pricing.`
+                  contentData?.monthly_price_paragraph || `Monitor monthly price patterns to identify the best time to book your ${airlineName} flight from ${departureCity} to ${arrivalCity}. With average fares around $${contentData?.avragefares || 'N/A'}, the cheapest month to fly is typically ${contentData?.cheapest_month || 'off-season'}. Seasonal variations and holiday periods significantly impact pricing.`
                 }
                 data={monthlyPriceData}
                 yAxisLabel="Price (USD)"

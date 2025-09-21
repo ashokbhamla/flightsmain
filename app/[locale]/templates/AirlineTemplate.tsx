@@ -611,6 +611,91 @@ export default function AirlineTemplate({ locale, pageData, params, onAction }: 
           </Box>
         )}
 
+        {/* Contact Information */}
+        {pageData?.contactInfo && (
+          <Box sx={{ 
+            mb: 6, 
+            p: 4,
+            backgroundColor: '#f8fafc',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 3,
+                color: '#1a1a1a',
+                textAlign: 'left'
+              }}
+            >
+              {airlineName} Contact Information
+            </Typography>
+            
+            <Grid container spacing={3}>
+              {pageData.contactInfo.phone && (
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ textAlign: 'left' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a1a1a', mb: 1 }}>
+                      Phone
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#666' }}>
+                      {pageData.contactInfo.phone}
+                    </Typography>
+                  </Box>
+                </Grid>
+              )}
+              
+              {pageData.contactInfo.email && (
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ textAlign: 'left' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a1a1a', mb: 1 }}>
+                      Email
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#666' }}>
+                      {pageData.contactInfo.email}
+                    </Typography>
+                  </Box>
+                </Grid>
+              )}
+              
+              {pageData.contactInfo.website && (
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ textAlign: 'left' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a1a1a', mb: 1 }}>
+                      Website
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#666' }}>
+                      <a 
+                        href={pageData.contactInfo.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ color: '#1e3a8a', textDecoration: 'none' }}
+                      >
+                        {pageData.contactInfo.website}
+                      </a>
+                    </Typography>
+                  </Box>
+                </Grid>
+              )}
+              
+              {pageData.contactInfo.address && (
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ textAlign: 'left' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a1a1a', mb: 1 }}>
+                      Address
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#666' }}>
+                      {pageData.contactInfo.address}
+                    </Typography>
+                  </Box>
+                </Grid>
+              )}
+            </Grid>
+          </Box>
+        )}
+
         {/* FAQs */}
         {((pageData?.faqs && Array.isArray(pageData.faqs) && pageData.faqs.length > 0) || true) && (
           <Box sx={{ mb: 6 }}>
