@@ -243,8 +243,8 @@ export async function generateMetadata({ params }: { params: { locale: string; a
     const title = (contentData?.title && locale === 'en') ? 
       stripHtml(contentData.title) : 
       (arrivalIata ? 
-        `${getAirlineName(airlineCode, contentData)} ${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}` :
-        `${getAirlineName(airlineCode, contentData)} ${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)}`
+        `${getAirlineName(airlineCode, contentData)} flights ${getCityName(departureIata)} to ${getCityName(arrivalIata)}` :
+        `${getAirlineName(airlineCode, contentData)} flights from ${getCityName(departureIata)}`
       );
 
     // Use fallback translations when API content is not translated or is in English
@@ -253,8 +253,8 @@ export async function generateMetadata({ params }: { params: { locale: string; a
       ((contentData?.description && locale === 'en') ? 
         stripHtml(contentData.description) : 
         (arrivalIata ?
-          `${t.flightPage.findBest} ${getAirlineName(airlineCode, contentData)} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}. ${t.flightPage.comparePricesBookTrip}.` :
-          `${t.flightPage.findBest} ${getAirlineName(airlineCode, contentData)} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)}. ${t.flightPage.comparePricesBookTrip}.`
+          `Find ${getAirlineName(airlineCode, contentData)} flights from ${getCityName(departureIata)} to ${getCityName(arrivalIata)}. Compare prices and book your trip.` :
+          `Find ${getAirlineName(airlineCode, contentData)} flights from ${getCityName(departureIata)}. Compare prices and book your trip.`
         )
       );
     
@@ -365,7 +365,30 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   const airlineName = getAirlineName(airlineCode, contentData);
   
   // Extract airline details from flight data
-  const airlineDetails = flightData?.[0]?.airlineroutes?.[0]?.airline || null;
+  let airlineDetails = flightData?.[0]?.airlineroutes?.[0]?.airline || null;
+  
+  // If airline details are incomplete or missing, fetch from airlines API
+  if (!airlineDetails?.phone || !airlineDetails?.url) {
+    try {
+      const airlinesApiUrl = `https://api.triposia.com/real/airlines/india-${airlineCode.toLowerCase()}-${airlineCode.toLowerCase()}-in`;
+      const airlinesResponse = await fetch(airlinesApiUrl);
+      if (airlinesResponse.ok) {
+        const airlinesData = await airlinesResponse.json();
+        if (airlinesData && airlinesData.length > 0) {
+          const airlineInfo = airlinesData[0];
+          airlineDetails = {
+            ...airlineDetails,
+            phone: airlineDetails?.phone || airlineInfo.phone || '+1-800-223-7776',
+            url: airlineDetails?.url || airlineInfo.url || `https://www.${airlineCode.toLowerCase()}.com`,
+            location: airlineDetails?.location || airlineInfo.location || 'India',
+            country: airlineDetails?.country || airlineInfo.country || 'India'
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching airline details from airlines API:', error);
+    }
+  }
 
   // Helper function to strip HTML tags
   const stripHtml = (html: string) => {
@@ -510,7 +533,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           {contentData?.title || (arrivalIata ? 
             `${airlineName} flights from ${departureCity} to ${arrivalCity}` :
             normalizedFlights.length > 0 ? 
-              `${airlineName} flights from ${departureCity} to ${normalizedFlights.map(f => f.city).join(', ')}` :
+              `${airlineName} flights from ${departureCity} to ${normalizedFlights.slice(0, 3).map(f => f.city).join(', ')}${normalizedFlights.length > 3 ? ` and ${normalizedFlights.length - 3} more destinations` : ''}` :
               `${airlineName} flights from ${departureCity}`
           )}
         </Typography>
@@ -528,7 +551,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             __html: contentData?.description || (arrivalIata ? 
               `Plan your journey from ${departureCity} to ${arrivalCity} with ${airlineName}'s latest deals, travel tips, and flight information.` :
               normalizedFlights.length > 0 ?
-                `Plan your journey from ${departureCity} to ${normalizedFlights.map(f => f.city).join(', ')} with ${airlineName}'s latest deals, travel tips, and flight information.` :
+                `Plan your journey from ${departureCity} to ${normalizedFlights.slice(0, 3).map(f => f.city).join(', ')}${normalizedFlights.length > 3 ? ` and ${normalizedFlights.length - 3} more destinations` : ''} with ${airlineName}'s latest deals, travel tips, and flight information.` :
                 `Plan your journey from ${departureCity} with ${airlineName}'s latest deals, travel tips, and flight information.`
             )
           }}
@@ -557,145 +580,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           locale={locale}
         />
 
-        {/* Airline Contact Information */}
-        <Box sx={{ 
-          mb: 6, 
-          mt: 4,
-          p: 4,
-          backgroundColor: '#f8fafc',
-          borderRadius: '12px',
-          border: '1px solid #e2e8f0'
-        }}>
-          <Typography 
-            variant="h3" 
-            sx={{ 
-              fontSize: '1.5rem',
-              fontWeight: 600,
-              mb: 3,
-              color: '#1a1a1a',
-              textAlign: 'left'
-            }}
-          >
-            {airlineName} Contact Information
-          </Typography>
-          
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ 
-                  fontWeight: 600, 
-                  color: '#1e3a8a', 
-                  mb: 1,
-                  textAlign: 'left'
-                }}>
-                  Customer Service
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Phone: {airlineDetails?.phone || '+1 (800) 123-4567'}
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Email: customer.service@{airlineCode.toLowerCase()}.com
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568' }}>
-                  Hours: 24/7 Customer Support
-                </Typography>
-        </Box>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ 
-                  fontWeight: 600, 
-                  color: '#1e3a8a', 
-                  mb: 1,
-                  textAlign: 'left'
-                }}>
-                  Booking & Reservations
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Phone: {airlineDetails?.phone || '+1 (800) 987-6543'}
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Email: reservations@{airlineCode.toLowerCase()}.com
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568' }}>
-                  Online: {airlineDetails?.url || `${airlineCode.toLowerCase()}.com`}
-                </Typography>
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ 
-                  fontWeight: 600, 
-                  color: '#1e3a8a', 
-                  mb: 1,
-                  textAlign: 'left'
-                }}>
-                  Baggage Information
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Phone: {airlineDetails?.phone || '+1 (800) 555-0123'}
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Email: baggage@{airlineCode.toLowerCase()}.com
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568' }}>
-                  Lost & Found: {airlineDetails?.phone || '+1 (800) 555-0124'}
-                </Typography>
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ 
-                  fontWeight: 600, 
-                  color: '#1e3a8a', 
-                  mb: 1,
-                  textAlign: 'left'
-                }}>
-                  Corporate Office
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  {airlineName} Airlines Headquarters
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  {airlineDetails?.location || 'New Delhi, India'}
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  {airlineDetails?.country || 'India'}
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#4a5568' }}>
-                  Phone: {airlineDetails?.phone || '+1 (212) 555-0100'}
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-          
-          <Box sx={{ 
-            mt: 3, 
-            p: 3, 
-            backgroundColor: '#1e3a8a', 
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <Typography variant="h6" sx={{ 
-              color: 'white', 
-              fontWeight: 600, 
-              mb: 1,
-              textAlign: 'left'
-            }}>
-              Need Help? Contact Us Now
-            </Typography>
-            <Typography variant="body2" sx={{ 
-              color: 'rgba(255, 255, 255, 0.9)',
-              textAlign: 'left'
-            }}>
-              Our customer service team is available 24/7 to assist you with bookings, 
-              changes, cancellations, and any other inquiries about your {airlineName} flight.
-            </Typography>
-          </Box>
-        </Box>
 
         {/* Cheap Flight Deals */}
         <Box sx={{ mb: 6 }}>
@@ -974,64 +858,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           </Box>
         )}
 
-        {/* FAQs */}
-        {contentData?.faqs && Array.isArray(contentData.faqs) && contentData.faqs.length > 0 && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 4,
-                color: '#1a1a1a',
-                textAlign: 'left'
-              }}
-            >
-              Frequently Asked Questions
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {contentData.faqs.map((faq: any, index: number) => (
-                <Box key={index} sx={{ mb: 3 }}>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      fontSize: '1.1rem',
-                      fontWeight: 600,
-                      mb: 1,
-                      color: '#1a1a1a',
-                      textAlign: 'left'
-                    }}
-                  >
-                    {faq.q || faq.question || `Question ${index + 1}`}
-                  </Typography>
-                  <Box 
-                    sx={{ 
-                      color: '#4a5568',
-                      lineHeight: 1.6,
-                      '& h3, & h4, & h5, & h6': {
-                        color: '#1a1a1a',
-                        fontWeight: 600,
-                        mb: 2,
-                        mt: 3
-                      },
-                      '& p': {
-                        mb: 2
-                      },
-                      '& ul, & ol': {
-                        pl: 3,
-                        mb: 2
-                      },
-                      '& li': {
-                        mb: 1
-                      }
-                    }}
-                    dangerouslySetInnerHTML={{ __html: faq.a || faq.answer || '' }}
-                  />
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        )}
 
         {/* Flight Deals Section with Tabs */}
         {flightData && arrivalIata && (
@@ -1046,6 +872,17 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           />
         )}
 
+
+        {/* Available Destinations from Flight Data */}
+        {normalizedFlights.length > 0 && arrivalIata === null && (
+          <Box sx={{ mb: 6 }}>
+            <FlightCards 
+              flights={normalizedFlights}
+              title={`Available Destinations from ${departureCity}`}
+              showAirlineInfo={true}
+            />
+          </Box>
+        )}
 
         {/* Price Trends & Analysis */}
         <Box sx={{ mb: 6 }}>
@@ -1358,16 +1195,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         )}
 
 
-        {/* Available Destinations from Flight Data */}
-        {normalizedFlights.length > 0 && arrivalIata === null && (
-          <Box sx={{ mb: 6 }}>
-            <FlightCards 
-              flights={normalizedFlights}
-              title={`Available Destinations from ${departureCity}`}
-              showAirlineInfo={true}
-            />
-          </Box>
-        )}
 
         {/* Places to Visit (Additional) */}
         {contentData?.places_to_visit && (
@@ -1398,114 +1225,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         )}
 
 
-        {/* Frequently Asked Questions */}
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 4,
-              color: '#1a1a1a'
-            }}
-          >
-            Frequently Asked Questions
-          </Typography>
-          
-          {contentData?.faqs?.map((faq: any, index: number) => (
-            <Box key={index} sx={{ mb: 3 }}>
-              <Typography 
-                variant="h4" 
-                sx={{ 
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                  mb: 1,
-                  color: '#1a1a1a'
-                }}
-                dangerouslySetInnerHTML={{ __html: faq.question || '' }}
-              />
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: '#666',
-                  lineHeight: 1.6
-                }}
-                dangerouslySetInnerHTML={{ __html: faq.answer || '' }}
-              />
-            </Box>
-          )) || (
-            <>
-              <Box sx={{ mb: 3 }}>
-                <Typography 
-                  variant="h4" 
-                  sx={{ 
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    mb: 1,
-                    color: '#1a1a1a'
-                  }}
-                >
-                  How long is the {airlineName} flight from {departureCity} to {arrivalCity}?
-          </Typography>
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
-                    color: '#666',
-                    lineHeight: 1.6
-                  }}
-                >
-                  <div dangerouslySetInnerHTML={{ __html: contentData?.flight_duration || `Non-stop ${airlineName} flights average about 2-3 hours, covering a distance of approximately 1,200 miles (1,900 km).` }} />
-          </Typography>
-              </Box>
-              
-              <Box sx={{ mb: 3 }}>
-                <Typography 
-                  variant="h4" 
-                  sx={{ 
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    mb: 1,
-                    color: '#1a1a1a'
-                  }}
-                >
-                  Which airport should I fly into in {arrivalCity}?
-          </Typography>
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
-                    color: '#666',
-                    lineHeight: 1.6
-                  }}
-                >
-                  <div dangerouslySetInnerHTML={{ __html: contentData?.airport_recommendation || `The main airport is ${arrivalCity} Airport (${arrivalIata}), which is closest to downtown and handles most domestic flights.` }} />
-          </Typography>
-              </Box>
-              
-              <Box>
-                <Typography 
-                  variant="h4" 
-                  sx={{ 
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    mb: 1,
-                    color: '#1a1a1a'
-                  }}
-                >
-                  Do I need a visa to travel from {departureCity} to {arrivalCity}?
-          </Typography>
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
-                    color: '#666',
-                    lineHeight: 1.6
-                  }}
-                >
-                  <div dangerouslySetInnerHTML={{ __html: contentData?.visa_requirements || `No visa is required for domestic travel within India.` }} />
-          </Typography>
-              </Box>
-            </>
-          )}
-        </Box>
 
         {/* Additional Content Sections - City, Hotels, Airlines */}
         {contentData?.city && (
@@ -1706,13 +1425,154 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             />
           </Box>
         )}
+
+        {/* Airline Contact Information */}
+        <Box sx={{ 
+          mb: 6, 
+          mt: 4,
+          p: 4,
+          backgroundColor: '#f8fafc',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0'
+        }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: '1.8rem',
+              fontWeight: 600,
+              mb: 3,
+              color: '#1a1a1a',
+              textAlign: 'left'
+            }}
+          >
+            {airlineName} Contact Information
+          </Typography>
+          
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ 
+                  fontWeight: 600, 
+                  color: '#1e3a8a', 
+                  mb: 1,
+                  textAlign: 'left'
+                }}>
+                  Customer Service
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
+                  Phone: {airlineDetails?.phone || '+1 (800) 123-4567'}
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
+                  Email: customer.service@{airlineCode.toLowerCase()}.com
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568' }}>
+                  Hours: 24/7 Customer Support
+                </Typography>
+        </Box>
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ 
+                  fontWeight: 600, 
+                  color: '#1e3a8a', 
+                  mb: 1,
+                  textAlign: 'left'
+                }}>
+                  Booking & Reservations
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
+                  Phone: {airlineDetails?.phone || '+1 (800) 987-6543'}
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
+                  Email: reservations@{airlineCode.toLowerCase()}.com
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568' }}>
+                  Online: {airlineDetails?.url || `${airlineCode.toLowerCase()}.com`}
+                </Typography>
+              </Box>
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ 
+                  fontWeight: 600, 
+                  color: '#1e3a8a', 
+                  mb: 1,
+                  textAlign: 'left'
+                }}>
+                  Baggage Information
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
+                  Phone: {airlineDetails?.phone || '+1 (800) 555-0123'}
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
+                  Email: baggage@{airlineCode.toLowerCase()}.com
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568' }}>
+                  Lost & Found: {airlineDetails?.phone || '+1 (800) 555-0124'}
+                </Typography>
+              </Box>
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ 
+                  fontWeight: 600, 
+                  color: '#1e3a8a', 
+                  mb: 1,
+                  textAlign: 'left'
+                }}>
+                  Corporate Office
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
+                  {airlineName} Airlines Headquarters
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
+                  {airlineDetails?.location || 'New Delhi, India'}
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
+                  {airlineDetails?.country || 'India'}
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4a5568' }}>
+                  Phone: {airlineDetails?.phone || '+1 (212) 555-0100'}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+          
+          <Box sx={{ 
+            mt: 3, 
+            p: 3, 
+            backgroundColor: '#1e3a8a', 
+            borderRadius: '8px',
+            textAlign: 'center'
+          }}>
+            <Typography variant="h6" sx={{ 
+              color: 'white', 
+              fontWeight: 600, 
+              mb: 1,
+              textAlign: 'left'
+            }}>
+              Need Help? Contact Us Now
+            </Typography>
+            <Typography variant="body2" sx={{ 
+              color: 'rgba(255, 255, 255, 0.9)',
+              textAlign: 'left'
+            }}>
+              Our customer service team is available 24/7 to assist you with bookings, 
+              changes, cancellations, and any other inquiries about your {airlineName} flight.
+            </Typography>
+          </Box>
+        </Box>
+
     </Container>
       
       <SchemaOrg data={breadcrumbSchema([
         { name: 'Home', url: locale === 'es' ? '/es' : '/' },
         { name: 'Airlines', url: (locale === 'es' ? '/es' : '') + '/airlines' },
         { name: airlineName, url: (locale === 'es' ? '/es' : '') + `/airlines/${airlineCode}` },
-        { name: `${departureCity}${arrivalIata ? ` to ${arrivalCity}` : normalizedFlights.length > 0 ? ` to ${normalizedFlights.map(f => f.city).join(', ')}` : ''}`, url: (locale === 'es' ? '/es' : '') + `/airlines/${airlineCode}/${params.route}` },
+        { name: `${departureCity}${arrivalIata ? ` to ${arrivalCity}` : normalizedFlights.length > 0 ? ` to ${normalizedFlights.slice(0, 2).map(f => f.city).join(', ')}${normalizedFlights.length > 2 ? ` and ${normalizedFlights.length - 2} more` : ''}` : ''}`, url: (locale === 'es' ? '/es' : '') + `/airlines/${airlineCode}/${params.route}` },
       ])} />
 
       {/* Flight Product Schema */}

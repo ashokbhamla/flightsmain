@@ -108,19 +108,11 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
         <link
           href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-          rel="preload"
-          as="style"
+          rel="stylesheet"
         />
-        <noscript>
-          <link
-            href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-            rel="stylesheet"
-          />
-        </noscript>
         <link rel="preload" href="/fonts/playfair-display.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" href="/styles/critical.css" as="style" />
         <noscript><link rel="stylesheet" href="/styles/critical.css" /></noscript>
-        <link rel="stylesheet" href="/styles/critical.css" />
         <ServerCriticalCSS />
         <meta name="theme-color" content="#1e3a8a" />
         <meta name="msapplication-TileColor" content="#1e3a8a" />
