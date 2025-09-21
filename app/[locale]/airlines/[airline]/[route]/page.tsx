@@ -363,6 +363,9 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   const departureCity = getCityName(departureIata);
   const arrivalCity = arrivalIata ? getCityName(arrivalIata) : 'Various Destinations';
   const airlineName = getAirlineName(airlineCode, contentData);
+  
+  // Extract airline details from flight data
+  const airlineDetails = flightData?.[0]?.airlineroutes?.[0]?.airline || null;
 
   // Helper function to strip HTML tags
   const stripHtml = (html: string) => {
@@ -588,10 +591,10 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   Customer Service
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Phone: +1 (800) 123-4567
+                  Phone: {airlineDetails?.phone || '+1 (800) 123-4567'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Email: customer.service@{airlineName.toLowerCase().replace(/\s+/g, '')}.com
+                  Email: customer.service@{airlineCode.toLowerCase()}.com
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568' }}>
                   Hours: 24/7 Customer Support
@@ -610,13 +613,13 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   Booking & Reservations
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Phone: +1 (800) 987-6543
+                  Phone: {airlineDetails?.phone || '+1 (800) 987-6543'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Email: reservations@{airlineName.toLowerCase().replace(/\s+/g, '')}.com
+                  Email: reservations@{airlineCode.toLowerCase()}.com
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568' }}>
-                  Online: {airlineName.toLowerCase().replace(/\s+/g, '')}.com
+                  Online: {airlineDetails?.url || `${airlineCode.toLowerCase()}.com`}
                 </Typography>
               </Box>
             </Grid>
@@ -632,13 +635,13 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   Baggage Information
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Phone: +1 (800) 555-0123
+                  Phone: {airlineDetails?.phone || '+1 (800) 555-0123'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Email: baggage@{airlineName.toLowerCase().replace(/\s+/g, '')}.com
+                  Email: baggage@{airlineCode.toLowerCase()}.com
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568' }}>
-                  Lost & Found: +1 (800) 555-0124
+                  Lost & Found: {airlineDetails?.phone || '+1 (800) 555-0124'}
                 </Typography>
               </Box>
             </Grid>
@@ -657,13 +660,13 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   {airlineName} Airlines Headquarters
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  123 Aviation Boulevard
+                  {airlineDetails?.location || 'New Delhi, India'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  New York, NY 10001
+                  {airlineDetails?.country || 'India'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568' }}>
-                  Phone: +1 (212) 555-0100
+                  Phone: {airlineDetails?.phone || '+1 (212) 555-0100'}
                 </Typography>
               </Box>
             </Grid>
