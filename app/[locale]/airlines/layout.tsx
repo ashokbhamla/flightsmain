@@ -7,8 +7,8 @@ export async function generateMetadata({ params }: { params: { locale: string } 
   
   return {
     title: {
-      template: '%s | FlightSearchs - Compare Airlines & Find Best Deals',
-      default: 'Airlines - Compare US Airlines & Find Best Flight Deals | FlightSearchs'
+      template: `%s | ${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'} - Compare Airlines & Find Best Deals`,
+      default: `Airlines - Compare US Airlines & Find Best Flight Deals | ${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'}`
     },
     description: 'Compare major US airlines including American Airlines, Delta, United, Southwest, and more. Find the best flight deals, routes, and airline information for domestic and international travel.',
     keywords: [
@@ -27,9 +27,9 @@ export async function generateMetadata({ params }: { params: { locale: string } 
       'airline routes',
       'flight booking'
     ],
-    authors: [{ name: 'FlightSearchs Team' }],
-    creator: 'FlightSearchs',
-    publisher: 'FlightSearchs',
+    authors: [{ name: `${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'} Team` }],
+    creator: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
+    publisher: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
     formatDetection: {
       email: false,
       address: false,
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: { params: { locale: string } 
       title: 'Airlines - Compare US Airlines & Find Best Flight Deals',
       description: 'Compare major US airlines including American Airlines, Delta, United, Southwest, and more. Find the best flight deals and routes.',
       url: `${baseUrl}/${locale}/airlines`,
-      siteName: 'FlightSearchs',
+      siteName: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
       locale: locale,
       type: 'website',
       images: [
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: { params: { locale: string } 
           url: `${baseUrl}/images/airlines-og.jpg`,
           width: 1200,
           height: 630,
-          alt: 'US Airlines Comparison - FlightSearchs',
+          alt: `US Airlines Comparison - ${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'}`,
         },
       ],
     },

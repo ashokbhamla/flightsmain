@@ -275,7 +275,7 @@ export async function generateMetadata({ params }: { params: { locale: string; a
         url: canonicalUrl,
         type: 'website',
         locale: locale === 'es' ? 'es_ES' : locale === 'ru' ? 'ru_RU' : locale === 'fr' ? 'fr_FR' : 'en_US',
-        siteName: process.env.NEXT_PUBLIC_COMPANY_NAME || 'airlinesmap.com',
+        siteName: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
       },
       twitter: {
         card: 'summary_large_image',
@@ -1942,7 +1942,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       <SchemaOrg data={{
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
+        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
         "url": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com",
         "potentialAction": {
           "@type": "SearchAction",
@@ -1958,7 +1958,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       <SchemaOrg data={{
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
+        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
         "url": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com",
         "logo": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/logo.png`,
         "description": "Compare airlines and find the best flight deals",
@@ -2049,7 +2049,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       <SchemaOrg data={{
         "@context": "https://schema.org",
         "@type": "TravelAgency",
-        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "airlinesmap.com",
+        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
         "url": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com",
         "description": "Compare airlines and find the best flight deals",
         "address": {

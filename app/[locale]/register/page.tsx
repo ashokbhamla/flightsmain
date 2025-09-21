@@ -152,7 +152,7 @@ export default function RegisterPage({ params }: RegisterPageProps) {
               Create Account
             </Typography>
             <Typography variant="body1" sx={{ color: '#666' }}>
-              Join FlightSearchs and start your journey
+              Join {process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'} and start your journey
             </Typography>
           </Box>
 

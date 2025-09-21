@@ -7,8 +7,8 @@ export async function generateMetadata({ params }: { params: { locale: string } 
   
   return {
     title: {
-      template: '%s | FlightSearchs - Airport Hotels & Accommodations',
-      default: 'Hotels Near US Airports - Find Airport Hotels in America | FlightSearchs'
+      template: `%s | ${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'} - Airport Hotels & Accommodations`,
+      default: `Hotels Near US Airports - Find Airport Hotels in America | ${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'}`
     },
     description: 'Discover the best hotels near major US airports including LAX, JFK, ATL, ORD, DFW, and more. Find comfortable accommodations with airport shuttle service, great amenities, and competitive rates.',
     keywords: [
@@ -28,9 +28,9 @@ export async function generateMetadata({ params }: { params: { locale: string } 
       'airport hotel deals',
       'convenient airport hotels'
     ],
-    authors: [{ name: 'FlightSearchs Team' }],
-    creator: 'FlightSearchs',
-    publisher: 'FlightSearchs',
+    authors: [{ name: `${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'} Team` }],
+    creator: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
+    publisher: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
     formatDetection: {
       email: false,
       address: false,
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: { params: { locale: string } 
       title: 'Hotels Near US Airports - Find Airport Hotels in America',
       description: 'Discover the best hotels near major US airports including LAX, JFK, ATL, ORD, DFW, and more. Find comfortable accommodations with airport shuttle service, great amenities, and competitive rates.',
       url: `${baseUrl}/${locale}/hotels`,
-      siteName: 'FlightSearchs',
+      siteName: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
       locale: locale,
       type: 'website',
       images: [
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: { params: { locale: string } 
           url: `${baseUrl}/images/airport-hotels-og.jpg`,
           width: 1200,
           height: 630,
-          alt: 'US Airport Hotels - FlightSearchs',
+          alt: `US Airport Hotels - ${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'}`,
         },
       ],
     },

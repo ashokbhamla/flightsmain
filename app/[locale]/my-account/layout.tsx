@@ -7,10 +7,10 @@ export async function generateMetadata({ params }: { params: { locale: string } 
   
   return {
     title: {
-      template: '%s | FlightSearchs - My Account',
-      default: 'My Account - Manage Your Travel Profile | FlightSearchs'
+      template: `%s | ${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'} - My Account`,
+      default: `My Account - Manage Your Travel Profile | ${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'}`
     },
-    description: 'Manage your FlightSearchs account, view booking history, update travel preferences, and access exclusive member benefits.',
+    description: `Manage your ${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'} account, view booking history, update travel preferences, and access exclusive member benefits.`,
     keywords: [
       'my account',
       'user dashboard',
@@ -22,9 +22,9 @@ export async function generateMetadata({ params }: { params: { locale: string } 
       'hotel bookings',
       'travel management'
     ],
-    authors: [{ name: 'FlightSearchs Team' }],
-    creator: 'FlightSearchs',
-    publisher: 'FlightSearchs',
+    authors: [{ name: `${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'} Team` }],
+    creator: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
+    publisher: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
     formatDetection: {
       email: false,
       address: false,
@@ -37,9 +37,9 @@ export async function generateMetadata({ params }: { params: { locale: string } 
     },
     openGraph: {
       title: 'My Account - Manage Your Travel Profile',
-      description: 'Manage your FlightSearchs account, view booking history, update travel preferences, and access exclusive member benefits.',
+      description: `Manage your ${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'} account, view booking history, update travel preferences, and access exclusive member benefits.`,
       url: `${baseUrl}/${locale}/my-account`,
-      siteName: 'FlightSearchs',
+      siteName: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
       locale: locale,
       type: 'website',
       images: [
@@ -47,14 +47,14 @@ export async function generateMetadata({ params }: { params: { locale: string } 
           url: `${baseUrl}/images/account-dashboard-og.jpg`,
           width: 1200,
           height: 630,
-          alt: 'My Account Dashboard - FlightSearchs',
+          alt: `My Account Dashboard - ${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'}`,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
       title: 'My Account - Manage Your Travel Profile',
-      description: 'Manage your FlightSearchs account, view booking history, update travel preferences, and access exclusive member benefits.',
+      description: `Manage your ${process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap'} account, view booking history, update travel preferences, and access exclusive member benefits.`,
       images: [`${baseUrl}/images/account-dashboard-og.jpg`],
     },
     robots: {

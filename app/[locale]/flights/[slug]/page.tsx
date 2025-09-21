@@ -320,7 +320,7 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
   // Use FlightTemplate for route pair pages
   return (
     <FlightTemplate 
-      locale={locale}
+        locale={locale}
       pageData={contentData}
       params={params}
       flightData={actualFlightData}
