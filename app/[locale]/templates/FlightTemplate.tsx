@@ -4,6 +4,7 @@ import FlightSearchBox from '@/components/FlightSearchBox';
 import ClientPriceGraph from '@/components/ClientPriceGraph';
 import FlightTabs from '@/components/FlightTabs';
 import { getAirportImageUrl } from '@/lib/cdn';
+import { memo } from 'react';
 
 interface FlightTemplateProps {
   locale: Locale;
@@ -101,15 +102,15 @@ const getFlightContent = (locale: Locale, departureCity: string, arrivalCity: st
   return content[locale] || content.en;
 };
 
-export default function FlightTemplate({ 
+const FlightTemplate = memo(function FlightTemplate({ 
   locale, 
   pageData, 
   params, 
   flightData, 
-  departureCityName, 
-  arrivalCityName, 
-  departureIata, 
-  arrivalIata, 
+  departureCityName,
+  arrivalCityName,
+  departureIata,
+  arrivalIata,
   onAction 
 }: FlightTemplateProps) {
   // Helper function to get city name from IATA code
@@ -1207,4 +1208,6 @@ export default function FlightTemplate({
       </Container>
     </Box>
   );
-}
+});
+
+export default FlightTemplate;

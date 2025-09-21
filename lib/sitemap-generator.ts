@@ -1,5 +1,3 @@
-import { MetadataRoute } from 'next'
-
 export interface SitemapUrl {
   url: string
   lastModified: string

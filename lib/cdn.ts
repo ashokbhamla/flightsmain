@@ -12,7 +12,7 @@ export const CDN_BASE = process.env.NEXT_PUBLIC_CDN_BASE || 'https://storage.goo
  * @returns Full CDN URL for airport image
  */
 export function getAirportImageUrl(airportCode: string, size: 'small' | 'medium' | 'large' = 'medium'): string {
-  return `${CDN_BASE}/airports/${airportCode.toLowerCase()}_${size}.jpg`;
+  return `${CDN_BASE}/airports/${airportCode.toUpperCase()}.webp`;
 }
 
 /**
@@ -24,7 +24,7 @@ export function getAirportImageUrl(airportCode: string, size: 'small' | 'medium'
 export function getCityImageUrl(cityName: string, size: 'small' | 'medium' | 'large' = 'medium'): string {
   // Convert city name to URL-friendly format
   const citySlug = cityName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  return `${CDN_BASE}/cities/${citySlug}_${size}.jpg`;
+  return `${CDN_BASE}/cities/${citySlug}.webp`;
 }
 
 /**
@@ -34,7 +34,7 @@ export function getCityImageUrl(cityName: string, size: 'small' | 'medium' | 'la
  * @returns Full CDN URL for airline logo
  */
 export function getAirlineLogoUrl(airlineCode: string, size: 'small' | 'medium' | 'large' = 'medium'): string {
-  return `${CDN_BASE}/airlines/${airlineCode.toLowerCase()}_${size}.jpg`;
+  return `${CDN_BASE}/airlines/${airlineCode.toUpperCase()}.webp`;
 }
 
 /**
@@ -44,7 +44,7 @@ export function getAirlineLogoUrl(airlineCode: string, size: 'small' | 'medium' 
  * @returns Full CDN URL for hotel image
  */
 export function getHotelImageUrl(hotelId: string, size: 'small' | 'medium' | 'large' = 'medium'): string {
-  return `${CDN_BASE}/hotels/${hotelId}_${size}.jpg`;
+  return `${CDN_BASE}/hotels/${hotelId}.webp`;
 }
 
 /**
@@ -55,7 +55,7 @@ export function getHotelImageUrl(hotelId: string, size: 'small' | 'medium' | 'la
  */
 export function getDestinationImageUrl(destinationName: string, size: 'small' | 'medium' | 'large' = 'medium'): string {
   const destinationSlug = destinationName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  return `${CDN_BASE}/destinations/${destinationSlug}_${size}.jpg`;
+  return `${CDN_BASE}/destinations/${destinationSlug}.webp`;
 }
 
 /**

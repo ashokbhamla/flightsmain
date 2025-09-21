@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    optimizePackageImports: ['@mui/material', '@mui/icons-material'],
+    optimizePackageImports: ['@mui/material', '@mui/icons-material', 'recharts'],
     turbo: {
       rules: {
         '*.svg': {
@@ -96,7 +96,7 @@ const nextConfig = {
       config.optimization.splitChunks = {
         chunks: 'all',
         minSize: 20000,
-        maxSize: 244000,
+        maxSize: 200000,
         cacheGroups: {
           vendor: {
             test: /[\\/]node_modules[\\/]/,
@@ -110,6 +110,20 @@ const nextConfig = {
             name: 'mui',
             chunks: 'all',
             priority: 20,
+            enforce: true,
+          },
+          recharts: {
+            test: /[\\/]node_modules[\\/]recharts[\\/]/,
+            name: 'recharts',
+            chunks: 'async',
+            priority: 25,
+            enforce: true,
+          },
+          framer: {
+            test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+            name: 'framer',
+            chunks: 'async',
+            priority: 25,
             enforce: true,
           },
           common: {

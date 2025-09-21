@@ -31,6 +31,9 @@ export default function Header({ locale }: { locale: Locale }) {
   };
 
   const handleLanguageChange = (newLocale: Locale) => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+    
     // Update URL to new locale
     const currentPath = window.location.pathname;
     

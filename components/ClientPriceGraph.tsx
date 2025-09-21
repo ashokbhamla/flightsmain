@@ -1,8 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Box, Typography, Card, CardContent, Skeleton } from '@mui/material';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import dynamic from 'next/dynamic';
+
+// Lazy load Recharts to reduce initial bundle size
+const BarChart = dynamic(() => import('recharts').then(mod => ({ default: mod.BarChart })), { ssr: false });
+const Bar = dynamic(() => import('recharts').then(mod => ({ default: mod.Bar })), { ssr: false });
+const XAxis = dynamic(() => import('recharts').then(mod => ({ default: mod.XAxis })), { ssr: false });
+const YAxis = dynamic(() => import('recharts').then(mod => ({ default: mod.YAxis })), { ssr: false });
+const CartesianGrid = dynamic(() => import('recharts').then(mod => ({ default: mod.CartesianGrid })), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(mod => ({ default: mod.Tooltip })), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => ({ default: mod.ResponsiveContainer })), { ssr: false });
+const Cell = dynamic(() => import('recharts').then(mod => ({ default: mod.Cell })), { ssr: false });
 
 interface ClientPriceGraphProps {
   title: string;
@@ -17,7 +27,7 @@ interface ClientPriceGraphProps {
   height?: number;
 }
 
-export default function ClientPriceGraph({ 
+const ClientPriceGraph = memo(function ClientPriceGraph({ 
   title, 
   description, 
   data, 
@@ -124,43 +134,41 @@ export default function ClientPriceGraph({
 
         <Box sx={{ flex: 1, minHeight: 0 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={processedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <BarChart data={processedData} margin={{ top: 10, right: 20, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="1 1" stroke="#f5f5f5" />
               <XAxis 
                 dataKey="name" 
-                stroke="#666666"
-                fontSize={12}
+                stroke="#999"
+                fontSize={11}
                 tickLine={false}
                 axisLine={false}
+                interval="preserveStartEnd"
               />
               <YAxis 
-                stroke="#666666"
-                fontSize={12}
+                stroke="#999"
+                fontSize={11}
                 tickLine={false}
                 axisLine={false}
-                label={{ 
-                  value: yAxisLabel, 
-                  angle: -90, 
-                  position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: '#666666', fontSize: 12 }
-                }}
+                width={40}
+                tickFormatter={(value) => showPrices ? `$${value}` : value.toString()}
               />
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'white', 
-                  border: '1px solid #e0e0e0',
+                  border: '1px solid #ddd',
                   borderRadius: '4px',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  padding: '8px'
                 }}
                 formatter={(value: any) => [showPrices ? `$${value}` : value, yAxisLabel]}
               />
               <Bar 
                 dataKey="value" 
                 fill="#1e3a8a"
-                radius={[0, 0, 4, 4]}
+                radius={[2, 2, 0, 0]}
               >
                 {processedData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell key={index} fill={entry.color} />
                 ))}
               </Bar>
             </BarChart>
@@ -169,4 +177,6 @@ export default function ClientPriceGraph({
       </CardContent>
     </Card>
   );
-}
+});
+
+export default ClientPriceGraph;

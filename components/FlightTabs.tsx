@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Box, Typography, Tabs, Tab, Grid } from '@mui/material';
+import { useState, memo, useMemo } from 'react';
+import { Box, Typography, Grid } from '@mui/material';
 import FlightCard from './FlightCard';
-import FlightCards from './FlightCards';
 import FlightRouteCard from './FlightRouteCard';
 import { NormalizedFlight } from '@/lib/flightNormalizer';
 import { getTranslations } from '@/lib/translations';
@@ -47,7 +46,7 @@ interface FlightTabsProps {
   locale?: Locale;
 }
 
-export default function FlightTabs({ flightData, departureCity, arrivalCity, departureIata, arrivalIata, normalizedFlights, tabDescriptions, locale = 'en' }: FlightTabsProps) {
+const FlightTabs = memo(function FlightTabs({ flightData, departureCity, arrivalCity, departureIata, arrivalIata, normalizedFlights, tabDescriptions, locale = 'en' }: FlightTabsProps) {
   const [activeTab, setActiveTab] = useState(0);
   const t = getTranslations(locale);
 
@@ -55,8 +54,8 @@ export default function FlightTabs({ flightData, departureCity, arrivalCity, dep
     setActiveTab(newValue);
   };
 
-  // Transform API data to FlightCard format
-  const transformFlightData = (flights: FlightData[]) => {
+  // Memoize flight data transformation
+  const transformFlightData = useMemo(() => (flights: FlightData[]) => {
     return flights.map((flight, index) => ({
       id: index + 1,
       airline: flight.airline,
@@ -73,7 +72,7 @@ export default function FlightTabs({ flightData, departureCity, arrivalCity, dep
       dealFound: 'Just now',
       bookingPlatform: `${flight.airline}.com`
     }));
-  };
+  }, [departureCity, arrivalCity]);
 
   // Use normalized flights if available, otherwise fall back to original flight data
   const hasNormalizedFlights = normalizedFlights && normalizedFlights.length > 0;
@@ -229,4 +228,6 @@ export default function FlightTabs({ flightData, departureCity, arrivalCity, dep
       )}
     </Box>
   );
-}
+});
+
+export default FlightTabs;
