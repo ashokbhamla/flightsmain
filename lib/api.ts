@@ -320,33 +320,6 @@ export async function fetchAirlineAirportData(airlineCode: string, departureIata
 /**
  * Get homepage cards data based on user location
  */
-// Fetch airline contact information by IATA code
-export async function fetchAirlineContactInfo(iataCode: string, domain: 1 | 2 = 1) {
-  const isServer = typeof window === 'undefined';
-  
-  try {
-    if (isServer) {
-      // Server-side: call external API directly
-      const url = `${process.env.NEXT_PUBLIC_API_REAL || 'https://api.triposia.com'}/real/airlines?iata_code=${iataCode}&lang=1&domain_id=${domain}`;
-      const res = await fetch(url, { 
-        next: { revalidate: 300 }
-      });
-      if (!res.ok) {
-        console.warn(`API error ${res.status}: ${await res.text()}`);
-        return null;
-      }
-      const data = await res.json();
-      return data[0] || null;
-    } else {
-      // Client-side: call local API route
-      return fetchJSON<any>(`api/airline-contact?iata_code=${iataCode}&lang=1&domain_id=${domain}`);
-    }
-  } catch (error) {
-    console.warn('Error fetching airline contact info:', error);
-    return null;
-  }
-}
-
 export async function getHomepageCards(
   countryCode: string,
   country: string,
@@ -385,5 +358,15 @@ export async function getHomepageCards(
       customer_reviews: [],
       hotels: []
     };
+  }
+}
+
+export async function fetchAirlineContactInfo(iataCode: string) {
+  try {
+    const data = await fetchJSON<any[]>(`real/airlines?iata_code=${iataCode}`, 3600);
+    return data && data.length > 0 ? data[0] : null;
+  } catch (error) {
+    console.error('Error fetching airline contact info:', error);
+    return null;
   }
 }

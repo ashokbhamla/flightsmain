@@ -35,7 +35,7 @@ interface FlightTabsProps {
   departureCity: string;
   arrivalCity: string;
   departureIata: string;
-  arrivalIata: string;
+  arrivalIata: string | null;
   normalizedFlights?: NormalizedFlight[];
   tabDescriptions?: {
     oneway_flights?: string;
@@ -64,7 +64,7 @@ const FlightTabs = memo(function FlightTabs({ flightData, departureCity, arrival
       departure: `${flight.iata_from} - ${departureCity}`,
       departureTime: `${flight.date} • ${flight.departure_time}`,
       departureRoute: `${flight.iata_from} - ${flight.iata_to}`,
-      return: `${flight.iata_to} - ${arrivalCity}`,
+      return: arrivalIata ? `${flight.iata_to} - ${arrivalCity}` : `${flight.iata_to} - Various Destinations`,
       returnTime: `${flight.date} • ${flight.arrival_time}`,
       returnRoute: `${flight.iata_to} - ${flight.iata_from}`,
       stops: flight.stops === 0 ? 'Non-stop' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`,
@@ -72,7 +72,7 @@ const FlightTabs = memo(function FlightTabs({ flightData, departureCity, arrival
       dealFound: 'Just now',
       bookingPlatform: `${flight.airline}.com`
     }));
-  }, [departureCity, arrivalCity]);
+  }, [departureCity, arrivalCity, arrivalIata]);
 
   // Use normalized flights if available, otherwise fall back to original flight data
   const hasNormalizedFlights = normalizedFlights && normalizedFlights.length > 0;
@@ -81,22 +81,22 @@ const FlightTabs = memo(function FlightTabs({ flightData, departureCity, arrival
     {
       label: t.flightTabs.onewayFlights,
       flights: hasNormalizedFlights ? normalizedFlights : transformFlightData(flightData?.oneway_flights || []),
-      description: tabDescriptions?.oneway_flights || t.flightTabs.onewayDescription.replace('{from}', departureCity).replace('{to}', arrivalCity)
+      description: tabDescriptions?.oneway_flights || t.flightTabs.onewayDescription.replace('{from}', departureCity).replace('{to}', arrivalIata ? arrivalCity : 'Various Destinations')
     },
     {
       label: t.flightTabs.lastMinute,
       flights: hasNormalizedFlights ? normalizedFlights : transformFlightData(flightData?.last_minute_flights || []),
-      description: tabDescriptions?.last_minute_flights || t.flightTabs.lastMinuteDescription.replace('{from}', departureCity).replace('{to}', arrivalCity)
+      description: tabDescriptions?.last_minute_flights || t.flightTabs.lastMinuteDescription.replace('{from}', departureCity).replace('{to}', arrivalIata ? arrivalCity : 'Various Destinations')
     },
     {
       label: t.flightTabs.cheapFlights,
       flights: hasNormalizedFlights ? normalizedFlights : transformFlightData(flightData?.cheap_flights || []),
-      description: tabDescriptions?.cheap_flights || t.flightTabs.cheapDescription.replace('{from}', departureCity).replace('{to}', arrivalCity)
+      description: tabDescriptions?.cheap_flights || t.flightTabs.cheapDescription.replace('{from}', departureCity).replace('{to}', arrivalIata ? arrivalCity : 'Various Destinations')
     },
     {
       label: t.flightTabs.bestFlights,
       flights: hasNormalizedFlights ? normalizedFlights : transformFlightData(flightData?.best_flights || []),
-      description: tabDescriptions?.best_flights || t.flightTabs.bestDescription.replace('{from}', departureCity).replace('{to}', arrivalCity)
+      description: tabDescriptions?.best_flights || t.flightTabs.bestDescription.replace('{from}', departureCity).replace('{to}', arrivalIata ? arrivalCity : 'Various Destinations')
     }
   ];
 
@@ -117,7 +117,10 @@ const FlightTabs = memo(function FlightTabs({ flightData, departureCity, arrival
           color: '#1a1a1a'
         }}
       >
-        {t.flightSearch.findFlightDeals} from {departureCity} to {arrivalCity}
+        {arrivalIata ? 
+          `${t.flightSearch.findFlightDeals} from ${departureCity} to ${arrivalCity}` :
+          `Available Flights from ${departureCity}`
+        }
       </Typography>
       
       <Typography 
@@ -129,7 +132,10 @@ const FlightTabs = memo(function FlightTabs({ flightData, departureCity, arrival
           color: '#1a1a1a'
         }}
       >
-        {t.flightSearch.cheapestFlights} from {departureCity} to {arrivalCity}
+        {arrivalIata ? 
+          `${t.flightSearch.cheapestFlights} from ${departureCity} to ${arrivalCity}` :
+          `Find the best deals from ${departureCity}`
+        }
       </Typography>
       
       {/* Tabs - Only show if there are flights available */}
