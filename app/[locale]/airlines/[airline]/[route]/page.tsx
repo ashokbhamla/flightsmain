@@ -241,7 +241,8 @@ function decodeHtmlEntities(html: string): string {
 // Helper function to generate weather description based on temperature data
 function generateWeatherDescription(weatherData: any[], cityName: string, t: any): string {
   if (!weatherData || weatherData.length === 0) {
-    return t.weatherDescriptionFallback.replace('{cityName}', cityName);
+    return t?.flightPage?.weatherDescriptionFallback?.replace('{cityName}', cityName) || 
+      `Plan your visit to ${cityName} with current temperature data. ${cityName} experiences varied weather throughout the year, with temperatures ranging from mild to warm depending on the season.`;
   }
 
   const temperatures = weatherData.map(item => item.value);
@@ -257,20 +258,26 @@ function generateWeatherDescription(weatherData: any[], cityName: string, t: any
   const mildTemps = weatherData.filter(item => item.value >= 65 && item.value <= 80);
   const bestMonths = mildTemps.map(item => item.name).join(', ');
   
-  return t.weatherDescriptionDetailed
-    .replace('{cityName}', cityName)
-    .replace('{minTemp}', minTemp.toString())
-    .replace('{coolestMonth}', coolestMonth)
-    .replace('{maxTemp}', maxTemp.toString())
-    .replace('{warmestMonth}', warmestMonth)
-    .replace('{avgTemp}', Math.round(avgTemp).toString())
-    .replace('{bestMonths}', bestMonths || 'spring and fall');
+  const detailedDescription = t?.flightPage?.weatherDescriptionDetailed;
+  if (detailedDescription) {
+    return detailedDescription
+      .replace(/{cityName}/g, cityName)
+      .replace(/{minTemp}/g, minTemp.toString())
+      .replace(/{coolestMonth}/g, coolestMonth)
+      .replace(/{maxTemp}/g, maxTemp.toString())
+      .replace(/{warmestMonth}/g, warmestMonth)
+      .replace(/{avgTemp}/g, Math.round(avgTemp).toString())
+      .replace(/{bestMonths}/g, bestMonths || 'spring and fall');
+  }
+  
+  return `Plan your visit to ${cityName} with detailed temperature insights. ${cityName} experiences temperatures ranging from ${minTemp}°F in ${coolestMonth} to ${maxTemp}°F in ${warmestMonth}, with an average of ${Math.round(avgTemp)}°F. The best time to visit is during ${bestMonths || 'spring and fall'} when temperatures are most comfortable for sightseeing and outdoor activities.`;
 }
 
 // Helper function to generate rainfall description based on rainfall data
 function generateRainfallDescription(rainfallData: any[], cityName: string, t: any): string {
   if (!rainfallData || rainfallData.length === 0) {
-    return t.rainfallDescriptionFallback.replace('{cityName}', cityName);
+    return t?.flightPage?.rainfallDescriptionFallback?.replace('{cityName}', cityName) || 
+      `Stay prepared for your trip to ${cityName} with current rainfall data. ${cityName} receives varied rainfall throughout the year, with precipitation patterns changing by season.`;
   }
 
   const rainfalls = rainfallData.map(item => item.value);
@@ -286,14 +293,19 @@ function generateRainfallDescription(rainfallData: any[], cityName: string, t: a
   const dryMonths = rainfallData.filter(item => item.value <= avgRainfall * 0.7);
   const bestMonths = dryMonths.map(item => item.name).join(', ');
   
-  return t.rainfallDescriptionDetailed
-    .replace('{cityName}', cityName)
-    .replace('{minRainfall}', minRainfall.toString())
-    .replace('{driestMonth}', driestMonth)
-    .replace('{maxRainfall}', maxRainfall.toString())
-    .replace('{wettestMonth}', wettestMonth)
-    .replace('{avgRainfall}', avgRainfall.toFixed(1))
-    .replace('{bestMonths}', bestMonths || 'winter and spring');
+  const detailedDescription = t?.flightPage?.rainfallDescriptionDetailed;
+  if (detailedDescription) {
+    return detailedDescription
+      .replace(/{cityName}/g, cityName)
+      .replace(/{minRainfall}/g, minRainfall.toString())
+      .replace(/{driestMonth}/g, driestMonth)
+      .replace(/{maxRainfall}/g, maxRainfall.toString())
+      .replace(/{wettestMonth}/g, wettestMonth)
+      .replace(/{avgRainfall}/g, avgRainfall.toFixed(1))
+      .replace(/{bestMonths}/g, bestMonths || 'winter and spring');
+  }
+  
+  return `Stay prepared for your trip to ${cityName} with detailed rainfall insights. ${cityName} receives rainfall ranging from ${minRainfall} inches in ${driestMonth} to ${maxRainfall} inches in ${wettestMonth}, with an average of ${avgRainfall.toFixed(1)} inches annually. The best time to visit is during ${bestMonths || 'winter and spring'} when rainfall is minimal, ensuring clear skies for outdoor exploration and sightseeing.`;
 }
 
 export async function generateMetadata({ params }: { params: { locale: string; airline: string; route: string } }): Promise<Metadata> {
@@ -346,22 +358,22 @@ export async function generateMetadata({ params }: { params: { locale: string; a
     const title = arrivalIata ? 
       t.flightPage.title
         .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
-        .replace('{departureCity}', contentData?.departure_city || getCityName(departureIata))
-        .replace('{arrivalCity}', contentData?.arrival_city || getCityName(arrivalIata)) :
+        .replace('{departureCity}', flightData?.metadata?.departure_city || contentData?.departure_city || getCityName(departureIata))
+        .replace('{arrivalCity}', flightData?.metadata?.arrival_city || contentData?.arrival_city || getCityName(arrivalIata)) :
       t.flightPage.title
         .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
-        .replace('{departureCity}', contentData?.departure_city || getCityName(departureIata))
+        .replace('{departureCity}', flightData?.metadata?.departure_city || contentData?.departure_city || getCityName(departureIata))
         .replace('{arrivalCity}', t.flightPage.destinationsWorldwide);
 
     // Use translated text with real API data, fallback to API content if needed
     const description = arrivalIata ?
       t.flightPage.description
         .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
-        .replace('{departureCity}', contentData?.departure_city || getCityName(departureIata))
-        .replace('{arrivalCity}', contentData?.arrival_city || getCityName(arrivalIata)) :
+        .replace('{departureCity}', flightData?.metadata?.departure_city || contentData?.departure_city || getCityName(departureIata))
+        .replace('{arrivalCity}', flightData?.metadata?.arrival_city || contentData?.arrival_city || getCityName(arrivalIata)) :
       t.flightPage.description
         .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
-        .replace('{departureCity}', contentData?.departure_city || getCityName(departureIata))
+        .replace('{departureCity}', flightData?.metadata?.departure_city || contentData?.departure_city || getCityName(departureIata))
         .replace('{arrivalCity}', t.flightPage.destinationsWorldwide);
     
     return {
@@ -613,14 +625,18 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     departureCity = `${contentData.departure_city} (${departureIata})`;
     // For arrival city, check if we have it in content data, otherwise use flight data or fallback
     if (contentData?.arrival_city) {
-      arrivalCity = arrivalIata ? `${contentData.arrival_city} (${arrivalIata})` : 'Various Destinations';
+    arrivalCity = arrivalIata ? `${contentData.arrival_city} (${arrivalIata})` : 'Various Destinations';
     } else if (flightData?.arrival_city) {
       arrivalCity = arrivalIata ? `${flightData.arrival_city} (${arrivalIata})` : 'Various Destinations';
     } else {
       arrivalCity = arrivalIata ? getCityName(arrivalIata) : 'Various Destinations';
     }
+  } else if (flightData?.metadata?.departure_city) {
+    // Use flight data API metadata
+    departureCity = `${flightData.metadata.departure_city} (${departureIata})`;
+    arrivalCity = arrivalIata ? (flightData.metadata.arrival_city ? `${flightData.metadata.arrival_city} (${arrivalIata})` : getCityName(arrivalIata)) : 'Various Destinations';
   } else if (flightData?.departure_city) {
-    // Use flight data API
+    // Use flight data API (legacy)
     departureCity = `${flightData.departure_city} (${departureIata})`;
     arrivalCity = arrivalIata ? (flightData?.arrival_city ? `${flightData.arrival_city} (${arrivalIata})` : getCityName(arrivalIata)) : 'Various Destinations';
   } else if (contentData?.title) {
@@ -820,7 +836,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       id: 1,
       type: 'round-trip',
       price: contentData?.avragefares ? `$${contentData.avragefares}` : (flightData?.round_trip_start ? `$${flightData.round_trip_start}` : '$189'),
-      description: contentData?.cheap_flights ? stripHtml(contentData.cheap_flights) : t.flightPage.roundTrip.replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalCity),
+      description: contentData?.cheap_flights ? stripHtml(contentData.cheap_flights) : (t?.flightPage?.roundTrip || 'Round-trip from:').replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalCity),
       buttonText: t.searchDeals,
       buttonColor: '#10b981'
     },
@@ -828,7 +844,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       id: 2,
       type: 'one-way',
       price: flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$122',
-      description: contentData?.direct_flights ? stripHtml(contentData.direct_flights) : t.flightPage.oneWayFlight.replace('{airlineName}', airlineName).replace('{from}', departureCity).replace('{to}', arrivalCity),
+      description: contentData?.direct_flights ? stripHtml(contentData.direct_flights) : (t?.flightPage?.oneWayFlight || 'One-way flight from {from} {code} to {to}').replace('{airlineName}', airlineName).replace('{from}', departureCity).replace('{to}', arrivalCity),
       buttonText: t.searchDeals,
       buttonColor: '#1e3a8a'
     },
@@ -836,7 +852,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       id: 3,
       type: 'popular',
       month: contentData?.cheapest_month || flightData?.popular_month || 'April',
-      description: t.flightPage.cheapestMonthDesc.replace('{month}', contentData?.cheapest_month || flightData?.popular_month || 'April').replace('{departureCity}', departureCity),
+      description: (t?.flightPage?.cheapestMonthDesc || 'Cheapest month is {month} from {departureCity}. Maximum price drop flights to {departureCity} in month of {month}.').replace('{month}', contentData?.cheapest_month || flightData?.popular_month || 'April').replace('{departureCity}', departureCity),
       buttonText: t.viewPopular,
       buttonColor: '#ff6b35'
     },
@@ -844,7 +860,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       id: 4,
       type: 'cheapest',
       month: contentData?.cheapest_day || flightData?.cheapest_day || 'Monday',
-      description: t.flightPage.cheapestDayDesc.replace('{day}', contentData?.cheapest_day || flightData?.cheapest_day || 'Monday').replace('{departureCity}', departureCity),
+      description: (t?.flightPage?.cheapestDayDesc || 'Cheapest week day is {day} from {departureCity}. Maximum price drop flights to {departureCity} on {day}.').replace('{day}', contentData?.cheapest_day || flightData?.cheapest_day || 'Monday').replace('{departureCity}', departureCity),
       buttonText: t.findDeals,
       buttonColor: '#10b981'
     }
@@ -925,7 +941,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               color: '#1a1a1a'
             }}
           >
-            {t.cheapFlightDeals.replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalCity)}
+            {t?.flightPage?.cheapFlightDeals?.replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalCity) || `Cheap ${airlineName} flight deals from ${departureCity} to ${arrivalCity}`}
           </Typography>
           
           <Grid container spacing={3}>
@@ -1040,7 +1056,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 textAlign: 'left'
               }}
             >
-{t.flightPage.bookingSteps.replace('{airlineName}', airlineName)}
+{(t?.flightPage?.bookingSteps || 'How to Book {airlineName} Flights').replace('{airlineName}', airlineName)}
             </Typography>
             <Box 
               sx={{ 
@@ -1081,7 +1097,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 textAlign: 'left'
               }}
             >
-{t.flightPage.cancellationPolicy.replace('{airlineName}', airlineName)}
+{(t?.flightPage?.cancellationPolicy || '{airlineName} Cancellation Policy').replace('{airlineName}', airlineName)}
             </Typography>
             <Box 
               sx={{ 
@@ -1122,7 +1138,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 textAlign: 'left'
               }}
             >
-{t.flightPage.classes.replace('{airlineName}', airlineName)}
+{(t?.flightPage?.classes || '{airlineName} Flight Classes').replace('{airlineName}', airlineName)}
             </Typography>
             <Box 
               sx={{ 
@@ -1163,7 +1179,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 textAlign: 'left'
               }}
             >
-{t.flightPage.destinationsOverview.replace('{airlineName}', airlineName)}
+{(t?.flightPage?.destinationsOverview || '{airlineName} Destinations Overview').replace('{airlineName}', airlineName)}
             </Typography>
             <Box 
               sx={{ 
@@ -1671,7 +1687,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              {t.flightPage.popularDestinationsFrom.replace('{departureCity}', departureCity)}
+              {(t?.flightPage?.popularDestinationsFrom || 'Popular Destinations from {departureCity}').replace('{departureCity}', departureCity)}
             </Typography>
             
             {contentData?.description && (
@@ -1711,7 +1727,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              {t.flightPage.airlineDepartureTerminal.replace('{airlineName}', airlineName)}
+              {(t?.flightPage?.airlineDepartureTerminal || '{airlineName} Departure Terminal').replace('{airlineName}', airlineName)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.departure_terminal_paragraph }} 
@@ -1736,7 +1752,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              {t.flightPage.airlineArrivalTerminal.replace('{airlineName}', airlineName)}
+              {(t?.flightPage?.airlineArrivalTerminal || '{airlineName} Arrival Terminal').replace('{airlineName}', airlineName)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.arrival_terminal_paragraph }} 
@@ -1761,7 +1777,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              {t.flightPage.airlinesContactAtTerminal.replace('{departureCity}', departureCity)}
+              {(t?.flightPage?.airlinesContactAtTerminal || 'Airlines Contact Information at {departureCity} Terminal').replace('{departureCity}', departureCity)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.terminal_contact_paragraph }} 
@@ -1786,7 +1802,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              {t.flightPage.hotelsNear.replace('{departureCity}', departureCity)}
+              {(t?.flightPage?.hotelsNear || 'Hotels Near {departureCity}').replace('{departureCity}', departureCity)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.hotels }} 
@@ -1841,7 +1857,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              {t.flightPage.placesToVisit.replace('{arrivalCity}', arrivalCity)}
+              {(t?.flightPage?.placesToVisit || 'Places to Visit in {arrivalCity}').replace('{arrivalCity}', arrivalCity)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.places }} 
@@ -1867,7 +1883,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              {t.flightPage.aboutCity.replace('{arrivalCity}', arrivalCity)}
+              {(t?.flightPage?.aboutCity || 'About {arrivalCity}').replace('{arrivalCity}', arrivalCity)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.city }} 
@@ -2111,8 +2127,8 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         <SchemaOrg data={{
           "@context": "https://schema.org",
           "@type": "Product",
-          "name": t.schemaProductName.replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalCity),
-          "description": contentData?.description?.replace(/<[^>]*>/g, '') || t.schemaProductDescription.replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalCity),
+          "name": (t?.schemaProductName || '{airlineName} flights from {departureCity} to {arrivalCity}').replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalCity),
+          "description": contentData?.description?.replace(/<[^>]*>/g, '') || (t?.schemaProductDescription || 'Find cheap {airlineName} flights from {departureCity} to {arrivalCity}').replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalCity),
           "image": [
             getAirlineLogoUrl(airlineCode, 'large'),
             getAirportImageUrl(departureIata),
@@ -2137,7 +2153,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               "name": airlineName
             },
             "validFrom": flight.iso_date || new Date().toISOString(),
-            "description": t.schemaFlightDescription.replace('{airlineName}', airlineName).replace('{departureCity}', getCityName(flight.iata_from || departureIata)).replace('{arrivalCity}', getCityName(flight.iata_to || arrivalIata)),
+            "description": (t?.schemaFlightDescription || '{airlineName} flight from {departureCity} to {arrivalCity}').replace('{airlineName}', airlineName).replace('{departureCity}', getCityName(flight.iata_from || departureIata)).replace('{arrivalCity}', getCityName(flight.iata_to || arrivalIata)),
             "shippingDetails": {
               "@type": "OfferShippingDetails",
               "shippingRate": {
@@ -2177,7 +2193,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           },
           "departureAirport": {
             "@type": "Airport",
-            "name": t.schemaAirportName.replace('{cityName}', getCityName(departureIata)),
+            "name": (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(departureIata)),
             "iataCode": departureIata,
             "address": {
               "@type": "PostalAddress",
@@ -2187,7 +2203,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           },
           "arrivalAirport": {
             "@type": "Airport",
-            "name": t.schemaAirportName.replace('{cityName}', getCityName(arrivalIata)),
+            "name": (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(arrivalIata)),
             "iataCode": arrivalIata,
             "address": {
               "@type": "PostalAddress",
@@ -2209,8 +2225,8 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         <SchemaOrg data={{
           "@context": "https://schema.org",
           "@type": "ItemList",
-          "name": t.schemaItemListName.replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalIata ? ` to ${arrivalCity}` : ''),
-          "description": t.schemaItemListDescription.replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalIata ? ` to ${arrivalCity}` : ' to various destinations'),
+          "name": (t?.schemaItemListName || '{airlineName} Flights from {departureCity}{arrivalCity}').replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalIata ? ` to ${arrivalCity}` : ''),
+          "description": (t?.schemaItemListDescription || 'Available {airlineName} flights from {departureCity}{arrivalCity}').replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalIata ? ` to ${arrivalCity}` : ' to various destinations'),
           "numberOfItems": (flightData.oneway_flights?.length || 0) + (flightData.last_minute_flights?.length || 0) + (flightData.cheap_flights?.length || 0) + (flightData.best_flights?.length || 0),
           "itemListElement": [
             ...(flightData.oneway_flights?.map((flight: any, index: number) => ({
@@ -2226,12 +2242,12 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 },
                 "departureAirport": {
                   "@type": "Airport",
-                  "name": t.schemaAirportName.replace('{cityName}', getCityName(flight.iata_from || departureIata)),
+                  "name": (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(flight.iata_from || departureIata)),
                   "iataCode": flight.iata_from || departureIata
                 },
                 "arrivalAirport": {
                   "@type": "Airport",
-                  "name": t.schemaAirportName.replace('{cityName}', getCityName(flight.iata_to || arrivalIata)),
+                  "name": (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(flight.iata_to || arrivalIata)),
                   "iataCode": flight.iata_to || arrivalIata
                 },
                 "departureTime": flight.iso_date && flight.departure_time ? 
@@ -2259,12 +2275,12 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 },
                 "departureAirport": {
                   "@type": "Airport",
-                  "name": t.schemaAirportName.replace('{cityName}', getCityName(flight.iata_from || departureIata)),
+                  "name": (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(flight.iata_from || departureIata)),
                   "iataCode": flight.iata_from || departureIata
                 },
                 "arrivalAirport": {
                   "@type": "Airport",
-                  "name": t.schemaAirportName.replace('{cityName}', getCityName(flight.iata_to || arrivalIata)),
+                  "name": (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(flight.iata_to || arrivalIata)),
                   "iataCode": flight.iata_to || arrivalIata
                 },
                 "departureTime": flight.iso_date && flight.departure_time ? 
@@ -2292,12 +2308,12 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 },
                 "departureAirport": {
                   "@type": "Airport",
-                  "name": t.schemaAirportName.replace('{cityName}', getCityName(flight.iata_from || departureIata)),
+                  "name": (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(flight.iata_from || departureIata)),
                   "iataCode": flight.iata_from || departureIata
                 },
                 "arrivalAirport": {
                   "@type": "Airport",
-                  "name": t.schemaAirportName.replace('{cityName}', getCityName(flight.iata_to || arrivalIata)),
+                  "name": (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(flight.iata_to || arrivalIata)),
                   "iataCode": flight.iata_to || arrivalIata
                 },
                 "departureTime": flight.iso_date && flight.departure_time ? 
@@ -2325,12 +2341,12 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 },
                 "departureAirport": {
                   "@type": "Airport",
-                  "name": t.schemaAirportName.replace('{cityName}', getCityName(flight.iata_from || departureIata)),
+                  "name": (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(flight.iata_from || departureIata)),
                   "iataCode": flight.iata_from || departureIata
                 },
                 "arrivalAirport": {
                   "@type": "Airport",
-                  "name": t.schemaAirportName.replace('{cityName}', getCityName(flight.iata_to || arrivalIata)),
+                  "name": (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(flight.iata_to || arrivalIata)),
                   "iataCode": flight.iata_to || arrivalIata
                 },
                 "departureTime": flight.iso_date && flight.departure_time ? 
@@ -2419,7 +2435,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               "departureTime": "6:10 am",
               "departureAirport": {
                 "@type": "Airport",
-                "name": flight.airport || t.schemaAirportName.replace('{cityName}', getCityName(flight.from)),
+                "name": flight.airport || (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(flight.from)),
                 "iataCode": flight.from,
                 "geo": {
                   "@type": "GeoCoordinates",
@@ -2429,7 +2445,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               },
               "arrivalAirport": {
                 "@type": "Airport",
-                "name": flight.airport || t.schemaAirportName.replace('{cityName}', getCityName(flight.to)),
+                "name": flight.airport || (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(flight.to)),
                 "iataCode": flight.to,
                 "geo": {
                   "@type": "GeoCoordinates",
@@ -2550,7 +2566,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       <SchemaOrg data={{
         "@context": "https://schema.org",
         "@type": "Airport",
-        "name": t.schemaAirportName.replace('{cityName}', getCityName(departureIata)),
+        "name": (t?.schemaAirportName || '{cityName} Airport').replace('{cityName}', getCityName(departureIata)),
         "iataCode": departureIata,
         "address": {
           "@type": "PostalAddress",

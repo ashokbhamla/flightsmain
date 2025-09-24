@@ -85,11 +85,6 @@ export default function AirlineRouteContent({
     fallbackKey: 'flightPage.placesToVisit'
   });
 
-  const hotels = useHtmlTranslation({
-    locale,
-    apiContent: contentData?.hotels,
-    fallbackKey: 'flightPage.hotels'
-  });
 
   const cityInfo = useHtmlTranslation({
     locale,
@@ -97,35 +92,10 @@ export default function AirlineRouteContent({
     fallbackKey: 'flightPage.cityInfo'
   });
 
-  const airlines = useHtmlTranslation({
-    locale,
-    apiContent: contentData?.airlines,
-    fallbackKey: 'flightPage.airlines'
-  });
 
-  const bestTimeVisit = useHtmlTranslation({
-    locale,
-    apiContent: contentData?.best_time_visit,
-    fallbackKey: 'flightPage.bestTimeVisit'
-  });
 
-  const departureTerminal = useHtmlTranslation({
-    locale,
-    apiContent: contentData?.departure_terminal_paragraph,
-    fallbackKey: 'flightPage.departureTerminal'
-  });
 
-  const arrivalTerminal = useHtmlTranslation({
-    locale,
-    apiContent: contentData?.arrival_terminal_paragraph,
-    fallbackKey: 'flightPage.arrivalTerminal'
-  });
 
-  const terminalContact = useHtmlTranslation({
-    locale,
-    apiContent: contentData?.terminal_contact_paragraph,
-    fallbackKey: 'flightPage.terminalContact'
-  });
 
   const faqs = useMultiLanguageContent({
     locale,
@@ -387,30 +357,6 @@ export default function AirlineRouteContent({
         </Box>
       )}
 
-      {/* Hotels */}
-      {contentData?.hotels && (
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 3,
-              color: '#1a1a1a'
-            }}
-          >
-{t.flightPage.hotels.replace('{arrivalCity}', arrivalCity)}
-          </Typography>
-          <div 
-            dangerouslySetInnerHTML={hotels}
-            style={{ 
-              fontSize: '1.1rem',
-              lineHeight: 1.6,
-              color: '#666'
-            }}
-          />
-        </Box>
-      )}
 
       {/* City Information */}
       {contentData?.city && (
@@ -437,130 +383,10 @@ export default function AirlineRouteContent({
         </Box>
       )}
 
-      {/* Airlines */}
-      {contentData?.airlines && (
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 3,
-              color: '#1a1a1a'
-            }}
-          >
-{t.flightPage.airlines} at {arrivalCity}
-          </Typography>
-          <div 
-            dangerouslySetInnerHTML={airlines}
-            style={{ 
-              fontSize: '1.1rem',
-              lineHeight: 1.6,
-              color: '#666'
-            }}
-          />
-        </Box>
-      )}
 
-      {/* Best Time to Visit */}
-      {contentData?.best_time_visit && (
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 3,
-              color: '#1a1a1a'
-            }}
-          >
-{t.flightPage.bestTimeVisit.replace('{arrivalCity}', arrivalCity)}
-          </Typography>
-          <div 
-            dangerouslySetInnerHTML={bestTimeVisit}
-            style={{ 
-              fontSize: '1.1rem',
-              lineHeight: 1.6,
-              color: '#666'
-            }}
-          />
-        </Box>
-      )}
 
-      {/* Departure Terminal */}
-      {contentData?.departure_terminal_paragraph && (
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 3,
-              color: '#1a1a1a'
-            }}
-          >
-{t.flightPage.departureTerminal}
-          </Typography>
-          <div 
-            dangerouslySetInnerHTML={departureTerminal}
-            style={{ 
-              fontSize: '1.1rem',
-              lineHeight: 1.6,
-              color: '#666'
-            }}
-          />
-        </Box>
-      )}
 
-      {/* Arrival Terminal */}
-      {contentData?.arrival_terminal_paragraph && (
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 3,
-              color: '#1a1a1a'
-            }}
-          >
-{t.flightPage.arrivalTerminal}
-          </Typography>
-          <div 
-            dangerouslySetInnerHTML={arrivalTerminal}
-            style={{ 
-              fontSize: '1.1rem',
-              lineHeight: 1.6,
-              color: '#666'
-            }}
-          />
-        </Box>
-      )}
 
-      {/* Terminal Contact */}
-      {contentData?.terminal_contact_paragraph && (
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 3,
-              color: '#1a1a1a'
-            }}
-          >
-{t.flightPage.terminalContact}
-          </Typography>
-          <div 
-            dangerouslySetInnerHTML={terminalContact}
-            style={{ 
-              fontSize: '1.1rem',
-              lineHeight: 1.6,
-              color: '#666'
-            }}
-          />
-        </Box>
-      )}
 
       {/* FAQ Section */}
       {contentData?.faqs && contentData.faqs.length > 0 && (
