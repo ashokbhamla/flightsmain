@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: CleanAirlineRoutePageProps): 
     departureCity,
     arrivalCity,
     departureIata,
-    arrivalIata
+    arrivalIata: arrivalIata || undefined
   });
   
   return {
@@ -114,7 +114,7 @@ export default async function CleanAirlineRoutePage({ params }: CleanAirlineRout
   };
 
   // Use city names from API data (content API first, then flight data, then fallback)
-  let departureCity, arrivalCity;
+  let departureCity: string, arrivalCity: string;
   
   if (contentData?.departure_city) {
     departureCity = contentData.departure_city;
