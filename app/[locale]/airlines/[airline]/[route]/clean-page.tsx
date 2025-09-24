@@ -1,7 +1,7 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { Box } from '@mui/material';
-import { Locale, localeFromParam } from '@/lib/i18n';
+import { localeFromParam } from '@/lib/i18n';
 import { getCleanPageMetadata } from '@/lib/cleanContentSystem';
 import { fetchAirlineContent, fetchAirlineData, fetchAirlineAirportContent, fetchAirlineAirportData } from '@/lib/api';
 import { getAirlineCodeFromSlug } from '@/lib/utils';
@@ -60,8 +60,8 @@ export async function generateMetadata({ params }: CleanAirlineRoutePageProps): 
     description: metadata.description,
     keywords: metadata.keywords,
     openGraph: {
-      title: metadata.ogTitle,
-      description: metadata.ogDescription,
+      title: metadata.title,
+      description: metadata.description,
       type: 'website',
       locale: locale === 'ru' ? 'ru_RU' : locale === 'fr' ? 'fr_FR' : locale === 'es' ? 'es_ES' : 'en_US',
     },
@@ -114,7 +114,8 @@ export default async function CleanAirlineRoutePage({ params }: CleanAirlineRout
   };
 
   // Use city names from API data (content API first, then flight data, then fallback)
-  let departureCity: string, arrivalCity: string;
+  let departureCity: string = departureIata; // Initialize with fallback
+  let arrivalCity: string = arrivalIata || ''; // Initialize with fallback
   
   if (contentData?.departure_city) {
     departureCity = contentData.departure_city;
@@ -125,14 +126,6 @@ export default async function CleanAirlineRoutePage({ params }: CleanAirlineRout
       departureCity = cities.departureCity;
       arrivalCity = cities.arrivalCity;
     }
-  }
-  
-  // Fallback to IATA codes if no city names found
-  if (!departureCity) {
-    departureCity = departureIata;
-  }
-  if (!arrivalCity && arrivalIata) {
-    arrivalCity = arrivalIata;
   }
 
   // Get airline name
@@ -187,8 +180,8 @@ export default async function CleanAirlineRoutePage({ params }: CleanAirlineRout
       "offers": {
         "@type": "AggregateOffer",
         "priceCurrency": "USD",
-        "lowPrice": normalizedFlights.length > 0 ? Math.min(...normalizedFlights.map(f => f.price || 0)) : 0,
-        "highPrice": normalizedFlights.length > 0 ? Math.max(...normalizedFlights.map(f => f.price || 0)) : 0,
+         "lowPrice": normalizedFlights.length > 0 ? Math.min(...normalizedFlights.map((f: any) => f.price || 0)) : 0,
+         "highPrice": normalizedFlights.length > 0 ? Math.max(...normalizedFlights.map((f: any) => f.price || 0)) : 0,
         "offerCount": normalizedFlights.length
       }
     };
