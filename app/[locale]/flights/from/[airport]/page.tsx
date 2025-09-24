@@ -995,7 +995,18 @@ export default async function FlightDestinationPage({ params }: { params: { loca
           "@type": "ContactPoint",
           "contactType": "customer service",
           "telephone": process.env.NEXT_PUBLIC_PHONE_NUMBER || "+1-800-FLIGHTS",
-          "availableLanguage": ["English", "Spanish"]
+          "knowsLanguage": [
+            {
+              "@type": "Language",
+              "name": "English",
+              "alternateName": "en"
+            },
+            {
+              "@type": "Language",
+              "name": "Spanish", 
+              "alternateName": "es"
+            }
+          ]
         },
         "sameAs": [
           process.env.NEXT_PUBLIC_FACEBOOK_URL || "https://www.facebook.com/flightsearchs",

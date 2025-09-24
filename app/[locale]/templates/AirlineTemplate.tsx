@@ -296,8 +296,9 @@ export default function AirlineTemplate({ locale, pageData, params, onAction }: 
                     textAlign: 'left',
                     mx: 0
                   }}
-                  dangerouslySetInnerHTML={{ __html: pageData?.description || content.description }}
-                />
+                >
+                  {pageData?.description || content.description}
+                </Typography>
               </Box>
             </Box>
           </Box>
@@ -306,89 +307,93 @@ export default function AirlineTemplate({ locale, pageData, params, onAction }: 
       </Box>
 
       <Container maxWidth="lg" sx={{ py: 6 }}>
-        {/* About Section */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h3" sx={{ mb: 4, color: '#333', fontWeight: 700 }}>
-            {content.aboutTitle}
-          </Typography>
-          <Typography 
-            variant="body1" 
-            sx={{ mb: 3, color: '#666', lineHeight: 1.7 }}
-            dangerouslySetInnerHTML={{ __html: pageData?.overview || content.description }}
-          />
-        </Box>
+        {/* About Section - Only show if we have API content and no overview */}
+        {pageData?.overview && !pageData?.description?.includes(pageData.overview) && (
+          <Box sx={{ mb: 6 }}>
+            <Typography variant="h3" sx={{ mb: 4, color: '#333', fontWeight: 700 }}>
+              {content.aboutTitle}
+            </Typography>
+            <Typography 
+              variant="body1" 
+              sx={{ mb: 3, color: '#666', lineHeight: 1.7 }}
+              dangerouslySetInnerHTML={{ __html: pageData.overview }}
+            />
+          </Box>
+        )}
 
-        {/* Popular Routes */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h3" sx={{ mb: 4, color: '#333', fontWeight: 700 }}>
-            {content.routesTitle}
-          </Typography>
-          
-          <Grid container spacing={3}>
-            {(pageData?.routes || content.fallbackRoutes).map((route: any, index: number) => (
-              <Grid item xs={12} md={6} lg={4} key={index}>
-                <Card sx={{ 
-                  height: '100%', 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  borderRadius: 2,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
-                  }
-                }}>
-                  <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <FlightIcon sx={{ color: '#1e3a8a', mr: 1 }} />
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#333' }}>
-                        {airlineName}
-                      </Typography>
-                    </Box>
+        {/* Popular Routes - Only show if we have route data and no API content */}
+        {pageData?.routes && Array.isArray(pageData.routes) && pageData.routes.length > 0 && !pageData?.description?.includes('Popular Destinations') && (
+          <Box sx={{ mb: 6 }}>
+            <Typography variant="h3" sx={{ mb: 4, color: '#333', fontWeight: 700 }}>
+              {content.routesTitle}
+            </Typography>
+            
+            <Grid container spacing={3}>
+              {pageData.routes.map((route: any, index: number) => (
+                <Grid item xs={12} md={6} lg={4} key={index}>
+                  <Card sx={{ 
+                    height: '100%', 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    borderRadius: 2,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+                    }
+                  }}>
+                    <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <FlightIcon sx={{ color: '#1e3a8a', mr: 1 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#333' }}>
+                          {airlineName}
+                        </Typography>
+                      </Box>
 
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
-                        <strong>{content.from}:</strong> {route.from}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
-                        <strong>{content.to}:</strong> {route.to}
-                      </Typography>
-                    </Box>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                          <strong>{content.from}:</strong> {route.from}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                          <strong>{content.to}:</strong> {route.to}
+                        </Typography>
+                      </Box>
 
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e3a8a' }}>
-                        {route.price}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#666' }}>
-                        {route.duration}
-                      </Typography>
-                    </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e3a8a' }}>
+                          {route.price}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#666' }}>
+                          {route.duration}
+                        </Typography>
+                      </Box>
 
-                    <Typography variant="body2" sx={{ color: '#666', mb: 3 }}>
-                      {route.frequency}
-                    </Typography>
+                      <Typography variant="body2" sx={{ color: '#666', mb: 3 }}>
+                        {route.frequency}
+                      </Typography>
 
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      sx={{
-                        backgroundColor: '#1e3a8a',
-                        '&:hover': {
-                          backgroundColor: '#1536a3'
-                        },
-                        borderRadius: 2,
-                        py: 1.5
-                      }}
-                    >
-                      {content.bookNow}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        sx={{
+                          backgroundColor: '#1e3a8a',
+                          '&:hover': {
+                            backgroundColor: '#1536a3'
+                          },
+                          borderRadius: 2,
+                          py: 1.5
+                        }}
+                      >
+                        {content.bookNow}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
 
         {/* Services & Amenities */}
         {pageData?.services && (
@@ -419,8 +424,8 @@ export default function AirlineTemplate({ locale, pageData, params, onAction }: 
           </Box>
         )}
 
-        {/* City Information */}
-        {pageData?.city && (
+        {/* City Information - Only show if we have city data and it's not already in description */}
+        {pageData?.city && !pageData?.description?.includes('Best Time to Visit') && (
           <Box sx={{ mb: 6 }}>
             <Typography 
               variant="h2" 

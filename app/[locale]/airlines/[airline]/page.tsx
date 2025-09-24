@@ -17,11 +17,14 @@ function getLangId(locale: string): 1 | 2 {
   }
 }
 
-// Function to fetch airline content from the new API endpoint
+// Function to fetch airline content from the correct API endpoint
 async function fetchAirlineContent(slug: string, langId: 1 | 2) {
   try {
+    // Extract airline code from slug (e.g., "indigo" -> "6e")
+    const airlineCode = getAirlineCodeFromSlug(slug);
+    
     const response = await fetch(
-      `http://34.173.111.243/content/airlines?slugs=${slug}&lang_id=${langId}&domain_id=1`,
+      `https://api.triposia.com/content/airlines?airline_code=${airlineCode}&departure_iata=&lang=${langId}`,
       { 
         next: { revalidate: 300 },
         headers: {
@@ -40,6 +43,24 @@ async function fetchAirlineContent(slug: string, langId: 1 | 2) {
     console.error('Error fetching airline content:', error);
     return null;
   }
+}
+
+// Helper function to get airline code from slug
+function getAirlineCodeFromSlug(slug: string): string {
+  const airlineCodeMap: { [key: string]: string } = {
+    'indigo': '6e',
+    'air-india': 'ai',
+    'spicejet': 'sg',
+    'go-air': 'g8',
+    'vistara': 'uk',
+    'air-asia': 'i5',
+    'jet-airways': '9w',
+    'kingfisher': 'it',
+    'trujet': '2t',
+    'alliance-air': '9i'
+  };
+  
+  return airlineCodeMap[slug.toLowerCase()] || slug.toUpperCase();
 }
 
 interface AirlinePageProps {

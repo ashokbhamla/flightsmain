@@ -253,7 +253,7 @@ export async function fetchAirlineContent(airlineCode: string, arrivalIata: stri
   const isServer = typeof window === 'undefined';
   
   if (isServer) {
-    const url = `${process.env.NEXT_PUBLIC_API_CONTENT || 'https://api.triposia.com'}/content/airlines?airline_iata=${airlineCode}&arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${lang}&domain_id=${domain}`;
+    const url = `${process.env.NEXT_PUBLIC_API_CONTENT || 'https://api.triposia.com'}/content/airlines?airline_code=${airlineCode}&departure_iata=${departureIata}&arrival_iata=${arrivalIata}&lang_id=${lang}&domain_id=${domain}`;
     const res = await fetch(url, { 
       next: { revalidate: 300 }
     });
@@ -261,16 +261,16 @@ export async function fetchAirlineContent(airlineCode: string, arrivalIata: stri
     const data = await res.json() as any[];
     return data[0] || null;
   } else {
-    const data = await fetchJSON<any[]>(`api/airline-content?airline_iata=${airlineCode}&arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${lang}&domain_id=${domain}`);
+    const data = await fetchJSON<any[]>(`api/airline-content?airline_code=${airlineCode}&departure_iata=${departureIata}&arrival_iata=${arrivalIata}&lang_id=${lang}&domain_id=${domain}`);
     return data[0] || null;
   }
 }
 
-export async function fetchAirlineData(airlineCode: string, arrivalIata: string, departureIata: string, domain: 1 | 2 = 1) {
+export async function fetchAirlineData(airlineCode: string, arrivalIata: string, departureIata: string, lang: 1 | 2 = 1, domain: 1 | 2 = 1) {
   const isServer = typeof window === 'undefined';
   
   if (isServer) {
-    const url = `${process.env.NEXT_PUBLIC_API_REAL || 'https://api.triposia.com'}/real/airlines?airline_iata=${airlineCode}&arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang=1&domain_id=${domain}`;
+    const url = `${process.env.NEXT_PUBLIC_API_REAL || 'https://api.triposia.com'}/real/airlines?airline_code=${airlineCode}&departure_iata=${departureIata}&arrival_iata=${arrivalIata}&lang_id=${lang}&domain_id=${domain}`;
     const res = await fetch(url, { 
       next: { revalidate: 60 }
     });
@@ -278,7 +278,7 @@ export async function fetchAirlineData(airlineCode: string, arrivalIata: string,
     const data = await res.json() as any[];
     return data[0] || null;
   } else {
-    const data = await fetchJSON<any[]>(`api/airline-data?airline_iata=${airlineCode}&arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang=1&domain_id=${domain}`);
+    const data = await fetchJSON<any[]>(`api/airline-data?airline_code=${airlineCode}&departure_iata=${departureIata}&arrival_iata=${arrivalIata}&lang_id=${lang}&domain_id=${domain}`);
     return data[0] || null;
   }
 }

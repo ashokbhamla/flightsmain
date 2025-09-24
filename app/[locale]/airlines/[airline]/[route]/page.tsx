@@ -2,6 +2,9 @@ import { Metadata } from 'next';
 import { Typography, Box, Container, Grid, Card, CardContent, Button, Tabs, Tab, Chip } from '@mui/material';
 import { localeFromParam } from '@/lib/i18n';
 import { getTranslations } from '@/lib/translations';
+import AirlineRouteContent from '@/components/AirlineRouteContent';
+import { generateFallbackContent } from '@/lib/fallbackContentGenerator';
+import { generateDatasetSchema } from '@/lib/datasetSchemaGenerator';
 import { generateAirlineCanonicalUrl, generateAlternateUrls } from '@/lib/canonical';
 import SchemaOrg from '@/components/SchemaOrg';
 import { breadcrumbSchema } from '@/lib/schema';
@@ -9,7 +12,7 @@ import { fetchAirlineContent, fetchAirlineData, fetchAirlineAirportContent, fetc
 import dynamic from 'next/dynamic';
 import { toUSD } from '@/utils/currency';
 import { normalizeFlights, NormalizedFlight } from '@/lib/flightNormalizer';
-import { getAirlineLogoUrl } from '@/lib/cdn';
+import { getAirlineLogoUrl, getAirportImageUrl } from '@/lib/cdn';
 
 // Dynamic imports for client components with SSR enabled for SEO
 const FlightSearchBox = dynamic(() => import('@/components/FlightSearchBox'), { 
@@ -81,6 +84,34 @@ function getCityName(iataCode: string): string {
   return cityMap[iataCode] || iataCode;
 }
 
+
+// Helper function to get airline code from slug
+function getAirlineCodeFromSlug(slug: string): string {
+  const airlineCodeMap: { [key: string]: string } = {
+    'indigo': '6e',
+    'air-india': 'ai',
+    'spicejet': 'sg',
+    'go-air': 'g8',
+    'vistara': 'uk',
+    'air-asia': 'i5',
+    'jet-airways': '9w',
+    'kingfisher': 'it',
+    'trujet': '2t',
+    'alliance-air': '9i',
+    'delta': 'dl',
+    'american': 'aa',
+    'united': 'ua',
+    'southwest': 'wn',
+    'jetblue': 'b6',
+    'alaska': 'as',
+    'spirit': 'nk',
+    'frontier': 'f9',
+    'allegiant': 'g4',
+    'hawaiian': 'ha'
+  };
+  
+  return airlineCodeMap[slug.toLowerCase()] || slug.toUpperCase();
+}
 
 // Helper function to get airline name from code
 function getAirlineName(airlineCode: string, contentData?: any, airlineContactInfo?: any): string {
@@ -255,7 +286,8 @@ export async function generateMetadata({ params }: { params: { locale: string; a
   const locale = localeFromParam(params.locale);
   const t = getTranslations(locale);
   const { departureIata, arrivalIata } = parseFlightSlug(params.route);
-  const airlineCode = params.airline;
+  // Convert airline slug to airline code (e.g., "indigo" -> "6e", "6e" -> "6e")
+  const airlineCode = getAirlineCodeFromSlug(params.airline);
   
   // Generate canonical URL and alternate URLs
   const canonicalUrl = generateAirlineCanonicalUrl(airlineCode, params.route, locale);
@@ -275,13 +307,20 @@ export async function generateMetadata({ params }: { params: { locale: string; a
     // Fetch airline contact info for metadata
     const airlineContactInfo = await fetchAirlineContactInfo(airlineCode);
     let contentData = null;
+    let flightData = null;
     
     if (arrivalIata) {
       // Route pair - use airline content function
-      contentData = await fetchAirlineContent(airlineCode, arrivalIata, departureIata, getLangId(locale));
+      [contentData, flightData] = await Promise.all([
+        fetchAirlineContent(airlineCode, arrivalIata, departureIata, getLangId(locale), 1),
+        fetchAirlineData(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
+      ]);
     } else {
       // Single airport - use airline airport content function
-      contentData = await fetchAirlineAirportContent(airlineCode, departureIata, getLangId(locale));
+      [contentData, flightData] = await Promise.all([
+        fetchAirlineAirportContent(airlineCode, departureIata, getLangId(locale), 1),
+        fetchAirlineAirportData(airlineCode, departureIata, 1)
+      ]);
     }
     
     // Helper function to strip HTML tags and truncate to 158 characters
@@ -290,24 +329,30 @@ export async function generateMetadata({ params }: { params: { locale: string; a
       return cleanText.length > 158 ? cleanText.substring(0, 155) + '...' : cleanText;
     };
     
-    // Use fallback translations when API content is not translated or is in English
-    const title = (contentData?.title && locale === 'en') ? 
-      stripHtml(contentData.title) : 
-      (arrivalIata ? 
-        `${getAirlineName(airlineCode, contentData, airlineContactInfo)} flights ${getCityName(departureIata)} to ${getCityName(arrivalIata)}` :
-        `${getAirlineName(airlineCode, contentData, airlineContactInfo)} flights from ${getCityName(departureIata)}`
-      );
+    // Get translations for the current locale
+    const t = getTranslations(locale);
+    
+    // Use translated text with real API data, fallback to API content if needed
+    const title = arrivalIata ? 
+      t.flightPage.title
+        .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
+        .replace('{departureCity}', flightData?.departure_city || getCityName(departureIata))
+        .replace('{arrivalCity}', flightData?.arrival_city || getCityName(arrivalIata)) :
+      t.flightPage.title
+        .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
+        .replace('{departureCity}', flightData?.departure_city || getCityName(departureIata))
+        .replace('{arrivalCity}', 'Various Destinations');
 
-    // Use fallback translations when API content is not translated or is in English
-    const description = (contentData?.meta_description && locale === 'en') ? 
-      stripHtml(contentData.meta_description) : 
-      ((contentData?.description && locale === 'en') ? 
-        stripHtml(contentData.description) : 
-        (arrivalIata ?
-          `Find ${getAirlineName(airlineCode, contentData, airlineContactInfo)} flights from ${getCityName(departureIata)} to ${getCityName(arrivalIata)}. Compare prices and book your trip.` :
-          `Find ${getAirlineName(airlineCode, contentData, airlineContactInfo)} flights from ${getCityName(departureIata)}. Compare prices and book your trip.`
-        )
-      );
+    // Use translated text with real API data, fallback to API content if needed
+    const description = arrivalIata ?
+      t.flightPage.description
+        .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
+        .replace('{departureCity}', flightData?.departure_city || getCityName(departureIata))
+        .replace('{arrivalCity}', flightData?.arrival_city || getCityName(arrivalIata)) :
+      t.flightPage.description
+        .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
+        .replace('{departureCity}', flightData?.departure_city || getCityName(departureIata))
+        .replace('{arrivalCity}', 'Various Destinations');
     
     return {
       title,
@@ -317,9 +362,23 @@ export async function generateMetadata({ params }: { params: { locale: string; a
         languages: alternateUrls,
       },
       keywords: contentData?.meta?.keywords?.join(', ') || (arrivalIata ?
-        `${getAirlineName(airlineCode, contentData, airlineContactInfo)} flights ${departureIata} ${arrivalIata}, ${getCityName(departureIata)} to ${getCityName(arrivalIata)} ${getAirlineName(airlineCode, contentData, airlineContactInfo)}` :
-        `${getAirlineName(airlineCode, contentData, airlineContactInfo)} flights ${departureIata}, ${getCityName(departureIata)} ${getAirlineName(airlineCode, contentData, airlineContactInfo)}`
+        `${getAirlineName(airlineCode, contentData, airlineContactInfo)} flights ${getCityName(departureIata)} ${getCityName(arrivalIata)}, ${getCityName(departureIata)} to ${getCityName(arrivalIata)} ${getAirlineName(airlineCode, contentData, airlineContactInfo)}` :
+        `${getAirlineName(airlineCode, contentData, airlineContactInfo)} flights ${getCityName(departureIata)}, ${getCityName(departureIata)} ${getAirlineName(airlineCode, contentData, airlineContactInfo)}`
       ),
+      authors: [{ name: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap' }],
+      creator: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
+      publisher: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        },
+      },
       openGraph: {
         title,
         description,
@@ -327,11 +386,51 @@ export async function generateMetadata({ params }: { params: { locale: string; a
         type: 'website',
         locale: locale === 'es' ? 'es_ES' : locale === 'ru' ? 'ru_RU' : locale === 'fr' ? 'fr_FR' : 'en_US',
         siteName: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
+        images: [
+          {
+            url: getAirlineLogoUrl(airlineCode, 'large'),
+            width: 1200,
+            height: 630,
+            alt: `${getAirlineName(airlineCode, contentData, airlineContactInfo)} logo`,
+          },
+          ...(arrivalIata ? [
+            {
+              url: getAirportImageUrl(departureIata),
+              width: 1200,
+              height: 630,
+              alt: `${getCityName(departureIata)} Airport`,
+            },
+            {
+              url: getAirportImageUrl(arrivalIata),
+              width: 1200,
+              height: 630,
+              alt: `${getCityName(arrivalIata)} Airport`,
+            }
+          ] : [
+            {
+              url: getAirportImageUrl(departureIata),
+              width: 1200,
+              height: 630,
+              alt: `${getCityName(departureIata)} Airport`,
+            }
+          ])
+        ],
       },
       twitter: {
         card: 'summary_large_image',
         title,
         description,
+        site: '@airlinesmap',
+        creator: '@airlinesmap',
+        images: [
+          getAirlineLogoUrl(airlineCode, 'large'),
+          ...(arrivalIata ? [
+            getAirportImageUrl(departureIata),
+            getAirportImageUrl(arrivalIata)
+          ] : [
+            getAirportImageUrl(departureIata)
+          ])
+        ],
       },
     };
   } catch (error) {
@@ -354,6 +453,76 @@ export async function generateMetadata({ params }: { params: { locale: string; a
       alternates: {
         canonical: canonicalUrl,
         languages: alternateUrls,
+      },
+      keywords: arrivalIata ?
+        `${fallbackAirlineName} flights ${getCityName(departureIata)} ${getCityName(arrivalIata)}, ${getCityName(departureIata)} to ${getCityName(arrivalIata)} ${fallbackAirlineName}` :
+        `${fallbackAirlineName} flights ${getCityName(departureIata)}, ${getCityName(departureIata)} ${fallbackAirlineName}`,
+      authors: [{ name: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap' }],
+      creator: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
+      publisher: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        },
+      },
+      openGraph: {
+        title,
+        description,
+        url: canonicalUrl,
+        type: 'website',
+        locale: locale === 'es' ? 'es_ES' : locale === 'ru' ? 'ru_RU' : locale === 'fr' ? 'fr_FR' : 'en_US',
+        siteName: process.env.NEXT_PUBLIC_COMPANY_NAME || 'AirlinesMap',
+        images: [
+          {
+            url: getAirlineLogoUrl(airlineCode, 'large'),
+            width: 1200,
+            height: 630,
+            alt: `${fallbackAirlineName} logo`,
+          },
+          ...(arrivalIata ? [
+            {
+              url: getAirportImageUrl(departureIata),
+              width: 1200,
+              height: 630,
+              alt: `${getCityName(departureIata)} Airport`,
+            },
+            {
+              url: getAirportImageUrl(arrivalIata),
+              width: 1200,
+              height: 630,
+              alt: `${getCityName(arrivalIata)} Airport`,
+            }
+          ] : [
+            {
+              url: getAirportImageUrl(departureIata),
+              width: 1200,
+              height: 630,
+              alt: `${getCityName(departureIata)} Airport`,
+            }
+          ])
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        site: '@airlinesmap',
+        creator: '@airlinesmap',
+        images: [
+          getAirlineLogoUrl(airlineCode, 'large'),
+          ...(arrivalIata ? [
+            getAirportImageUrl(departureIata),
+            getAirportImageUrl(arrivalIata)
+          ] : [
+            getAirportImageUrl(departureIata)
+          ])
+        ],
       },
     };
   }
@@ -381,7 +550,9 @@ function parseFlightSlug(route: string): { departureIata: string; arrivalIata: s
 export default async function AirlineRoutePage({ params }: { params: { locale: string; airline: string; route: string } }) {
   const locale = localeFromParam(params.locale);
   const { departureIata, arrivalIata } = parseFlightSlug(params.route);
-  const airlineCode = params.airline;
+  // Convert airline slug to airline code (e.g., "indigo" -> "6e", "6e" -> "6e")
+  const airlineCode = getAirlineCodeFromSlug(params.airline);
+  const t = getTranslations(locale) as any;
   
   // Fetch content and flight data based on route type
   let contentData = null;
@@ -401,30 +572,60 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     if (arrivalIata) {
       // Route pair - use existing airline content/data functions
       [contentData, flightData] = await Promise.all([
-        fetchAirlineContent(airlineCode, arrivalIata, departureIata, getLangId(locale)),
-        fetchAirlineData(airlineCode, arrivalIata, departureIata)
+        fetchAirlineContent(airlineCode, arrivalIata, departureIata, getLangId(locale), 1),
+        fetchAirlineData(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
       ]);
     } else {
       // Single airport - use airport-specific functions
       [contentData, flightData] = await Promise.all([
-        fetchAirlineAirportContent(airlineCode, departureIata, getLangId(locale)),
-        fetchAirlineAirportData(airlineCode, departureIata)
+        fetchAirlineAirportContent(airlineCode, departureIata, getLangId(locale), 1),
+        fetchAirlineAirportData(airlineCode, departureIata, 1)
       ]);
     }
   } catch (error) {
     console.error('Error fetching airline data:', error);
   }
 
-  // Use city names from content API if available, otherwise fallback to hardcoded mapping
-  const departureCity = contentData?.departure_city ? 
-    `${contentData.departure_city} (${departureIata})` : 
-    getCityName(departureIata);
-  const arrivalCity = arrivalIata ? 
-    (contentData?.arrival_city ? 
-      `${contentData.arrival_city} (${arrivalIata})` : 
-      getCityName(arrivalIata)
-    ) : 
-    'Various Destinations';
+  // Helper function to extract city names from title
+  const extractCitiesFromTitle = (title: string) => {
+    // Pattern: "Aegean Airlines flights from Amman to Istanbul @ $268"
+    const match = title.match(/flights from ([^to]+) to ([^@]+)/i);
+    if (match) {
+      return {
+        departureCity: match[1].trim(),
+        arrivalCity: match[2].trim()
+      };
+    }
+    return null;
+  };
+
+  // Use city names from API data (content API first, then flight data, then fallback)
+  let departureCity, arrivalCity;
+  
+  if (contentData?.departure_city && contentData?.arrival_city) {
+    // Use content API data
+    departureCity = `${contentData.departure_city} (${departureIata})`;
+    arrivalCity = arrivalIata ? `${contentData.arrival_city} (${arrivalIata})` : 'Various Destinations';
+  } else if (flightData?.departure_city && flightData?.arrival_city) {
+    // Use flight data API
+    departureCity = `${flightData.departure_city} (${departureIata})`;
+    arrivalCity = arrivalIata ? `${flightData.arrival_city} (${arrivalIata})` : 'Various Destinations';
+  } else if (contentData?.title) {
+    // Extract from title
+    const cities = extractCitiesFromTitle(contentData.title);
+    if (cities) {
+      departureCity = `${cities.departureCity} (${departureIata})`;
+      arrivalCity = arrivalIata ? `${cities.arrivalCity} (${arrivalIata})` : 'Various Destinations';
+    } else {
+      // Fallback to hardcoded mapping
+      departureCity = getCityName(departureIata);
+      arrivalCity = arrivalIata ? getCityName(arrivalIata) : 'Various Destinations';
+    }
+  } else {
+    // Fallback to hardcoded mapping
+    departureCity = getCityName(departureIata);
+    arrivalCity = arrivalIata ? getCityName(arrivalIata) : 'Various Destinations';
+  }
   // Fetch airline contact information from the dedicated API
   const airlineContactInfo = await fetchAirlineContactInfo(airlineCode);
   
@@ -446,7 +647,16 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       country: airlineContactInfo.country || airlineDetails?.country || 'India',
       location: airlineContactInfo.city && airlineContactInfo.state ? 
         `${airlineContactInfo.city}, ${airlineContactInfo.state}` : 
-        airlineDetails?.location || 'India'
+        airlineDetails?.location || 'India',
+      // Add more dynamic fields
+      email: airlineContactInfo.email || airlineDetails?.email || `customer.service@${airlineCode.toLowerCase()}.com`,
+      reservations_email: airlineContactInfo.reservations_email || airlineDetails?.reservations_email || `reservations@${airlineCode.toLowerCase()}.com`,
+      baggage_email: airlineContactInfo.baggage_email || airlineDetails?.baggage_email || `baggage@${airlineCode.toLowerCase()}.com`,
+      service_hours: airlineContactInfo.service_hours || airlineDetails?.service_hours || '24/7 Customer Support',
+      twitter: airlineContactInfo.twitter || airlineDetails?.twitter || '',
+      facebook: airlineContactInfo.facebook || airlineDetails?.facebook || '',
+      instagram: airlineContactInfo.instagram || airlineDetails?.instagram || '',
+      linkedin: airlineContactInfo.linkedin || airlineDetails?.linkedin || ''
     };
   }
 
@@ -578,8 +788,86 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     { name: 'Dec', value: 1.2 }
   ];
 
+  // Generate fallback content when API content is not available
+  const fallbackContent = generateFallbackContent({
+    locale,
+    airlineName,
+    departureCity,
+    arrivalCity,
+    flightData,
+    contentData
+  });
+
+  // Keep original content data - fallback content will be used below graphs
+  const finalContentData = contentData;
+
+  // Use fallback price cards if needed
+  const finalPriceCards = contentData ? [
+    {
+      id: 1,
+      type: 'round-trip',
+      price: contentData?.avragefares ? `$${contentData.avragefares}` : (flightData?.round_trip_start ? `$${flightData.round_trip_start}` : '$189'),
+      description: contentData?.cheap_flights ? stripHtml(contentData.cheap_flights) : `Round-trip ${airlineName} flights from ${departureCity} to ${arrivalCity}`,
+      buttonText: 'Search Deals',
+      buttonColor: '#10b981'
+    },
+    {
+      id: 2,
+      type: 'one-way',
+      price: flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$122',
+      description: contentData?.direct_flights ? stripHtml(contentData.direct_flights) : `One-way ${airlineName} flight from ${departureCity} to ${arrivalCity}`,
+      buttonText: 'Search Deals',
+      buttonColor: '#1e3a8a'
+    },
+    {
+      id: 3,
+      type: 'popular',
+      month: contentData?.cheapest_month || flightData?.popular_month || 'April',
+      description: `Cheapest month is ${contentData?.cheapest_month || flightData?.popular_month || 'April'} from ${departureCity}. Maximum price drop flights to ${departureCity} in month of ${contentData?.cheapest_month || flightData?.popular_month || 'April'}.`,
+      buttonText: 'View Popular',
+      buttonColor: '#ff6b35'
+    },
+    {
+      id: 4,
+      type: 'cheapest',
+      month: contentData?.cheapest_day || flightData?.cheapest_day || 'Monday',
+      description: `Cheapest week day is ${contentData?.cheapest_day || flightData?.cheapest_day || 'Monday'} from ${departureCity}. Maximum price drop flights to ${departureCity} on ${contentData?.cheapest_day || flightData?.cheapest_day || 'Monday'}.`,
+      buttonText: 'Find Deals',
+      buttonColor: '#10b981'
+    }
+  ] : fallbackContent.priceCards;
+
+  // Generate canonical URL
+  const canonicalUrl = generateAirlineCanonicalUrl(airlineCode, params.route, locale);
+
+  // Generate dataset schemas for graphs
+  const datasetSchemas = generateDatasetSchema({
+    locale,
+    airlineName,
+    departureCity,
+    arrivalCity,
+    pageUrl: canonicalUrl,
+    monthlyPriceData: monthlyPriceData,
+    monthlyWeatherData: weatherData,
+    monthlyRainfallData: rainfallData,
+    weeklyPriceData: weeklyPriceData
+  });
+
   return (
     <Box sx={{ width: '100%', maxWidth: '100%' }}>
+      {/* Main Content with Translation Support */}
+      <AirlineRouteContent
+        locale={locale}
+        contentData={finalContentData}
+        flightData={flightData}
+        airlineName={airlineName}
+        departureCity={departureCity}
+        arrivalCity={arrivalCity}
+        departureIata={departureIata}
+        arrivalIata={arrivalIata}
+        normalizedFlights={normalizedFlights}
+      />
+
       <Container 
         sx={{ 
           py: { xs: 3, sm: 4, md: 6 },
@@ -588,43 +876,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           maxWidth: '100%'
         }}
       >
-        {/* Main Title */}
-        <Typography 
-          variant="h1" 
-          sx={{ 
-            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-            fontWeight: 700,
-            textAlign: 'left',
-            mb: 2,
-            color: '#1a1a1a'
-          }}
-        >
-          {contentData?.title || (arrivalIata ? 
-            `${airlineName} flights from ${departureCity} to ${arrivalCity}` :
-            normalizedFlights.length > 0 ? 
-              `${airlineName} flights from ${departureCity} to ${normalizedFlights.slice(0, 3).map(f => f.city).join(', ')}${normalizedFlights.length > 3 ? ` and ${normalizedFlights.length - 3} more destinations` : ''}` :
-              `${airlineName} flights from ${departureCity}`
-          )}
-        </Typography>
-
-        {/* Subtitle */}
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            fontSize: '1.1rem',
-            color: '#666',
-            mb: 4,
-            lineHeight: 1.6
-          }}
-          dangerouslySetInnerHTML={{
-            __html: contentData?.description || (arrivalIata ? 
-              `Plan your journey from ${departureCity} to ${arrivalCity} with ${airlineName}'s latest deals, travel tips, and flight information.` :
-              normalizedFlights.length > 0 ?
-                `Plan your journey from ${departureCity} to ${normalizedFlights.slice(0, 3).map(f => f.city).join(', ')}${normalizedFlights.length > 3 ? ` and ${normalizedFlights.length - 3} more destinations` : ''} with ${airlineName}'s latest deals, travel tips, and flight information.` :
-                `Plan your journey from ${departureCity} with ${airlineName}'s latest deals, travel tips, and flight information.`
-            )
-          }}
-        />
 
 
 
@@ -647,7 +898,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               type: 'airport' as const
             } : undefined}
           locale={locale}
-        />
+          />
 
 
         {/* Cheap Flight Deals */}
@@ -776,7 +1027,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 textAlign: 'left'
               }}
             >
-              How to Book {airlineName} Flights
+{t.flightPage.bookingSteps.replace('{airlineName}', airlineName)}
             </Typography>
             <Box 
               sx={{ 
@@ -817,7 +1068,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 textAlign: 'left'
               }}
             >
-              {airlineName} Cancellation Policy
+{t.flightPage.cancellationPolicy.replace('{airlineName}', airlineName)}
             </Typography>
             <Box 
               sx={{ 
@@ -858,7 +1109,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 textAlign: 'left'
               }}
             >
-              {airlineName} Flight Classes
+{t.flightPage.classes.replace('{airlineName}', airlineName)}
             </Typography>
             <Box 
               sx={{ 
@@ -899,7 +1150,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 textAlign: 'left'
               }}
             >
-              {airlineName} Destinations Overview
+{t.flightPage.destinationsOverview.replace('{airlineName}', airlineName)}
             </Typography>
             <Box 
               sx={{ 
@@ -930,31 +1181,310 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
 
         {/* Flight Deals Section with Tabs */}
         {flightData && arrivalIata && (
-          <FlightTabs 
-            flightData={flightData}
-            departureCity={departureCity}
-            arrivalCity={arrivalCity}
-            departureIata={departureIata}
-            arrivalIata={arrivalIata}
-            normalizedFlights={normalizedFlights}
-            tabDescriptions={contentData?.tab_descriptions}
-          />
+          <>
+            {/* Static Flight Data for SEO */}
+            <Box sx={{ mb: 6 }}>
+              <Typography 
+                variant="h2" 
+                sx={{ 
+                  fontSize: '1.8rem',
+                  fontWeight: 600,
+                  mb: 4,
+                  color: '#1a1a1a'
+                }}
+              >
+                {airlineName} Flights from {departureCity} to {arrivalCity}
+              </Typography>
+              
+              {/* One-way Flights */}
+              {flightData.oneway_flights && flightData.oneway_flights.length > 0 && (
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
+                    One-way Flights
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {flightData.oneway_flights.slice(0, 6).map((flight: any, index: number) => (
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Card sx={{ p: 2, height: '100%' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                            {airlineName} {flight.flight_number || `FL${index + 1}`}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            {getCityName(flight.iata_from || departureIata)} → {getCityName(flight.iata_to || arrivalIata)}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Departure: {flight.departure_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Arrival: {flight.arrival_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 600 }}>
+                            ${flight.price || 'N/A'}
+                          </Typography>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+
+              {/* Last Minute Flights */}
+              {flightData.last_minute_flights && flightData.last_minute_flights.length > 0 && (
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
+                    Last Minute Flights
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {flightData.last_minute_flights.slice(0, 6).map((flight: any, index: number) => (
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Card sx={{ p: 2, height: '100%' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                            {airlineName} {flight.flight_number || `LM${index + 1}`}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            {getCityName(flight.iata_from || departureIata)} → {getCityName(flight.iata_to || arrivalIata)}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Departure: {flight.departure_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Arrival: {flight.arrival_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="h6" sx={{ color: '#ff6b35', fontWeight: 600 }}>
+                            ${flight.price || 'N/A'}
+                          </Typography>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+
+              {/* Cheap Flights */}
+              {flightData.cheap_flights && flightData.cheap_flights.length > 0 && (
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
+                    Cheap Flights
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {flightData.cheap_flights.slice(0, 6).map((flight: any, index: number) => (
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Card sx={{ p: 2, height: '100%' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                            {airlineName} {flight.flight_number || `CF${index + 1}`}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            {getCityName(flight.iata_from || departureIata)} → {getCityName(flight.iata_to || arrivalIata)}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Departure: {flight.departure_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Arrival: {flight.arrival_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="h6" sx={{ color: '#1e3a8a', fontWeight: 600 }}>
+                            ${flight.price || 'N/A'}
+                          </Typography>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+
+              {/* Best Flights */}
+              {flightData.best_flights && flightData.best_flights.length > 0 && (
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
+                    Best Flights
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {flightData.best_flights.slice(0, 6).map((flight: any, index: number) => (
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Card sx={{ p: 2, height: '100%' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                            {airlineName} {flight.flight_number || `BF${index + 1}`}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            {getCityName(flight.iata_from || departureIata)} → {getCityName(flight.iata_to || arrivalIata)}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Departure: {flight.departure_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Arrival: {flight.arrival_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 600 }}>
+                            ${flight.price || 'N/A'}
+                          </Typography>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+            </Box>
+
+            {/* Interactive Flight Tabs */}
+            <FlightTabs 
+              flightData={flightData}
+              departureCity={departureCity}
+              arrivalCity={arrivalCity}
+              departureIata={departureIata}
+              arrivalIata={arrivalIata}
+              normalizedFlights={normalizedFlights}
+              tabDescriptions={contentData?.tab_descriptions}
+            />
+          </>
         )}
 
         {/* Flight Cards for Single Airport Pages */}
         {flightData && !arrivalIata && normalizedFlights.length > 0 && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 4,
-                color: '#1a1a1a'
-              }}
-            >
-              Available Flights from {departureCity}
-            </Typography>
+          <>
+            {/* Static Flight Data for SEO */}
+            <Box sx={{ mb: 6 }}>
+              <Typography 
+                variant="h2" 
+                sx={{ 
+                  fontSize: '1.8rem',
+                  fontWeight: 600,
+                  mb: 4,
+                  color: '#1a1a1a'
+                }}
+              >
+                Available Flights from {departureCity}
+              </Typography>
+              
+              {/* One-way Flights */}
+              {flightData.oneway_flights && flightData.oneway_flights.length > 0 && (
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
+                    One-way Flights
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {flightData.oneway_flights.slice(0, 6).map((flight: any, index: number) => (
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Card sx={{ p: 2, height: '100%' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                            {airlineName} {flight.flight_number || `FL${index + 1}`}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            {getCityName(flight.iata_from || departureIata)} → {getCityName(flight.iata_to || 'Destination')}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Departure: {flight.departure_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Arrival: {flight.arrival_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 600 }}>
+                            ${flight.price || 'N/A'}
+                          </Typography>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+
+              {/* Last Minute Flights */}
+              {flightData.last_minute_flights && flightData.last_minute_flights.length > 0 && (
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
+                    Last Minute Flights
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {flightData.last_minute_flights.slice(0, 6).map((flight: any, index: number) => (
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Card sx={{ p: 2, height: '100%' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                            {airlineName} {flight.flight_number || `LM${index + 1}`}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            {getCityName(flight.iata_from || departureIata)} → {getCityName(flight.iata_to || 'Destination')}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Departure: {flight.departure_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Arrival: {flight.arrival_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="h6" sx={{ color: '#ff6b35', fontWeight: 600 }}>
+                            ${flight.price || 'N/A'}
+                          </Typography>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+
+              {/* Cheap Flights */}
+              {flightData.cheap_flights && flightData.cheap_flights.length > 0 && (
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
+                    Cheap Flights
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {flightData.cheap_flights.slice(0, 6).map((flight: any, index: number) => (
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Card sx={{ p: 2, height: '100%' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                            {airlineName} {flight.flight_number || `CF${index + 1}`}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            {getCityName(flight.iata_from || departureIata)} → {getCityName(flight.iata_to || 'Destination')}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Departure: {flight.departure_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Arrival: {flight.arrival_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="h6" sx={{ color: '#1e3a8a', fontWeight: 600 }}>
+                            ${flight.price || 'N/A'}
+                          </Typography>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+
+              {/* Best Flights */}
+              {flightData.best_flights && flightData.best_flights.length > 0 && (
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
+                    Best Flights
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {flightData.best_flights.slice(0, 6).map((flight: any, index: number) => (
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Card sx={{ p: 2, height: '100%' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                            {airlineName} {flight.flight_number || `BF${index + 1}`}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            {getCityName(flight.iata_from || departureIata)} → {getCityName(flight.iata_to || 'Destination')}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Departure: {flight.departure_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                            Arrival: {flight.arrival_time || 'N/A'}
+                          </Typography>
+                          <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 600 }}>
+                            ${flight.price || 'N/A'}
+                          </Typography>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+            </Box>
+
+            {/* Interactive Flight Tabs */}
             <FlightTabs 
               flightData={flightData}
               departureCity={departureCity}
@@ -964,7 +1494,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               normalizedFlights={normalizedFlights}
               tabDescriptions={contentData?.tab_descriptions}
             />
-          </Box>
+          </>
         )}
 
 
@@ -980,13 +1510,13 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               color: '#1a1a1a'
             }}
           >
-            Price Trends & Analysis
+            {t.flightPage.priceTrends}
           </Typography>
           
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
-                title="Weekly Price Trends"
+                title={t.flightPage.weeklyTrends}
                 description={
                   contentData?.weekly_price_paragraph || `Track weekly price fluctuations for ${airlineName} flights from ${departureCity} to ${arrivalCity}. With average fares around $${flightData?.average_fare || 'N/A'}, the cheapest day to fly is typically ${flightData?.cheapest_day || 'mid-week'}. Prices typically vary by day of the week, with mid-week flights often offering better deals.`
                 }
@@ -998,7 +1528,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             </Grid>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
-                title="Monthly Price Trends"
+                title={t.flightPage.monthlyTrends}
                 description={
                   contentData?.monthly_price_paragraph || `Monitor monthly price patterns to identify the best time to book your ${airlineName} flight from ${departureCity} to ${arrivalCity}. With average fares around $${flightData?.average_fare || 'N/A'}, the cheapest month to fly is typically ${flightData?.cheapest_month || 'off-season'}. Seasonal variations and holiday periods significantly impact pricing.`
                 }
@@ -1022,13 +1552,13 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               color: '#1a1a1a'
             }}
           >
-            Weather & Climate Information
+            {t.flightPage.weatherClimateInfo || 'Weather & Climate Information'}
           </Typography>
           
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
-                title={`Weather in ${departureCity}`}
+                title={`${t.flightPage.weatherIn || 'Weather in'} ${departureCity}`}
                 description={generateWeatherDescription(weatherData, departureCity)}
                 data={weatherData}
                 yAxisLabel="Temperature (°F)"
@@ -1038,7 +1568,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             </Grid>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
-                title={`Average Rainfall in ${departureCity}`}
+                title={`${t.flightPage.averageRainfallIn || 'Average Rainfall in'} ${departureCity}`}
                 description={generateRainfallDescription(rainfallData, departureCity)}
                 data={rainfallData}
                 yAxisLabel="Rainfall (inches)"
@@ -1048,6 +1578,73 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             </Grid>
           </Grid>
         </Box>
+
+        {/* Fallback Content Section - Generated when API content is not available */}
+        {!contentData && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {fallbackContent.title}
+            </Typography>
+            
+            <div 
+              dangerouslySetInnerHTML={{ __html: fallbackContent.description }} 
+              style={{ 
+                fontSize: '1.1rem',
+                lineHeight: 1.6,
+                color: '#666',
+                marginBottom: '2rem'
+              }}
+            />
+
+            <div 
+              dangerouslySetInnerHTML={{ __html: fallbackContent.pageContent }} 
+              style={{ 
+                fontSize: '1.1rem',
+                lineHeight: 1.6,
+                color: '#666',
+                marginBottom: '2rem'
+              }}
+            />
+
+            {/* Fallback FAQ Section */}
+            {fallbackContent.faqs && fallbackContent.faqs.length > 0 && (
+              <Box sx={{ mt: 4 }}>
+                <Typography 
+                  variant="h3" 
+                  sx={{ 
+                    fontSize: '1.5rem',
+                    fontWeight: 600,
+                    mb: 3,
+                    color: '#1a1a1a'
+                  }}
+                >
+                  Frequently Asked Questions
+                </Typography>
+                <div 
+                  dangerouslySetInnerHTML={{ __html: fallbackContent.faqs.map((faq: any) => 
+                    `<div style="margin-bottom: 1.5rem;">
+                      <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 0.5rem;">${faq.q || ''}</h4>
+                      <p style="color: #666; line-height: 1.6;">${faq.a || ''}</p>
+                    </div>`
+                  ).join('') }} 
+                  style={{ 
+                    fontSize: '1.1rem',
+                    lineHeight: 1.6,
+                    color: '#666'
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
+        )}
 
         {/* Popular Destinations Section */}
         {(contentData?.destinations || contentData?.description) && (
@@ -1065,8 +1662,8 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             </Typography>
             
             {contentData?.description && (
-              <div 
-                dangerouslySetInnerHTML={{ __html: contentData.description }} 
+            <div 
+              dangerouslySetInnerHTML={{ __html: contentData.description }} 
                 style={{ 
                   fontSize: '1.1rem',
                   lineHeight: 1.6,
@@ -1079,12 +1676,12 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             {contentData?.destinations && (
               <div 
                 dangerouslySetInnerHTML={{ __html: contentData.destinations }} 
-                style={{ 
-                  fontSize: '1.1rem',
-                  lineHeight: 1.6,
-                  color: '#666'
-                }}
-              />
+              style={{ 
+                fontSize: '1.1rem',
+                lineHeight: 1.6,
+                color: '#666'
+              }}
+            />
             )}
           </Box>
         )}
@@ -1348,80 +1945,80 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
 
         {/* Terminal & Contact Information */}
         {contentData?.terminal_contact_paragraph && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: '1.8rem',
+              fontWeight: 600,
                 mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
+              color: '#1a1a1a'
+            }}
+          >
               Terminal & Contact Information
-            </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                color: '#666',
+          </Typography>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  color: '#666',
                 lineHeight: 1.6,
                 fontSize: '1.1rem'
-              }}
+                }}
               dangerouslySetInnerHTML={{ __html: contentData.terminal_contact_paragraph }}
-            />
-          </Box>
+              />
+            </Box>
         )}
 
         {/* Additional Description */}
         {contentData?.description && (
           <Box sx={{ mb: 6 }}>
-            <Typography 
+                <Typography 
               variant="h2" 
-              sx={{ 
+                  sx={{ 
                 fontSize: '1.8rem',
-                fontWeight: 600,
+                    fontWeight: 600,
                 mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
+                    color: '#1a1a1a'
+                  }}
+                >
               About This Route
-            </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                color: '#666',
+          </Typography>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    color: '#666',
                 lineHeight: 1.6,
                 fontSize: '1.1rem'
-              }}
+                  }}
               dangerouslySetInnerHTML={{ __html: contentData.description }}
             />
-          </Box>
+              </Box>
         )}
-
+              
         {/* Destinations */}
         {contentData?.destinations && (
           <Box sx={{ mb: 6 }}>
-            <Typography 
+                <Typography 
               variant="h2" 
-              sx={{ 
+                  sx={{ 
                 fontSize: '1.8rem',
-                fontWeight: 600,
+                    fontWeight: 600,
                 mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
+                    color: '#1a1a1a'
+                  }}
+                >
               Popular Destinations
-            </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                color: '#666',
+          </Typography>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    color: '#666',
                 lineHeight: 1.6,
                 fontSize: '1.1rem'
-              }}
+                  }}
               dangerouslySetInnerHTML={{ __html: contentData.destinations }}
             />
-          </Box>
+              </Box>
         )}
 
 
@@ -1429,30 +2026,30 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         {/* Places to Visit (Additional) */}
         {contentData?.places_to_visit && (
           <Box sx={{ mb: 6 }}>
-            <Typography 
+                <Typography 
               variant="h2" 
-              sx={{ 
+                  sx={{ 
                 fontSize: '1.8rem',
-                fontWeight: 600,
+                    fontWeight: 600,
                 mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
+                    color: '#1a1a1a'
+                  }}
+                >
               More Places to Visit
-            </Typography>
+          </Typography>
             
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                color: '#666',
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    color: '#666',
                 mb: 4,
                 lineHeight: 1.6,
                 fontSize: '1.1rem'
-              }}
+                  }}
               dangerouslySetInnerHTML={{ __html: contentData.places_to_visit }}
             />
-          </Box>
-        )}
+              </Box>
+          )}
 
 
 
@@ -1675,7 +2272,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               textAlign: 'left'
             }}
           >
-            <strong>{airlineName}</strong> Contact Information
+            <strong>{airlineName}</strong> {t.contactInfo?.title || 'Contact Information'}
           </Typography>
           
           <Grid container spacing={3}>
@@ -1687,16 +2284,16 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   mb: 1,
                   textAlign: 'left'
                 }}>
-                  Customer Service
+                  {t.contactInfo?.customerService || 'Customer Service'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Phone: {airlineDetails?.phone || '+1 (800) 123-4567'}
+                  {t.contactInfo?.phone || 'Phone'}: {airlineDetails?.phone || '+1 (800) 123-4567'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Email: customer.service@{airlineCode.toLowerCase()}.com
+                  {t.contactInfo?.email || 'Email'}: {airlineDetails?.email || `customer.service@${airlineCode.toLowerCase()}.com`}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568' }}>
-                  Hours: 24/7 Customer Support
+                  {t.contactInfo?.hours || 'Hours'}: {airlineDetails?.service_hours || '24/7 Customer Support'}
                 </Typography>
               </Box>
             </Grid>
@@ -1709,16 +2306,16 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   mb: 1,
                   textAlign: 'left'
                 }}>
-                  Booking & Reservations
+                  {t.contactInfo?.bookingReservations || 'Booking & Reservations'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Phone: {airlineDetails?.phone || '+1 (800) 987-6543'}
+                  {t.contactInfo?.phone || 'Phone'}: {airlineDetails?.phone || '+1 (800) 987-6543'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Email: reservations@{airlineCode.toLowerCase()}.com
+                  {t.contactInfo?.email || 'Email'}: {airlineDetails?.reservations_email || `reservations@${airlineCode.toLowerCase()}.com`}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568' }}>
-                  Online: {airlineDetails?.url || `${airlineCode.toLowerCase()}.com`}
+                  {t.contactInfo?.online || 'Online'}: {airlineDetails?.url || `${airlineCode.toLowerCase()}.com`}
                 </Typography>
               </Box>
             </Grid>
@@ -1731,16 +2328,16 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   mb: 1,
                   textAlign: 'left'
                 }}>
-                  Baggage Information
+                  {t.contactInfo?.baggageInformation || 'Baggage Information'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Phone: {airlineDetails?.phone || '+1 (800) 555-0123'}
+                  {t.contactInfo?.phone || 'Phone'}: {airlineDetails?.phone || '+1 (800) 555-0123'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  Email: baggage@{airlineCode.toLowerCase()}.com
+                  {t.contactInfo?.email || 'Email'}: {airlineDetails?.baggage_email || `baggage@${airlineCode.toLowerCase()}.com`}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568' }}>
-                  Lost & Found: {airlineDetails?.phone || '+1 (800) 555-0124'}
+                  {t.contactInfo?.lostFound || 'Lost & Found'}: {airlineDetails?.phone || '+1 (800) 555-0124'}
                 </Typography>
               </Box>
             </Grid>
@@ -1753,10 +2350,10 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   mb: 1,
                   textAlign: 'left'
                 }}>
-                  Corporate Office
+                  {t.contactInfo?.corporateOffice || 'Corporate Office'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  <strong>{airlineName}</strong> Airlines Headquarters
+                  <strong>{airlineName}</strong> {t.contactInfo?.headquarters || 'Airlines Headquarters'}
                 </Typography>
                 {airlineDetails?.address && (
                   <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
@@ -1796,14 +2393,13 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               mb: 1,
               textAlign: 'left'
             }}>
-              Need Help? Contact Us Now
+              {t.contactInfo?.needHelp || 'Need Help? Contact Us Now'}
             </Typography>
             <Typography variant="body2" sx={{ 
               color: 'rgba(255, 255, 255, 0.9)',
               textAlign: 'left'
             }}>
-              Our customer service team is available 24/7 to assist you with bookings, 
-              changes, cancellations, and any other inquiries about your {airlineName} flight.
+              {t.contactInfo?.customerServiceDesc || 'Our customer service team is available 24/7 to assist you with bookings, changes, cancellations, and any other inquiries about your flight.'}
             </Typography>
           </Box>
         </Box>
@@ -1826,8 +2422,9 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           "description": contentData?.description?.replace(/<[^>]*>/g, '') || `Find cheap ${airlineName} flights from ${departureCity} to ${arrivalCity}`,
           "image": [
             getAirlineLogoUrl(airlineCode, 'large'),
-            `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/flights/${departureIata}-${arrivalIata}.jpg`
-          ],
+            getAirportImageUrl(departureIata),
+            arrivalIata ? getAirportImageUrl(arrivalIata) : null
+          ].filter(Boolean),
           "brand": {
             "@type": "Brand",
             "name": airlineName
@@ -1837,7 +2434,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             "ratingValue": "4.2",
             "reviewCount": "89"
           },
-          "offers": flightData.oneway_flights?.slice(0, 5).map((flight: any) => ({
+          "offers": flightData.oneway_flights?.map((flight: any) => ({
             "@type": "Offer",
             "price": flight.price || "0",
             "priceCurrency": flight.currency || "USD",
@@ -1847,7 +2444,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               "name": airlineName
             },
             "validFrom": flight.iso_date || new Date().toISOString(),
-            "description": `${airlineName} flight from ${flight.iata_from || departureIata} to ${flight.iata_to || arrivalIata}`,
+            "description": `${airlineName} flight from ${getCityName(flight.iata_from || departureIata)} to ${getCityName(flight.iata_to || arrivalIata)}`,
             "shippingDetails": {
               "@type": "OfferShippingDetails",
               "shippingRate": {
@@ -1887,7 +2484,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           },
           "departureAirport": {
             "@type": "Airport",
-            "name": `${departureIata} Airport`,
+            "name": `${getCityName(departureIata)} Airport`,
             "iataCode": departureIata,
             "address": {
               "@type": "PostalAddress",
@@ -1897,7 +2494,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           },
           "arrivalAirport": {
             "@type": "Airport",
-            "name": `${arrivalIata} Airport`,
+            "name": `${getCityName(arrivalIata)} Airport`,
             "iataCode": arrivalIata,
             "address": {
               "@type": "PostalAddress",
@@ -1923,7 +2520,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           "description": `Available ${airlineName} flights from ${departureCity}${arrivalIata ? ` to ${arrivalCity}` : ' to various destinations'}`,
           "numberOfItems": (flightData.oneway_flights?.length || 0) + (flightData.last_minute_flights?.length || 0) + (flightData.cheap_flights?.length || 0) + (flightData.best_flights?.length || 0),
           "itemListElement": [
-            ...(flightData.oneway_flights?.slice(0, 10).map((flight: any, index: number) => ({
+            ...(flightData.oneway_flights?.map((flight: any, index: number) => ({
               "@type": "ListItem",
               "position": index + 1,
               "item": {
@@ -1936,12 +2533,12 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 },
                 "departureAirport": {
                   "@type": "Airport",
-                  "name": `${flight.iata_from || departureIata} Airport`,
+                  "name": `${getCityName(flight.iata_from || departureIata)} Airport`,
                   "iataCode": flight.iata_from || departureIata
                 },
                 "arrivalAirport": {
                   "@type": "Airport",
-                  "name": `${flight.iata_to || arrivalIata} Airport`,
+                  "name": `${getCityName(flight.iata_to || arrivalIata)} Airport`,
                   "iataCode": flight.iata_to || arrivalIata
                 },
                 "departureTime": flight.iso_date && flight.departure_time ? 
@@ -1956,7 +2553,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 }
               }
             })) || []),
-            ...(flightData.last_minute_flights?.slice(0, 5).map((flight: any, index: number) => ({
+            ...(flightData.last_minute_flights?.map((flight: any, index: number) => ({
               "@type": "ListItem",
               "position": (flightData.oneway_flights?.length || 0) + index + 1,
               "item": {
@@ -1969,12 +2566,78 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 },
                 "departureAirport": {
                   "@type": "Airport",
-                  "name": `${flight.iata_from || departureIata} Airport`,
+                  "name": `${getCityName(flight.iata_from || departureIata)} Airport`,
                   "iataCode": flight.iata_from || departureIata
                 },
                 "arrivalAirport": {
                   "@type": "Airport",
-                  "name": `${flight.iata_to || arrivalIata} Airport`,
+                  "name": `${getCityName(flight.iata_to || arrivalIata)} Airport`,
+                  "iataCode": flight.iata_to || arrivalIata
+                },
+                "departureTime": flight.iso_date && flight.departure_time ? 
+                  `${flight.iso_date}T${(flight.departure_time || '').replace(' ', '')}` : undefined,
+                "arrivalTime": flight.iso_date && flight.arrival_time ? 
+                  `${flight.iso_date}T${(flight.arrival_time || '').replace(' ', '')}` : undefined,
+                "offers": {
+                  "@type": "Offer",
+                  "price": flight.price || "0",
+                  "priceCurrency": flight.currency || "USD",
+                  "availability": "https://schema.org/InStock"
+                }
+              }
+            })) || []),
+            ...(flightData.cheap_flights?.map((flight: any, index: number) => ({
+              "@type": "ListItem",
+              "position": (flightData.oneway_flights?.length || 0) + (flightData.last_minute_flights?.length || 0) + index + 1,
+              "item": {
+                "@type": "Flight",
+                "flightNumber": `${airlineCode.toUpperCase()}${flight.flight_number || Math.floor(Math.random() * 1000)}`,
+                "airline": {
+                  "@type": "Airline",
+                  "name": airlineName,
+                  "iataCode": airlineCode.toUpperCase()
+                },
+                "departureAirport": {
+                  "@type": "Airport",
+                  "name": `${getCityName(flight.iata_from || departureIata)} Airport`,
+                  "iataCode": flight.iata_from || departureIata
+                },
+                "arrivalAirport": {
+                  "@type": "Airport",
+                  "name": `${getCityName(flight.iata_to || arrivalIata)} Airport`,
+                  "iataCode": flight.iata_to || arrivalIata
+                },
+                "departureTime": flight.iso_date && flight.departure_time ? 
+                  `${flight.iso_date}T${(flight.departure_time || '').replace(' ', '')}` : undefined,
+                "arrivalTime": flight.iso_date && flight.arrival_time ? 
+                  `${flight.iso_date}T${(flight.arrival_time || '').replace(' ', '')}` : undefined,
+                "offers": {
+                  "@type": "Offer",
+                  "price": flight.price || "0",
+                  "priceCurrency": flight.currency || "USD",
+                  "availability": "https://schema.org/InStock"
+                }
+              }
+            })) || []),
+            ...(flightData.best_flights?.map((flight: any, index: number) => ({
+              "@type": "ListItem",
+              "position": (flightData.oneway_flights?.length || 0) + (flightData.last_minute_flights?.length || 0) + (flightData.cheap_flights?.length || 0) + index + 1,
+              "item": {
+                "@type": "Flight",
+                "flightNumber": `${airlineCode.toUpperCase()}${flight.flight_number || Math.floor(Math.random() * 1000)}`,
+                "airline": {
+                  "@type": "Airline",
+                  "name": airlineName,
+                  "iataCode": airlineCode.toUpperCase()
+                },
+                "departureAirport": {
+                  "@type": "Airport",
+                  "name": `${getCityName(flight.iata_from || departureIata)} Airport`,
+                  "iataCode": flight.iata_from || departureIata
+                },
+                "arrivalAirport": {
+                  "@type": "Airport",
+                  "name": `${getCityName(flight.iata_to || arrivalIata)} Airport`,
                   "iataCode": flight.iata_to || arrivalIata
                 },
                 "departureTime": flight.iso_date && flight.departure_time ? 
@@ -2049,7 +2712,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       }} />
 
       {/* Individual Flight Schemas */}
-      {normalizedFlights.slice(0, 10).map((flight, index) => {
+      {normalizedFlights.map((flight, index) => {
         const departureCoords = getAirportCoordinates(flight.from, flightData);
         const arrivalCoords = getAirportCoordinates(flight.to, flightData);
         
@@ -2063,7 +2726,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               "departureTime": "6:10 am",
               "departureAirport": {
                 "@type": "Airport",
-                "name": flight.airport || `${flight.from} Airport`,
+                "name": flight.airport || `${getCityName(flight.from)} Airport`,
                 "iataCode": flight.from,
                 "geo": {
                   "@type": "GeoCoordinates",
@@ -2073,7 +2736,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               },
               "arrivalAirport": {
                 "@type": "Airport",
-                "name": flight.airport || `${flight.to} Airport`,
+                "name": flight.airport || `${getCityName(flight.to)} Airport`,
                 "iataCode": flight.to,
                 "geo": {
                   "@type": "GeoCoordinates",
@@ -2082,9 +2745,10 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 }
               },
               "image": [
-                `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/images/flights/${flight.from || departureIata}-${flight.to || arrivalIata}.jpg`,
+                getAirportImageUrl(flight.from || departureIata),
+                flight.to ? getAirportImageUrl(flight.to) : (arrivalIata ? getAirportImageUrl(arrivalIata) : null),
                 getAirlineLogoUrl(airlineCode, 'medium')
-              ],
+              ].filter(Boolean),
               "offers": [{
                 "@type": "Offer",
                 "price": flight.price || "0",
@@ -2152,7 +2816,28 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-800-FLIGHTS",
           "contactType": "customer service"
         },
-        "availableLanguage": ["English", "Spanish", "French", "Russian"],
+        "knowsLanguage": [
+          {
+            "@type": "Language",
+            "name": "English",
+            "alternateName": "en"
+          },
+          {
+            "@type": "Language", 
+            "name": "Spanish",
+            "alternateName": "es"
+          },
+          {
+            "@type": "Language",
+            "name": "French", 
+            "alternateName": "fr"
+          },
+          {
+            "@type": "Language",
+            "name": "Russian",
+            "alternateName": "ru"
+          }
+        ],
         "sameAs": [
           process.env.NEXT_PUBLIC_FACEBOOK_URL || "https://facebook.com/airlinesmap.com",
           process.env.NEXT_PUBLIC_TWITTER_URL || "https://twitter.com/airlinesmap.com",
@@ -2172,7 +2857,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       <SchemaOrg data={{
         "@context": "https://schema.org",
         "@type": "Airport",
-        "name": `${departureIata} Airport`,
+        "name": `${getCityName(departureIata)} Airport`,
         "iataCode": departureIata,
         "address": {
           "@type": "PostalAddress",
@@ -2253,7 +2938,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         "hasOfferCatalog": {
           "@type": "OfferCatalog",
           "name": "Flight Services",
-          "itemListElement": normalizedFlights.slice(0, 5).map((flight, index) => ({
+          "itemListElement": normalizedFlights.map((flight, index) => ({
             "@type": "Offer",
             "itemOffered": {
               "@type": "Flight",
@@ -2291,6 +2976,10 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           }))
         }
       }} />
+
+      {/* Dataset Schemas for Graphs */}
+      <SchemaOrg data={datasetSchemas.monthly} />
+      <SchemaOrg data={datasetSchemas.weekly} />
 
     </Box>
   );

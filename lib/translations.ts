@@ -83,6 +83,21 @@ export interface Translations {
       heading: string;
       content: string;
     };
+    contactInfo: {
+      title: string;
+      customerService: string;
+      bookingReservations: string;
+      baggageInformation: string;
+      corporateOffice: string;
+      phone: string;
+      email: string;
+      hours: string;
+      online: string;
+      lostFound: string;
+      headquarters: string;
+      needHelp: string;
+      customerServiceDesc: string;
+    };
     airlines: {
       title: string;
       description: string;
@@ -156,6 +171,9 @@ export interface Translations {
     priceTrends: string;
     weeklyTrends: string;
     monthlyTrends: string;
+    weatherClimateInfo: string;
+    weatherIn: string;
+    averageRainfallIn: string;
     popularDestinations: string;
     airlines: string;
     faqs: string;
@@ -165,6 +183,19 @@ export interface Translations {
     flightsPerWeek: string;
     airline: string;
     avg: string;
+    title: string;
+    description: string;
+    bookingSteps: string;
+    cancellationPolicy: string;
+    classes: string;
+    destinationsOverview: string;
+    placesToVisit: string;
+    hotels: string;
+    cityInfo: string;
+    bestTimeVisit: string;
+    departureTerminal: string;
+    arrivalTerminal: string;
+    terminalContact: string;
     stops: string;
     stop: string;
     totalDestinations: string;
@@ -261,6 +292,21 @@ const translations: Record<Locale, Translations> = {
         heading: 'Contact Us',
         content: 'We are here to help you with any questions or concerns about your travel bookings. Contact our support team for assistance.'
       },
+      contactInfo: {
+        title: 'Contact Information',
+        customerService: 'Customer Service',
+        bookingReservations: 'Booking & Reservations',
+        baggageInformation: 'Baggage Information',
+        corporateOffice: 'Corporate Office',
+        phone: 'Phone',
+        email: 'Email',
+        hours: 'Hours',
+        online: 'Online',
+        lostFound: 'Lost & Found',
+        headquarters: 'Airlines Headquarters',
+        needHelp: 'Need Help? Contact Us Now',
+        customerServiceDesc: 'Our customer service team is available 24/7 to assist you with bookings, changes, cancellations, and any other inquiries about your flight.'
+      },
       airlines: {
         title: 'Airlines - AirlinesMap',
         description: 'Browse and compare flights from major airlines worldwide. Find the best airline deals for your next trip.',
@@ -334,6 +380,9 @@ const translations: Record<Locale, Translations> = {
       priceTrends: 'Price Trends & Analysis',
       weeklyTrends: 'Weekly Price Trends',
       monthlyTrends: 'Monthly Price Trends',
+      weatherClimateInfo: 'Weather & Climate Information',
+      weatherIn: 'Weather in',
+      averageRainfallIn: 'Average Rainfall in',
       popularDestinations: 'Popular Destinations',
       airlines: 'Airlines',
       faqs: 'Frequently Asked Questions',
@@ -343,6 +392,19 @@ const translations: Record<Locale, Translations> = {
       flightsPerWeek: 'flights/week',
       airline: 'Airline:',
       avg: 'avg',
+      title: '{airlineName} flights from {departureCity} to {arrivalCity}',
+      description: 'Plan your journey from {departureCity} to {arrivalCity} with {airlineName}\'s latest deals, travel tips, and flight information.',
+      bookingSteps: 'How to Book {airlineName} Flights',
+      cancellationPolicy: '{airlineName} Cancellation Policy',
+      classes: '{airlineName} Flight Classes',
+      destinationsOverview: '{airlineName} Destinations Overview',
+      placesToVisit: 'Places to Visit in {arrivalCity}',
+      hotels: 'Hotels in {arrivalCity}',
+      cityInfo: 'City Information',
+      bestTimeVisit: 'Best Time to Visit {arrivalCity}',
+      departureTerminal: 'Departure Terminal Information',
+      arrivalTerminal: 'Arrival Terminal Information',
+      terminalContact: 'Terminal Contact Information',
       stops: 'stops',
       stop: 'stop',
       totalDestinations: 'Total Destinations',
@@ -437,6 +499,21 @@ const translations: Record<Locale, Translations> = {
         heading: 'Contáctanos',
         content: 'Estamos aquí para ayudarte con cualquier pregunta o inquietud sobre tus reservas de viaje. Contacta a nuestro equipo de soporte para asistencia.'
       },
+      contactInfo: {
+        title: 'Información de Contacto',
+        customerService: 'Servicio al Cliente',
+        bookingReservations: 'Reservas y Reservaciones',
+        baggageInformation: 'Información de Equipaje',
+        corporateOffice: 'Oficina Corporativa',
+        phone: 'Teléfono',
+        email: 'Correo Electrónico',
+        hours: 'Horarios',
+        online: 'En Línea',
+        lostFound: 'Objetos Perdidos',
+        headquarters: 'Sede de Aerolíneas',
+        needHelp: '¿Necesitas Ayuda? Contáctanos Ahora',
+        customerServiceDesc: 'Nuestro equipo de servicio al cliente está disponible 24/7 para asistirte con reservas, cambios, cancelaciones y cualquier otra consulta sobre tu vuelo.'
+      },
       airlines: {
         title: 'Aerolíneas - AirlinesMap',
         description: 'Explora y compara vuelos de las principales aerolíneas del mundo. Encuentra las mejores ofertas de aerolíneas para tu próximo viaje.',
@@ -510,6 +587,9 @@ const translations: Record<Locale, Translations> = {
       priceTrends: 'Tendencias de Precios y Análisis',
       weeklyTrends: 'Tendencias de Precios Semanales',
       monthlyTrends: 'Tendencias de Precios Mensuales',
+      weatherClimateInfo: 'Información del Clima y Tiempo',
+      weatherIn: 'Tiempo en',
+      averageRainfallIn: 'Lluvia Promedio en',
       popularDestinations: 'Destinos Populares',
       airlines: 'Aerolíneas',
       faqs: 'Preguntas Frecuentes',
@@ -519,6 +599,19 @@ const translations: Record<Locale, Translations> = {
       flightsPerWeek: 'vuelos/semana',
       airline: 'Aerolínea:',
       avg: 'promedio',
+      title: 'Vuelos de {airlineName} desde {departureCity} a {arrivalCity}',
+      description: 'Planifica tu viaje desde {departureCity} a {arrivalCity} con las mejores ofertas, consejos de viaje e información de vuelos de {airlineName}.',
+      bookingSteps: 'Cómo Reservar Vuelos de {airlineName}',
+      cancellationPolicy: 'Política de Cancelación de {airlineName}',
+      classes: 'Clases de Vuelo de {airlineName}',
+      destinationsOverview: 'Resumen de Destinos de {airlineName}',
+      placesToVisit: 'Lugares para Visitar en {arrivalCity}',
+      hotels: 'Hoteles en {arrivalCity}',
+      cityInfo: 'Información de la Ciudad',
+      bestTimeVisit: 'Mejor Época para Visitar {arrivalCity}',
+      departureTerminal: 'Información del Terminal de Salida',
+      arrivalTerminal: 'Información del Terminal de Llegada',
+      terminalContact: 'Información de Contacto del Terminal',
       stops: 'escalas',
       stop: 'escala',
       totalDestinations: 'Total de Destinos',
@@ -613,6 +706,21 @@ const translations: Record<Locale, Translations> = {
         heading: 'Свяжитесь с нами',
         content: 'Мы здесь, чтобы помочь вам с любыми вопросами или проблемами, касающимися ваших бронирований путешествий. Обратитесь к нашей команде поддержки за помощью.'
       },
+      contactInfo: {
+        title: 'Контактная Информация',
+        customerService: 'Служба Поддержки',
+        bookingReservations: 'Бронирование и Резервации',
+        baggageInformation: 'Информация о Багаже',
+        corporateOffice: 'Корпоративный Офис',
+        phone: 'Телефон',
+        email: 'Электронная Почта',
+        hours: 'Часы Работы',
+        online: 'Онлайн',
+        lostFound: 'Потерянные Вещи',
+        headquarters: 'Штаб-квартира Авиакомпании',
+        needHelp: 'Нужна Помощь? Свяжитесь с Нами Сейчас',
+        customerServiceDesc: 'Наша команда службы поддержки доступна 24/7, чтобы помочь вам с бронированием, изменениями, отменами и любыми другими вопросами о вашем рейсе.'
+      },
       airlines: {
         title: 'Авиакомпании - AirlinesMap',
         description: 'Просматривайте и сравнивайте рейсы основных авиакомпаний мира. Найдите лучшие предложения авиакомпаний для вашей следующей поездки.',
@@ -686,6 +794,9 @@ const translations: Record<Locale, Translations> = {
       priceTrends: 'Тенденции цен и анализ',
       weeklyTrends: 'Еженедельные тенденции цен',
       monthlyTrends: 'Ежемесячные тенденции цен',
+      weatherClimateInfo: 'Информация о погоде и климате',
+      weatherIn: 'Погода в',
+      averageRainfallIn: 'Среднее количество осадков в',
       popularDestinations: 'Популярные направления',
       airlines: 'Авиакомпании',
       faqs: 'Часто задаваемые вопросы',
@@ -695,6 +806,19 @@ const translations: Record<Locale, Translations> = {
       flightsPerWeek: 'рейсов/неделя',
       airline: 'Авиакомпания:',
       avg: 'среднее',
+      title: 'Рейсы {airlineName} из {departureCity} в {arrivalCity}',
+      description: 'Спланируйте свое путешествие из {departureCity} в {arrivalCity} с лучшими предложениями, советами по путешествиям и информацией о рейсах {airlineName}.',
+      bookingSteps: 'Как забронировать рейсы {airlineName}',
+      cancellationPolicy: 'Политика отмены {airlineName}',
+      classes: 'Классы обслуживания {airlineName}',
+      destinationsOverview: 'Обзор направлений {airlineName}',
+      placesToVisit: 'Места для посещения в {arrivalCity}',
+      hotels: 'Отели в {arrivalCity}',
+      cityInfo: 'Информация о городе',
+      bestTimeVisit: 'Лучшее время для посещения {arrivalCity}',
+      departureTerminal: 'Информация о терминале отправления',
+      arrivalTerminal: 'Информация о терминале прибытия',
+      terminalContact: 'Контактная информация терминала',
       stops: 'остановки',
       stop: 'остановка',
       totalDestinations: 'Всего направлений',
@@ -789,6 +913,21 @@ const translations: Record<Locale, Translations> = {
         heading: 'Contactez-nous',
         content: 'Nous sommes là pour vous aider avec toute question ou préoccupation concernant vos réservations de voyage. Contactez notre équipe de support pour obtenir de l\'aide.'
       },
+      contactInfo: {
+        title: 'Informations de Contact',
+        customerService: 'Service Client',
+        bookingReservations: 'Réservations et Réservations',
+        baggageInformation: 'Informations sur les Bagages',
+        corporateOffice: 'Bureau Corporatif',
+        phone: 'Téléphone',
+        email: 'Email',
+        hours: 'Heures',
+        online: 'En Ligne',
+        lostFound: 'Objets Trouvés',
+        headquarters: 'Siège de la Compagnie Aérienne',
+        needHelp: 'Besoin d\'Aide? Contactez-nous Maintenant',
+        customerServiceDesc: 'Notre équipe de service client est disponible 24/7 pour vous aider avec les réservations, les modifications, les annulations et toute autre question concernant votre vol.'
+      },
       airlines: {
         title: 'Compagnies aériennes - AirlinesMap',
         description: 'Parcourez et comparez les vols des principales compagnies aériennes du monde. Trouvez les meilleures offres de compagnies aériennes pour votre prochain voyage.',
@@ -862,6 +1001,9 @@ const translations: Record<Locale, Translations> = {
       priceTrends: 'Tendances des Prix et Analyse',
       weeklyTrends: 'Tendances des Prix Hebdomadaires',
       monthlyTrends: 'Tendances des Prix Mensuelles',
+      weatherClimateInfo: 'Informations Météorologiques et Climatiques',
+      weatherIn: 'Météo à',
+      averageRainfallIn: 'Pluviométrie Moyenne à',
       popularDestinations: 'Destinations Populaires',
       airlines: 'Compagnies Aériennes',
       faqs: 'Questions Fréquemment Posées',
@@ -871,6 +1013,19 @@ const translations: Record<Locale, Translations> = {
       flightsPerWeek: 'vols/semaine',
       airline: 'Compagnie:',
       avg: 'moyenne',
+      title: 'Vols {airlineName} de {departureCity} à {arrivalCity}',
+      description: 'Planifiez votre voyage de {departureCity} à {arrivalCity} avec les meilleures offres, conseils de voyage et informations de vol de {airlineName}.',
+      bookingSteps: 'Comment Réserver des Vols {airlineName}',
+      cancellationPolicy: 'Politique d\'Annulation {airlineName}',
+      classes: 'Classes de Vol {airlineName}',
+      destinationsOverview: 'Aperçu des Destinations {airlineName}',
+      placesToVisit: 'Lieux à Visiter à {arrivalCity}',
+      hotels: 'Hôtels à {arrivalCity}',
+      cityInfo: 'Informations sur la Ville',
+      bestTimeVisit: 'Meilleur Moment pour Visiter {arrivalCity}',
+      departureTerminal: 'Informations sur le Terminal de Départ',
+      arrivalTerminal: 'Informations sur le Terminal d\'Arrivée',
+      terminalContact: 'Informations de Contact du Terminal',
       stops: 'escales',
       stop: 'escale',
       totalDestinations: 'Total des Destinations',
@@ -905,7 +1060,7 @@ export function getLanguageId(locale: Locale): 1 | 2 | 3 | 4 {
 }
 
 // Get page translations for a specific page
-export function getPageTranslations(locale: Locale, page: keyof Translations['pages']) {
+export function getPageTranslations(locale: Locale, page: keyof Translations['pages']): any {
   const t = getTranslations(locale);
   return t.pages[page];
 }
