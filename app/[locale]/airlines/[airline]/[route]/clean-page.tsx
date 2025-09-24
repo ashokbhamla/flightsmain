@@ -238,7 +238,7 @@ export default async function CleanAirlineRoutePage({ params }: CleanAirlineRout
         departureCity={departureCity}
         arrivalCity={arrivalCity}
         departureIata={departureIata}
-        arrivalIata={arrivalIata}
+         arrivalIata={arrivalIata || undefined}
         flightData={flightData}
         normalizedFlights={normalizedFlights}
         pageType="airline"

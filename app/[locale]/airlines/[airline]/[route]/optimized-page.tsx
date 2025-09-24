@@ -130,7 +130,8 @@ export default async function OptimizedAirlineRoutePage({ params }: OptimizedAir
   };
 
   // Use city names from API data (content API first, then flight data, then fallback)
-  let departureCity, arrivalCity;
+  let departureCity: string = departureIata;
+  let arrivalCity: string = arrivalIata || '';
   
   if (contentData?.departure_city) {
     departureCity = contentData.departure_city;
@@ -200,8 +201,8 @@ export default async function OptimizedAirlineRoutePage({ params }: OptimizedAir
       "offers": {
         "@type": "AggregateOffer",
         "priceCurrency": "USD",
-        "lowPrice": normalizedFlights.length > 0 ? Math.min(...normalizedFlights.map(f => f.price || 0)) : 0,
-        "highPrice": normalizedFlights.length > 0 ? Math.max(...normalizedFlights.map(f => f.price || 0)) : 0,
+         "lowPrice": normalizedFlights.length > 0 ? Math.min(...normalizedFlights.map((f: any) => f.price || 0)) : 0,
+         "highPrice": normalizedFlights.length > 0 ? Math.max(...normalizedFlights.map((f: any) => f.price || 0)) : 0,
         "offerCount": normalizedFlights.length
       }
     };
@@ -271,7 +272,7 @@ export default async function OptimizedAirlineRoutePage({ params }: OptimizedAir
         departureCity={departureCity}
         arrivalCity={arrivalCity}
         departureIata={departureIata}
-        arrivalIata={arrivalIata}
+         arrivalIata={arrivalIata || undefined}
         normalizedFlights={normalizedFlights}
       />
       

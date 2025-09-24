@@ -7,7 +7,7 @@ import { getTranslations } from './translations';
  * This ensures consistency across all pages and languages
  */
 
-interface MasterContent {
+export interface MasterContent {
   // Core page data
   title: string;
   description: string;
@@ -468,7 +468,7 @@ function getTranslatedFAQs(locale: Locale, airlineName: string, departureCity: s
     ]
   };
   
-  return faqs[locale] || faqs.es;
+  return faqs[locale as keyof typeof faqs] || faqs.es;
 }
 
 /**

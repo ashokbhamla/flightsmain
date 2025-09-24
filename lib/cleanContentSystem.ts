@@ -7,7 +7,7 @@ import { getTranslations } from './translations';
  * Single source of truth with no duplicates
  */
 
-interface CleanContent {
+export interface CleanContent {
   // Core page data
   title: string;
   description: string;
@@ -36,6 +36,11 @@ interface CleanContent {
     sortBy: string;
     showMore: string;
     showLess: string;
+    averagePrice: string;
+    cheapestPrice: string;
+    totalFlights: string;
+    mostExpensive: string;
+    findFlights: string;
   };
   
   // SEO content
@@ -180,7 +185,12 @@ function generateEnglishMasterContent(context: CleanContentContext): CleanConten
       filterResults: 'Filter Results',
       sortBy: 'Sort By',
       showMore: 'Show More',
-      showLess: 'Show Less'
+      showLess: 'Show Less',
+      averagePrice: 'Average Price',
+      cheapestPrice: 'Cheapest Price',
+      totalFlights: 'Total Flights',
+      mostExpensive: 'Most Expensive',
+      findFlights: 'Find Flights'
     },
     seo: {
       keywords: `${airlineName}, flights, ${departureCity}, ${arrivalCity || 'travel'}, booking, airline`,

@@ -73,7 +73,8 @@ export function useOptimizedHtmlTranslation(
   
   // Fallback to translation if no API content
   if (!content) {
-    content = getTranslation(locale, key) || fallback || key;
+    const t = getTranslations(locale);
+    content = (t as any)[key] || fallback || key;
   }
   
   const result = { __html: content };
@@ -233,15 +234,22 @@ export interface TranslationContextValue {
 export function createTranslationContext(locale: Locale): TranslationContextValue {
   return {
     locale,
-    t: (key: string, fallback?: string) => getTranslation(locale, key) || fallback || key,
+    t: (key: string, fallback?: string) => {
+      const t = getTranslations(locale);
+      return (t as any)[key] || fallback || key;
+    },
     tHtml: (key: string, apiContent?: any, fallback?: string) => {
-      const content = apiContent || getTranslation(locale, key) || fallback || key;
+      const content = apiContent || (() => {
+        const t = getTranslations(locale);
+        return (t as any)[key] || fallback || key;
+      })();
       return { __html: content };
     },
     tBatch: (keys: string[], fallbacks?: Record<string, string>) => {
       const results: Record<string, string> = {};
+      const t = getTranslations(locale);
       keys.forEach(key => {
-        results[key] = getTranslation(locale, key) || fallbacks?.[key] || key;
+        results[key] = (t as any)[key] || fallbacks?.[key] || key;
       });
       return results;
     }
