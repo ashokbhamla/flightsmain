@@ -166,6 +166,8 @@ export interface Translations {
     oneWayFlight: string;
     cheapestDay: string;
     cheapestMonth: string;
+    cheapestDayDesc: string;
+    cheapestMonthDesc: string;
     popularIn: string;
     highestDemand: string;
     priceTrends: string;
@@ -205,6 +207,25 @@ export interface Translations {
     flightDeals: string;
     comparePricesBookTrip: string;
     destinationsWorldwide: string;
+    searchDeals: string;
+    viewPopular: string;
+    findDeals: string;
+    roundTripFrom: string;
+    oneWayFrom: string;
+    cheapestMonthLabel: string;
+    cheapestDayLabel: string;
+    cheapFlightDeals: string;
+    availableFlightsFrom: string;
+    weatherDescriptionFallback: string;
+    weatherDescriptionDetailed: string;
+    rainfallDescriptionFallback: string;
+    rainfallDescriptionDetailed: string;
+    schemaProductName: string;
+    schemaProductDescription: string;
+    schemaItemListName: string;
+    schemaItemListDescription: string;
+    schemaFlightDescription: string;
+    schemaAirportName: string;
     popularDestinationsFrom: string;
     airlineDepartureTerminal: string;
     airlineArrivalTerminal: string;
@@ -393,6 +414,8 @@ const translations: Record<Locale, Translations> = {
       oneWayFlight: 'One-way flight from {from} {code} to {to}',
       cheapestDay: 'Cheapest day:',
       cheapestMonth: 'Cheapest month:',
+      cheapestDayDesc: 'Cheapest week day is {day} from {departureCity}. Maximum price drop flights to {departureCity} on {day}.',
+      cheapestMonthDesc: 'Cheapest month is {month} from {departureCity}. Maximum price drop flights to {departureCity} in month of {month}.',
       popularIn: 'Popular In:',
       highestDemand: 'Highest demand for flights to {cityName} this month. Book now to get the best prices.',
       priceTrends: 'Price Trends & Analysis',
@@ -432,6 +455,25 @@ const translations: Record<Locale, Translations> = {
       flightDeals: 'flight deals',
       comparePricesBookTrip: 'Compare prices, book your next trip',
       destinationsWorldwide: 'destinations worldwide',
+      searchDeals: 'Search Deals',
+      viewPopular: 'View Popular',
+      findDeals: 'Find Deals',
+      roundTripFrom: 'Round-trip from:',
+      oneWayFrom: 'One-way from:',
+      cheapestMonthLabel: 'Cheapest Month:',
+      cheapestDayLabel: 'Cheapest Day:',
+      cheapFlightDeals: 'Cheap {airlineName} flight deals from {departureCity} to {arrivalCity}',
+      availableFlightsFrom: 'Available Flights from {departureCity}',
+      weatherDescriptionFallback: 'Plan your visit to {cityName} with current temperature data. {cityName} experiences varied weather throughout the year, with temperatures ranging from mild to warm depending on the season.',
+      weatherDescriptionDetailed: 'Plan your visit to {cityName} with detailed temperature insights. {cityName} experiences temperatures ranging from {minTemp}°F in {coolestMonth} to {maxTemp}°F in {warmestMonth}, with an average of {avgTemp}°F. The best time to visit is during {bestMonths} when temperatures are most comfortable for sightseeing and outdoor activities.',
+      rainfallDescriptionFallback: 'Stay prepared for your trip to {cityName} with current rainfall data. {cityName} receives varied rainfall throughout the year, with precipitation patterns changing by season.',
+      rainfallDescriptionDetailed: 'Stay prepared for your trip to {cityName} with detailed rainfall insights. {cityName} receives rainfall ranging from {minRainfall} inches in {driestMonth} to {maxRainfall} inches in {wettestMonth}, with an average of {avgRainfall} inches annually. The best time to visit is during {bestMonths} when rainfall is minimal, ensuring clear skies for outdoor exploration and sightseeing.',
+      schemaProductName: '{airlineName} flights from {departureCity} to {arrivalCity}',
+      schemaProductDescription: 'Find cheap {airlineName} flights from {departureCity} to {arrivalCity}',
+      schemaItemListName: '{airlineName} Flights from {departureCity}{arrivalCity}',
+      schemaItemListDescription: 'Available {airlineName} flights from {departureCity}{arrivalCity}',
+      schemaFlightDescription: '{airlineName} flight from {departureCity} to {arrivalCity}',
+      schemaAirportName: '{cityName} Airport',
       popularDestinationsFrom: 'Popular Destinations from {departureCity}',
       airlineDepartureTerminal: '{airlineName} Departure Terminal',
       airlineArrivalTerminal: '{airlineName} Arrival Terminal',
@@ -618,6 +660,8 @@ const translations: Record<Locale, Translations> = {
       oneWayFlight: 'Vuelo solo ida desde {from} {code} a {to}',
       cheapestDay: 'Día más barato:',
       cheapestMonth: 'Mes más barato:',
+      cheapestDayDesc: 'El día más barato de la semana es {day} desde {departureCity}. Máxima caída de precios de vuelos a {departureCity} el {day}.',
+      cheapestMonthDesc: 'El mes más barato es {month} desde {departureCity}. Máxima caída de precios de vuelos a {departureCity} en el mes de {month}.',
       popularIn: 'Popular en:',
       highestDemand: 'Mayor demanda de vuelos a {cityName} este mes. Reserva ahora para obtener los mejores precios.',
       priceTrends: 'Tendencias de Precios y Análisis',
@@ -657,6 +701,25 @@ const translations: Record<Locale, Translations> = {
       flightDeals: 'ofertas de vuelos',
       comparePricesBookTrip: 'Compara precios, reserva tu próximo viaje',
       destinationsWorldwide: 'destinos en todo el mundo',
+      searchDeals: 'Buscar Ofertas',
+      viewPopular: 'Ver Popular',
+      findDeals: 'Encontrar Ofertas',
+      roundTripFrom: 'Ida y vuelta desde:',
+      oneWayFrom: 'Solo ida desde:',
+      cheapestMonthLabel: 'Mes más barato:',
+      cheapestDayLabel: 'Día más barato:',
+      cheapFlightDeals: 'Ofertas de vuelos baratos de {airlineName} desde {departureCity} a {arrivalCity}',
+      availableFlightsFrom: 'Vuelos Disponibles desde {departureCity}',
+      weatherDescriptionFallback: 'Planifica tu visita a {cityName} con datos actuales de temperatura. {cityName} experimenta clima variado durante todo el año, con temperaturas que van de suaves a cálidas dependiendo de la temporada.',
+      weatherDescriptionDetailed: 'Planifica tu visita a {cityName} con información detallada de temperatura. {cityName} experimenta temperaturas que van desde {minTemp}°F en {coolestMonth} hasta {maxTemp}°F en {warmestMonth}, con un promedio de {avgTemp}°F. El mejor momento para visitar es durante {bestMonths} cuando las temperaturas son más cómodas para turismo y actividades al aire libre.',
+      rainfallDescriptionFallback: 'Prepárate para tu viaje a {cityName} con datos actuales de lluvia. {cityName} recibe lluvia variada durante todo el año, con patrones de precipitación que cambian según la temporada.',
+      rainfallDescriptionDetailed: 'Prepárate para tu viaje a {cityName} con información detallada de lluvia. {cityName} recibe lluvia que va desde {minRainfall} pulgadas en {driestMonth} hasta {maxRainfall} pulgadas en {wettestMonth}, con un promedio de {avgRainfall} pulgadas anualmente. El mejor momento para visitar es durante {bestMonths} cuando la lluvia es mínima, asegurando cielos despejados para exploración y turismo al aire libre.',
+      schemaProductName: 'Vuelos de {airlineName} desde {departureCity} a {arrivalCity}',
+      schemaProductDescription: 'Encuentra vuelos baratos de {airlineName} desde {departureCity} a {arrivalCity}',
+      schemaItemListName: 'Vuelos de {airlineName} desde {departureCity}{arrivalCity}',
+      schemaItemListDescription: 'Vuelos disponibles de {airlineName} desde {departureCity}{arrivalCity}',
+      schemaFlightDescription: 'Vuelo de {airlineName} desde {departureCity} a {arrivalCity}',
+      schemaAirportName: 'Aeropuerto de {cityName}',
       popularDestinationsFrom: 'Destinos Populares desde {departureCity}',
       airlineDepartureTerminal: 'Terminal de Salida de {airlineName}',
       airlineArrivalTerminal: 'Terminal de Llegada de {airlineName}',
@@ -843,6 +906,8 @@ const translations: Record<Locale, Translations> = {
       oneWayFlight: 'Рейс в одну сторону из {from} {code} в {to}',
       cheapestDay: 'Самый дешевый день:',
       cheapestMonth: 'Самый дешевый месяц:',
+      cheapestDayDesc: 'Самый дешевый день недели - {day} из {departureCity}. Максимальное падение цен на рейсы в {departureCity} в {day}.',
+      cheapestMonthDesc: 'Самый дешевый месяц - {month} из {departureCity}. Максимальное падение цен на рейсы в {departureCity} в месяце {month}.',
       popularIn: 'Популярно в:',
       highestDemand: 'Наибольший спрос на рейсы в {cityName} в этом месяце. Забронируйте сейчас, чтобы получить лучшие цены.',
       priceTrends: 'Тенденции цен и анализ',
@@ -882,6 +947,25 @@ const translations: Record<Locale, Translations> = {
       flightDeals: 'предложения рейсов',
       comparePricesBookTrip: 'Сравните цены, забронируйте следующую поездку',
       destinationsWorldwide: 'направления по всему миру',
+      searchDeals: 'Поиск предложений',
+      viewPopular: 'Смотреть популярное',
+      findDeals: 'Найти предложения',
+      roundTripFrom: 'Туда и обратно от:',
+      oneWayFrom: 'В одну сторону от:',
+      cheapestMonthLabel: 'Самый дешевый месяц:',
+      cheapestDayLabel: 'Самый дешевый день:',
+      cheapFlightDeals: 'Дешевые предложения рейсов {airlineName} из {departureCity} в {arrivalCity}',
+      availableFlightsFrom: 'Доступные рейсы из {departureCity}',
+      weatherDescriptionFallback: 'Спланируйте свой визит в {cityName} с текущими данными о температуре. {cityName} имеет разнообразную погоду в течение года, с температурами от мягких до теплых в зависимости от сезона.',
+      weatherDescriptionDetailed: 'Спланируйте свой визит в {cityName} с подробной информацией о температуре. {cityName} имеет температуры от {minTemp}°F в {coolestMonth} до {maxTemp}°F в {warmestMonth}, со средним значением {avgTemp}°F. Лучшее время для посещения - это {bestMonths}, когда температуры наиболее комфортны для осмотра достопримечательностей и активного отдыха на свежем воздухе.',
+      rainfallDescriptionFallback: 'Будьте готовы к поездке в {cityName} с текущими данными о дожде. {cityName} получает разнообразные осадки в течение года, с изменяющимися по сезонам схемами осадков.',
+      rainfallDescriptionDetailed: 'Будьте готовы к поездке в {cityName} с подробной информацией об осадках. {cityName} получает осадки от {minRainfall} дюймов в {driestMonth} до {maxRainfall} дюймов в {wettestMonth}, со средним значением {avgRainfall} дюймов в год. Лучшее время для посещения - это {bestMonths}, когда осадки минимальны, обеспечивая ясное небо для исследования и осмотра достопримечательностей на свежем воздухе.',
+      schemaProductName: 'Рейсы {airlineName} из {departureCity} в {arrivalCity}',
+      schemaProductDescription: 'Найдите дешевые рейсы {airlineName} из {departureCity} в {arrivalCity}',
+      schemaItemListName: 'Рейсы {airlineName} из {departureCity}{arrivalCity}',
+      schemaItemListDescription: 'Доступные рейсы {airlineName} из {departureCity}{arrivalCity}',
+      schemaFlightDescription: 'Рейс {airlineName} из {departureCity} в {arrivalCity}',
+      schemaAirportName: 'Аэропорт {cityName}',
       popularDestinationsFrom: 'Популярные направления из {departureCity}',
       airlineDepartureTerminal: 'Терминал отправления {airlineName}',
       airlineArrivalTerminal: 'Терминал прибытия {airlineName}',
@@ -1068,6 +1152,8 @@ const translations: Record<Locale, Translations> = {
       oneWayFlight: 'Vol aller simple de {from} {code} à {to}',
       cheapestDay: 'Jour le moins cher:',
       cheapestMonth: 'Mois le moins cher:',
+      cheapestDayDesc: 'Le jour de la semaine le moins cher est {day} depuis {departureCity}. Baisse maximale des prix des vols vers {departureCity} le {day}.',
+      cheapestMonthDesc: 'Le mois le moins cher est {month} depuis {departureCity}. Baisse maximale des prix des vols vers {departureCity} au mois de {month}.',
       popularIn: 'Populaire en:',
       highestDemand: 'Plus forte demande de vols vers {cityName} ce mois-ci. Réservez maintenant pour obtenir les meilleurs prix.',
       priceTrends: 'Tendances des Prix et Analyse',
@@ -1107,6 +1193,25 @@ const translations: Record<Locale, Translations> = {
       flightDeals: 'offres de vols',
       comparePricesBookTrip: 'Comparez les prix, réservez votre prochain voyage',
       destinationsWorldwide: 'destinations dans le monde entier',
+      searchDeals: 'Rechercher des Offres',
+      viewPopular: 'Voir Populaire',
+      findDeals: 'Trouver des Offres',
+      roundTripFrom: 'Aller-retour depuis:',
+      oneWayFrom: 'Aller simple depuis:',
+      cheapestMonthLabel: 'Mois le moins cher:',
+      cheapestDayLabel: 'Jour le moins cher:',
+      cheapFlightDeals: 'Offres de vols pas chers {airlineName} de {departureCity} à {arrivalCity}',
+      availableFlightsFrom: 'Vols Disponibles depuis {departureCity}',
+      weatherDescriptionFallback: 'Planifiez votre visite à {cityName} avec les données de température actuelles. {cityName} connaît un temps varié tout au long de l\'année, avec des températures allant de douces à chaudes selon la saison.',
+      weatherDescriptionDetailed: 'Planifiez votre visite à {cityName} avec des informations détaillées sur la température. {cityName} connaît des températures allant de {minTemp}°F en {coolestMonth} à {maxTemp}°F en {warmestMonth}, avec une moyenne de {avgTemp}°F. Le meilleur moment pour visiter est pendant {bestMonths} lorsque les températures sont les plus confortables pour le tourisme et les activités de plein air.',
+      rainfallDescriptionFallback: 'Préparez-vous pour votre voyage à {cityName} avec les données de pluie actuelles. {cityName} reçoit des précipitations variées tout au long de l\'année, avec des modèles de précipitation qui changent selon la saison.',
+      rainfallDescriptionDetailed: 'Préparez-vous pour votre voyage à {cityName} avec des informations détaillées sur les précipitations. {cityName} reçoit des précipitations allant de {minRainfall} pouces en {driestMonth} à {maxRainfall} pouces en {wettestMonth}, avec une moyenne de {avgRainfall} pouces par an. Le meilleur moment pour visiter est pendant {bestMonths} lorsque les précipitations sont minimales, assurant un ciel dégagé pour l\'exploration et le tourisme de plein air.',
+      schemaProductName: 'Vols {airlineName} de {departureCity} à {arrivalCity}',
+      schemaProductDescription: 'Trouvez des vols pas chers {airlineName} de {departureCity} à {arrivalCity}',
+      schemaItemListName: 'Vols {airlineName} de {departureCity}{arrivalCity}',
+      schemaItemListDescription: 'Vols disponibles {airlineName} de {departureCity}{arrivalCity}',
+      schemaFlightDescription: 'Vol {airlineName} de {departureCity} à {arrivalCity}',
+      schemaAirportName: 'Aéroport de {cityName}',
       popularDestinationsFrom: 'Destinations Populaires depuis {departureCity}',
       airlineDepartureTerminal: 'Terminal de Départ de {airlineName}',
       airlineArrivalTerminal: 'Terminal d\'Arrivée de {airlineName}',
