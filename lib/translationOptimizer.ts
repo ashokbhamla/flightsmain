@@ -1,5 +1,5 @@
 import { Locale } from './i18n';
-import { getTranslations, Translations } from './translations';
+import { getTranslations } from './translations';
 
 /**
  * Optimized translation system for SSR and performance
@@ -73,7 +73,7 @@ export function useOptimizedHtmlTranslation(
   
   // Fallback to translation if no API content
   if (!content) {
-    content = useOptimizedTranslation(locale, key, fallback);
+    content = getTranslation(locale, key) || fallback || key;
   }
   
   const result = { __html: content };
@@ -233,11 +233,18 @@ export interface TranslationContextValue {
 export function createTranslationContext(locale: Locale): TranslationContextValue {
   return {
     locale,
-    t: (key: string, fallback?: string) => useOptimizedTranslation(locale, key, fallback),
-    tHtml: (key: string, apiContent?: any, fallback?: string) => 
-      useOptimizedHtmlTranslation(locale, key, apiContent, fallback),
-    tBatch: (keys: string[], fallbacks?: Record<string, string>) => 
-      useBatchTranslations(locale, keys, fallbacks)
+    t: (key: string, fallback?: string) => getTranslation(locale, key) || fallback || key,
+    tHtml: (key: string, apiContent?: any, fallback?: string) => {
+      const content = apiContent || getTranslation(locale, key) || fallback || key;
+      return { __html: content };
+    },
+    tBatch: (keys: string[], fallbacks?: Record<string, string>) => {
+      const results: Record<string, string> = {};
+      keys.forEach(key => {
+        results[key] = getTranslation(locale, key) || fallbacks?.[key] || key;
+      });
+      return results;
+    }
   };
 }
 

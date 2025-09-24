@@ -59,7 +59,7 @@ interface CleanContentContext {
  * This is the single source of truth for all content
  */
 export function generateCleanContent(context: CleanContentContext): CleanContent {
-  const { locale, airlineName, departureCity, arrivalCity, departureIata, arrivalIata } = context;
+  const { locale, airlineName: _airlineName, departureCity: _departureCity, arrivalCity: _arrivalCity, departureIata: _departureIata, arrivalIata: _arrivalIata } = context;
   
   // Generate English master content (NO DUPLICATES)
   const masterContent = generateEnglishMasterContent(context);
@@ -78,7 +78,7 @@ export function generateCleanContent(context: CleanContentContext): CleanContent
  * NO DUPLICATES - each piece of content appears only once
  */
 function generateEnglishMasterContent(context: CleanContentContext): CleanContent {
-  const { airlineName, departureCity, arrivalCity, departureIata, arrivalIata } = context;
+  const { airlineName, departureCity, arrivalCity, departureIata: _departureIata, arrivalIata: _arrivalIata } = context;
   
   // SINGLE title - no duplicates
   const title = arrivalCity ? 
