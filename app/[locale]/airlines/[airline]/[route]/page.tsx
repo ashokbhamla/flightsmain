@@ -827,8 +827,18 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     contentData
   });
 
-  // Keep original content data - fallback content will be used below graphs
-  const finalContentData = contentData;
+  // Filter out duplicate content sections from API data
+  const finalContentData = contentData ? {
+    ...contentData,
+    // Remove duplicate sections that cause content duplication
+    hotels: null,
+    airlines: null,
+    best_time_visit: null,
+    departure_terminal_paragraph: null,
+    arrival_terminal_paragraph: null,
+    terminal_contact_paragraph: null,
+    faqs: null
+  } : contentData;
 
   // Use fallback price cards if needed
   const finalPriceCards = contentData ? [
@@ -1643,35 +1653,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               }}
             />
 
-            {/* Fallback FAQ Section */}
-            {fallbackContent.faqs && fallbackContent.faqs.length > 0 && (
-              <Box sx={{ mt: 4 }}>
-                <Typography 
-                  variant="h3" 
-                  sx={{ 
-                    fontSize: '1.5rem',
-                    fontWeight: 600,
-                    mb: 3,
-                    color: '#1a1a1a'
-                  }}
-                >
-                  {t.flightPage.faqs}
-                </Typography>
-                <div 
-                  dangerouslySetInnerHTML={{ __html: fallbackContent.faqs.map((faq: any) => 
-                    `<div style="margin-bottom: 1.5rem;">
-                      <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 0.5rem;">${faq.q || ''}</h4>
-                      <p style="color: #666; line-height: 1.6;">${faq.a || ''}</p>
-                    </div>`
-                  ).join('') }} 
-                  style={{ 
-                    fontSize: '1.1rem',
-                    lineHeight: 1.6,
-                    color: '#666'
-                  }}
-                />
-              </Box>
-            )}
           </Box>
         )}
 
@@ -1715,108 +1696,12 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           </Box>
         )}
 
-        {/* Departure Terminal Information */}
-        {contentData?.departure_terminal_paragraph && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
-              {(t?.flightPage?.airlineDepartureTerminal || '{airlineName} Departure Terminal').replace('{airlineName}', airlineName)}
-            </Typography>
-            <div 
-              dangerouslySetInnerHTML={{ __html: contentData.departure_terminal_paragraph }} 
-              style={{ 
-                fontSize: '1.1rem',
-                lineHeight: 1.6,
-                color: '#666'
-              }}
-            />
-          </Box>
-        )}
 
-        {/* Arrival Terminal Information */}
-        {contentData?.arrival_terminal_paragraph && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
-              {(t?.flightPage?.airlineArrivalTerminal || '{airlineName} Arrival Terminal').replace('{airlineName}', airlineName)}
-            </Typography>
-            <div 
-              dangerouslySetInnerHTML={{ __html: contentData.arrival_terminal_paragraph }} 
-              style={{ 
-                fontSize: '1.1rem',
-                lineHeight: 1.6,
-                color: '#666'
-              }}
-            />
-          </Box>
-        )}
 
-        {/* Airlines Contact Information at Departure City Terminal */}
-        {contentData?.terminal_contact_paragraph && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
-              {(t?.flightPage?.airlinesContactAtTerminal || 'Airlines Contact Information at {departureCity} Terminal').replace('{departureCity}', departureCity)}
-            </Typography>
-            <div 
-              dangerouslySetInnerHTML={{ __html: contentData.terminal_contact_paragraph }} 
-              style={{ 
-                fontSize: '1.1rem',
-                lineHeight: 1.6,
-                color: '#666'
-              }}
-            />
-          </Box>
-        )}
 
-        {/* Hotels Near Departure City */}
-        {contentData?.hotels && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
-              {(t?.flightPage?.hotelsNear || 'Hotels Near {departureCity}').replace('{departureCity}', departureCity)}
-            </Typography>
-            <div 
-              dangerouslySetInnerHTML={{ __html: contentData.hotels }} 
-              style={{ 
-                fontSize: '1.1rem',
-                lineHeight: 1.6,
-                color: '#666'
-              }}
-            />
-          </Box>
-        )}
 
         {/* FAQ Section */}
-        {contentData?.faqs && contentData.faqs.length > 0 && (
+        {finalContentData?.faqs && finalContentData.faqs.length > 0 && (
           <Box sx={{ mb: 6 }}>
             <Typography 
               variant="h2" 
@@ -1830,7 +1715,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               {t.flightPage.faqs}
             </Typography>
             <div 
-              dangerouslySetInnerHTML={{ __html: contentData.faqs.map((faq: any) => 
+              dangerouslySetInnerHTML={{ __html: finalContentData.faqs.map((faq: any) => 
                 `<div style="margin-bottom: 1.5rem;">
                   <h3 style="font-weight: 600; color: #1a1a1a; margin-bottom: 0.5rem;">${faq.q || ''}</h3>
                   <p style="color: #666; line-height: 1.6;">${faq.a || ''}</p>
