@@ -205,6 +205,24 @@ export interface Translations {
     flightDeals: string;
     comparePricesBookTrip: string;
     destinationsWorldwide: string;
+    popularDestinationsFrom: string;
+    airlineDepartureTerminal: string;
+    airlineArrivalTerminal: string;
+    airlinesContactAtTerminal: string;
+    hotelsNear: string;
+    aboutCity: string;
+    departureInfo: string;
+    arrivalInfo: string;
+    terminalContactInfo: string;
+    aboutThisRoute: string;
+    morePlacesToVisit: string;
+    airlinesInfo: string;
+    weatherInfo: string;
+    priceInfo: string;
+    oneWayFlights: string;
+    lastMinuteFlights: string;
+    cheapFlights: string;
+    bestFlights: string;
   };
 }
 
@@ -413,7 +431,25 @@ const translations: Record<Locale, Translations> = {
       findBest: 'Find the best',
       flightDeals: 'flight deals',
       comparePricesBookTrip: 'Compare prices, book your next trip',
-      destinationsWorldwide: 'destinations worldwide'
+      destinationsWorldwide: 'destinations worldwide',
+      popularDestinationsFrom: 'Popular Destinations from {departureCity}',
+      airlineDepartureTerminal: '{airlineName} Departure Terminal',
+      airlineArrivalTerminal: '{airlineName} Arrival Terminal',
+      airlinesContactAtTerminal: 'Airlines Contact Information at {departureCity} Terminal',
+      hotelsNear: 'Hotels Near {departureCity}',
+      aboutCity: 'About {arrivalCity}',
+      departureInfo: 'Departure Information',
+      arrivalInfo: 'Arrival Information',
+      terminalContactInfo: 'Terminal & Contact Information',
+      aboutThisRoute: 'About This Route',
+      morePlacesToVisit: 'More Places to Visit',
+      airlinesInfo: 'Airlines Information',
+      weatherInfo: 'Weather Information',
+      priceInfo: 'Price Information',
+      oneWayFlights: 'One-way Flights',
+      lastMinuteFlights: 'Last Minute Flights',
+      cheapFlights: 'Cheap Flights',
+      bestFlights: 'Best Flights'
     }
   },
   es: {
@@ -620,7 +656,25 @@ const translations: Record<Locale, Translations> = {
       findBest: 'Encuentra las mejores',
       flightDeals: 'ofertas de vuelos',
       comparePricesBookTrip: 'Compara precios, reserva tu próximo viaje',
-      destinationsWorldwide: 'destinos en todo el mundo'
+      destinationsWorldwide: 'destinos en todo el mundo',
+      popularDestinationsFrom: 'Destinos Populares desde {departureCity}',
+      airlineDepartureTerminal: 'Terminal de Salida de {airlineName}',
+      airlineArrivalTerminal: 'Terminal de Llegada de {airlineName}',
+      airlinesContactAtTerminal: 'Información de Contacto de Aerolíneas en Terminal de {departureCity}',
+      hotelsNear: 'Hoteles Cerca de {departureCity}',
+      aboutCity: 'Acerca de {arrivalCity}',
+      departureInfo: 'Información de Salida',
+      arrivalInfo: 'Información de Llegada',
+      terminalContactInfo: 'Información de Contacto del Terminal',
+      aboutThisRoute: 'Acerca de Esta Ruta',
+      morePlacesToVisit: 'Más Lugares para Visitar',
+      airlinesInfo: 'Información de Aerolíneas',
+      weatherInfo: 'Información del Clima',
+      priceInfo: 'Información de Precios',
+      oneWayFlights: 'Vuelos de Ida',
+      lastMinuteFlights: 'Vuelos de Última Hora',
+      cheapFlights: 'Vuelos Baratos',
+      bestFlights: 'Mejores Vuelos'
     }
   },
   ru: {
@@ -827,7 +881,25 @@ const translations: Record<Locale, Translations> = {
       findBest: 'Найдите лучшие',
       flightDeals: 'предложения рейсов',
       comparePricesBookTrip: 'Сравните цены, забронируйте следующую поездку',
-      destinationsWorldwide: 'направления по всему миру'
+      destinationsWorldwide: 'направления по всему миру',
+      popularDestinationsFrom: 'Популярные направления из {departureCity}',
+      airlineDepartureTerminal: 'Терминал отправления {airlineName}',
+      airlineArrivalTerminal: 'Терминал прибытия {airlineName}',
+      airlinesContactAtTerminal: 'Контактная информация авиакомпаний в терминале {departureCity}',
+      hotelsNear: 'Отели рядом с {departureCity}',
+      aboutCity: 'О городе {arrivalCity}',
+      departureInfo: 'Информация об отправлении',
+      arrivalInfo: 'Информация о прибытии',
+      terminalContactInfo: 'Контактная информация терминала',
+      aboutThisRoute: 'Об этом маршруте',
+      morePlacesToVisit: 'Больше мест для посещения',
+      airlinesInfo: 'Информация об авиакомпаниях',
+      weatherInfo: 'Информация о погоде',
+      priceInfo: 'Информация о ценах',
+      oneWayFlights: 'Рейсы в одну сторону',
+      lastMinuteFlights: 'Рейсы последней минуты',
+      cheapFlights: 'Дешевые рейсы',
+      bestFlights: 'Лучшие рейсы'
     }
   },
   fr: {
@@ -1034,7 +1106,25 @@ const translations: Record<Locale, Translations> = {
       findBest: 'Trouvez les meilleures',
       flightDeals: 'offres de vols',
       comparePricesBookTrip: 'Comparez les prix, réservez votre prochain voyage',
-      destinationsWorldwide: 'destinations dans le monde entier'
+      destinationsWorldwide: 'destinations dans le monde entier',
+      popularDestinationsFrom: 'Destinations Populaires depuis {departureCity}',
+      airlineDepartureTerminal: 'Terminal de Départ de {airlineName}',
+      airlineArrivalTerminal: 'Terminal d\'Arrivée de {airlineName}',
+      airlinesContactAtTerminal: 'Informations de Contact des Compagnies Aériennes au Terminal de {departureCity}',
+      hotelsNear: 'Hôtels près de {departureCity}',
+      aboutCity: 'À propos de {arrivalCity}',
+      departureInfo: 'Informations de Départ',
+      arrivalInfo: 'Informations d\'Arrivée',
+      terminalContactInfo: 'Informations de Contact du Terminal',
+      aboutThisRoute: 'À propos de cette Route',
+      morePlacesToVisit: 'Plus de Lieux à Visiter',
+      airlinesInfo: 'Informations sur les Compagnies Aériennes',
+      weatherInfo: 'Informations Météorologiques',
+      priceInfo: 'Informations sur les Prix',
+      oneWayFlights: 'Vols Aller Simple',
+      lastMinuteFlights: 'Vols de Dernière Minute',
+      cheapFlights: 'Vols Pas Chers',
+      bestFlights: 'Meilleurs Vols'
     }
   }
 };

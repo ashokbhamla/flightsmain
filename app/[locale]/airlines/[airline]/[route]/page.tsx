@@ -295,12 +295,8 @@ export async function generateMetadata({ params }: { params: { locale: string; a
   
   // Map locale to language ID for API calls
   const getLangId = (locale: string): 1 | 2 => {
-    switch (locale) {
-      case 'es': return 2;
-      case 'ru': return 1; // Fallback to English for Russian
-      case 'fr': return 1; // Fallback to English for French
-      default: return 1; // English
-    }
+    // Always use English from API since it's the only available language
+    return 1;
   };
 
   try {
@@ -336,22 +332,22 @@ export async function generateMetadata({ params }: { params: { locale: string; a
     const title = arrivalIata ? 
       t.flightPage.title
         .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
-        .replace('{departureCity}', flightData?.departure_city || getCityName(departureIata))
-        .replace('{arrivalCity}', flightData?.arrival_city || getCityName(arrivalIata)) :
+        .replace('{departureCity}', contentData?.departure_city || getCityName(departureIata))
+        .replace('{arrivalCity}', contentData?.arrival_city || getCityName(arrivalIata)) :
       t.flightPage.title
         .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
-        .replace('{departureCity}', flightData?.departure_city || getCityName(departureIata))
+        .replace('{departureCity}', contentData?.departure_city || getCityName(departureIata))
         .replace('{arrivalCity}', 'Various Destinations');
 
     // Use translated text with real API data, fallback to API content if needed
     const description = arrivalIata ?
       t.flightPage.description
         .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
-        .replace('{departureCity}', flightData?.departure_city || getCityName(departureIata))
-        .replace('{arrivalCity}', flightData?.arrival_city || getCityName(arrivalIata)) :
+        .replace('{departureCity}', contentData?.departure_city || getCityName(departureIata))
+        .replace('{arrivalCity}', contentData?.arrival_city || getCityName(arrivalIata)) :
       t.flightPage.description
         .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
-        .replace('{departureCity}', flightData?.departure_city || getCityName(departureIata))
+        .replace('{departureCity}', contentData?.departure_city || getCityName(departureIata))
         .replace('{arrivalCity}', 'Various Destinations');
     
     return {
@@ -560,12 +556,8 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   
   // Map locale to language ID for API calls
   const getLangId = (locale: string): 1 | 2 => {
-    switch (locale) {
-      case 'es': return 2;
-      case 'ru': return 1; // Fallback to English for Russian
-      case 'fr': return 1; // Fallback to English for French
-      default: return 1; // English
-    }
+    // Always use English from API since it's the only available language
+    return 1;
   };
 
   try {
@@ -602,14 +594,21 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   // Use city names from API data (content API first, then flight data, then fallback)
   let departureCity, arrivalCity;
   
-  if (contentData?.departure_city && contentData?.arrival_city) {
-    // Use content API data
+  if (contentData?.departure_city) {
+    // Use content API data for departure city
     departureCity = `${contentData.departure_city} (${departureIata})`;
-    arrivalCity = arrivalIata ? `${contentData.arrival_city} (${arrivalIata})` : 'Various Destinations';
-  } else if (flightData?.departure_city && flightData?.arrival_city) {
+    // For arrival city, check if we have it in content data, otherwise use flight data or fallback
+    if (contentData?.arrival_city) {
+      arrivalCity = arrivalIata ? `${contentData.arrival_city} (${arrivalIata})` : 'Various Destinations';
+    } else if (flightData?.arrival_city) {
+      arrivalCity = arrivalIata ? `${flightData.arrival_city} (${arrivalIata})` : 'Various Destinations';
+    } else {
+      arrivalCity = arrivalIata ? getCityName(arrivalIata) : 'Various Destinations';
+    }
+  } else if (flightData?.departure_city) {
     // Use flight data API
     departureCity = `${flightData.departure_city} (${departureIata})`;
-    arrivalCity = arrivalIata ? `${flightData.arrival_city} (${arrivalIata})` : 'Various Destinations';
+    arrivalCity = arrivalIata ? (flightData?.arrival_city ? `${flightData.arrival_city} (${arrivalIata})` : getCityName(arrivalIata)) : 'Various Destinations';
   } else if (contentData?.title) {
     // Extract from title
     const cities = extractCitiesFromTitle(contentData.title);
@@ -1200,7 +1199,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               {flightData.oneway_flights && flightData.oneway_flights.length > 0 && (
                 <Box sx={{ mb: 4 }}>
                   <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
-                    One-way Flights
+                    {t.flightPage.oneWayFlights}
                   </Typography>
                   <Grid container spacing={2}>
                     {flightData.oneway_flights.slice(0, 6).map((flight: any, index: number) => (
@@ -1232,7 +1231,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               {flightData.last_minute_flights && flightData.last_minute_flights.length > 0 && (
                 <Box sx={{ mb: 4 }}>
                   <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
-                    Last Minute Flights
+                    {t.flightPage.lastMinuteFlights}
                   </Typography>
                   <Grid container spacing={2}>
                     {flightData.last_minute_flights.slice(0, 6).map((flight: any, index: number) => (
@@ -1264,7 +1263,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               {flightData.cheap_flights && flightData.cheap_flights.length > 0 && (
                 <Box sx={{ mb: 4 }}>
                   <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
-                    Cheap Flights
+                    {t.flightPage.cheapFlights}
                   </Typography>
                   <Grid container spacing={2}>
                     {flightData.cheap_flights.slice(0, 6).map((flight: any, index: number) => (
@@ -1296,7 +1295,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               {flightData.best_flights && flightData.best_flights.length > 0 && (
                 <Box sx={{ mb: 4 }}>
                   <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
-                    Best Flights
+                    {t.flightPage.bestFlights}
                   </Typography>
                   <Grid container spacing={2}>
                     {flightData.best_flights.slice(0, 6).map((flight: any, index: number) => (
@@ -1352,14 +1351,14 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   color: '#1a1a1a'
                 }}
               >
-                Available Flights from {departureCity}
+                {t.flightPage.availableFlights} {t.flightPage.from} {departureCity}
               </Typography>
               
               {/* One-way Flights */}
               {flightData.oneway_flights && flightData.oneway_flights.length > 0 && (
                 <Box sx={{ mb: 4 }}>
                   <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
-                    One-way Flights
+                    {t.flightPage.oneWayFlights}
                   </Typography>
                   <Grid container spacing={2}>
                     {flightData.oneway_flights.slice(0, 6).map((flight: any, index: number) => (
@@ -1391,7 +1390,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               {flightData.last_minute_flights && flightData.last_minute_flights.length > 0 && (
                 <Box sx={{ mb: 4 }}>
                   <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
-                    Last Minute Flights
+                    {t.flightPage.lastMinuteFlights}
                   </Typography>
                   <Grid container spacing={2}>
                     {flightData.last_minute_flights.slice(0, 6).map((flight: any, index: number) => (
@@ -1423,7 +1422,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               {flightData.cheap_flights && flightData.cheap_flights.length > 0 && (
                 <Box sx={{ mb: 4 }}>
                   <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
-                    Cheap Flights
+                    {t.flightPage.cheapFlights}
                   </Typography>
                   <Grid container spacing={2}>
                     {flightData.cheap_flights.slice(0, 6).map((flight: any, index: number) => (
@@ -1455,7 +1454,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               {flightData.best_flights && flightData.best_flights.length > 0 && (
                 <Box sx={{ mb: 4 }}>
                   <Typography variant="h3" sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2, color: '#1a1a1a' }}>
-                    Best Flights
+                    {t.flightPage.bestFlights}
                   </Typography>
                   <Grid container spacing={2}>
                     {flightData.best_flights.slice(0, 6).map((flight: any, index: number) => (
@@ -1626,7 +1625,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                     color: '#1a1a1a'
                   }}
                 >
-                  Frequently Asked Questions
+                  {t.flightPage.faqs}
                 </Typography>
                 <div 
                   dangerouslySetInnerHTML={{ __html: fallbackContent.faqs.map((faq: any) => 
@@ -1658,7 +1657,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Popular Destinations from {departureCity}
+              {t.flightPage.popularDestinationsFrom.replace('{departureCity}', departureCity)}
             </Typography>
             
             {contentData?.description && (
@@ -1698,7 +1697,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              {airlineName} Departure Terminal
+              {t.flightPage.airlineDepartureTerminal.replace('{airlineName}', airlineName)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.departure_terminal_paragraph }} 
@@ -1723,7 +1722,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              {airlineName} Arrival Terminal
+              {t.flightPage.airlineArrivalTerminal.replace('{airlineName}', airlineName)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.arrival_terminal_paragraph }} 
@@ -1748,7 +1747,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Airlines Contact Information at {departureCity} Terminal
+              {t.flightPage.airlinesContactAtTerminal.replace('{departureCity}', departureCity)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.terminal_contact_paragraph }} 
@@ -1773,7 +1772,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Hotels Near {departureCity}
+              {t.flightPage.hotelsNear.replace('{departureCity}', departureCity)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.hotels }} 
@@ -1798,7 +1797,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Frequently Asked Questions
+              {t.flightPage.faqs}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.faqs.map((faq: any) => 
@@ -1828,7 +1827,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Places to Visit in {arrivalCity}
+              {t.flightPage.placesToVisit.replace('{arrivalCity}', arrivalCity)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.places }} 
@@ -1841,30 +1840,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           </Box>
         )}
 
-        {/* Hotels Section */}
-        {contentData?.hotels && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
-              Hotels in {arrivalCity}
-            </Typography>
-            <div 
-              dangerouslySetInnerHTML={{ __html: contentData.hotels }} 
-              style={{ 
-                fontSize: '1.1rem',
-                lineHeight: 1.6,
-                color: '#666'
-              }}
-            />
-          </Box>
-        )}
 
         {/* City Information Section */}
         {contentData?.city && (
@@ -1878,7 +1853,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              About {arrivalCity}
+              {t.flightPage.aboutCity.replace('{arrivalCity}', arrivalCity)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.city }} 
@@ -1903,7 +1878,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Departure Information
+              {t.flightPage.departureInfo}
             </Typography>
             <Typography 
               variant="body1" 
@@ -1929,7 +1904,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Arrival Information
+              {t.flightPage.arrivalInfo}
             </Typography>
             <Typography 
               variant="body1" 
@@ -1955,7 +1930,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               color: '#1a1a1a'
             }}
           >
-              Terminal & Contact Information
+              {t.flightPage.terminalContactInfo}
           </Typography>
               <Typography 
                 variant="body1" 
@@ -1981,7 +1956,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                     color: '#1a1a1a'
                   }}
                 >
-              About This Route
+              {t.flightPage.aboutThisRoute}
           </Typography>
                 <Typography 
                   variant="body1" 
@@ -2007,7 +1982,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                     color: '#1a1a1a'
                   }}
                 >
-              Popular Destinations
+              {t.flightPage.popularDestinations}
           </Typography>
                 <Typography 
                   variant="body1" 
@@ -2035,7 +2010,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                     color: '#1a1a1a'
                   }}
                 >
-              More Places to Visit
+              {t.flightPage.morePlacesToVisit}
           </Typography>
             
                 <Typography 
@@ -2065,7 +2040,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              About {arrivalCity}
+              {t.flightPage.aboutCity.replace('{arrivalCity}', arrivalCity)}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.city }} 
@@ -2078,29 +2053,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           </Box>
         )}
 
-        {contentData?.hotels && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
-              Hotels in {arrivalCity}
-            </Typography>
-            <div 
-              dangerouslySetInnerHTML={{ __html: contentData.hotels }} 
-              style={{ 
-                fontSize: '1.1rem',
-                lineHeight: 1.6,
-                color: '#666'
-              }}
-            />
-          </Box>
-        )}
 
         {contentData?.airlines && (
           <Box sx={{ mb: 6 }}>
@@ -2113,7 +2065,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Airlines Information
+              {t.flightPage.airlinesInfo}
             </Typography>
             <div 
               dangerouslySetInnerHTML={{ __html: contentData.airlines }} 
@@ -2138,7 +2090,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Places to Visit in {arrivalCity}
+              {t.flightPage.placesToVisit.replace('{arrivalCity}', arrivalCity)}
             </Typography>
             
             <Typography 
@@ -2167,7 +2119,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Weather Information
+              {t.flightPage.weatherInfo}
             </Typography>
             
             <Typography 
@@ -2208,7 +2160,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Price Information
+              {t.flightPage.priceInfo}
             </Typography>
             
             {contentData?.monthly && (
