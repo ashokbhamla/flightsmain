@@ -4,7 +4,7 @@ export function orgSchema(header: any): Json | null {
   const companyName = process.env.NEXT_PUBLIC_COMPANY_NAME || 'airlinesmap.com';
   const companyUrl = process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com';
   const companyEmail = process.env.NEXT_PUBLIC_COMPANY_EMAIL || 'support@airlinesmap.com';
-  const companyPhone = process.env.NEXT_PUBLIC_COMPANY_PHONE || '+1-800-FLIGHTS';
+  const companyPhone = process.env.NEXT_PUBLIC_COMPANY_PHONE || '+1-888-319-6206';
   const companyAddress = process.env.NEXT_PUBLIC_COMPANY_ADDRESS || '8th the green suite b, Dover, DE 19901, US';
   const companyLogo = process.env.NEXT_PUBLIC_COMPANY_LOGO || `${companyUrl}/logo.png`;
   
@@ -53,7 +53,7 @@ export function localBusinessSchema(): Json {
   const companyName = process.env.NEXT_PUBLIC_COMPANY_NAME || 'airlinesmap.com';
   const companyUrl = process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com';
   const companyEmail = process.env.NEXT_PUBLIC_COMPANY_EMAIL || 'support@airlinesmap.com';
-  const companyPhone = process.env.NEXT_PUBLIC_COMPANY_PHONE || '+1-800-FLIGHTS';
+  const companyPhone = process.env.NEXT_PUBLIC_COMPANY_PHONE || '+1-888-319-6206';
   
   return {
     '@context': 'https://schema.org',

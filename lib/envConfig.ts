@@ -30,7 +30,7 @@ export const envConfig = {
 
   // Popup Configuration
   popup: {
-    phoneNumber: process.env.NEXT_PUBLIC_POPUP_PHONE_NUMBER || '1-800-FLIGHTS',
+    phoneNumber: process.env.NEXT_PUBLIC_POPUP_PHONE_NUMBER || '+1-888-319-6206',
     promoCode: process.env.NEXT_PUBLIC_POPUP_PROMO_CODE || 'SAVE30'
   }
 };
