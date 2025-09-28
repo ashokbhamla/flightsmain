@@ -349,25 +349,25 @@ export async function generateMetadata({ params }: { params: { locale: string; a
     return 1;
   };
 
+  let contentData = null;
+  let flightData = null;
+  let airlineContactInfo = null;
+
   try {
-    // Fetch airline contact info for metadata
-    const airlineContactInfo = await fetchAirlineContactInfo(airlineCode);
-    let contentData = null;
-    let flightData = null;
+    // Fetch all data in parallel for better performance
+    const [contentDataResult, flightDataResult, airlineContactInfoResult] = await Promise.all([
+      arrivalIata 
+        ? fetchAirlineContent(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
+        : fetchAirlineAirportContent(airlineCode, departureIata, getLangId(locale), 1),
+      arrivalIata 
+        ? fetchAirlineData(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
+        : fetchAirlineAirportData(airlineCode, departureIata, 1),
+      fetchAirlineContactInfo(airlineCode)
+    ]);
     
-    if (arrivalIata) {
-      // Route pair - use airline content function
-      [contentData, flightData] = await Promise.all([
-        fetchAirlineContent(airlineCode, arrivalIata, departureIata, getLangId(locale), 1),
-        fetchAirlineData(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
-      ]);
-    } else {
-      // Single airport - use airline airport content function
-      [contentData, flightData] = await Promise.all([
-        fetchAirlineAirportContent(airlineCode, departureIata, getLangId(locale), 1),
-        fetchAirlineAirportData(airlineCode, departureIata, 1)
-      ]);
-    }
+    contentData = contentDataResult;
+    flightData = flightDataResult;
+    airlineContactInfo = airlineContactInfoResult;
     
     // Helper function to strip HTML tags and truncate to 158 characters
     const stripHtml = (html: string) => {
@@ -603,6 +603,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   // Fetch content and flight data based on route type
   let contentData = null;
   let flightData = null;
+  let airlineContactInfo = null;
   
   // Map locale to language ID for API calls
   const getLangId = (locale: string): 1 | 2 => {
@@ -611,19 +612,20 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   };
 
   try {
-    if (arrivalIata) {
-      // Route pair - use existing airline content/data functions
-      [contentData, flightData] = await Promise.all([
-        fetchAirlineContent(airlineCode, arrivalIata, departureIata, getLangId(locale), 1),
-        fetchAirlineData(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
-      ]);
-    } else {
-      // Single airport - use airport-specific functions
-      [contentData, flightData] = await Promise.all([
-        fetchAirlineAirportContent(airlineCode, departureIata, getLangId(locale), 1),
-        fetchAirlineAirportData(airlineCode, departureIata, 1)
-      ]);
-    }
+    // Fetch all data in parallel for better performance
+    const [contentDataResult, flightDataResult, airlineContactInfoResult] = await Promise.all([
+      arrivalIata 
+        ? fetchAirlineContent(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
+        : fetchAirlineAirportContent(airlineCode, departureIata, getLangId(locale), 1),
+      arrivalIata 
+        ? fetchAirlineData(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
+        : fetchAirlineAirportData(airlineCode, departureIata, 1),
+      fetchAirlineContactInfo(airlineCode)
+    ]);
+    
+    contentData = contentDataResult;
+    flightData = flightDataResult;
+    airlineContactInfo = airlineContactInfoResult;
   } catch (error) {
     console.error('Error fetching airline data:', error);
   }
@@ -679,9 +681,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     departureCity = getCityName(departureIata);
     arrivalCity = arrivalIata ? getCityName(arrivalIata) : 'Various Destinations';
   }
-  // Fetch airline contact information from the dedicated API
-  const airlineContactInfo = await fetchAirlineContactInfo(airlineCode);
-  
   const airlineName = getAirlineName(airlineCode, contentData, airlineContactInfo);
   
   // Extract airline details from flight data as fallback
@@ -811,18 +810,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     { name: 'Dec', value: 170 }
   ];
 
-  // Debug logging
-  console.log('Content API Data:', {
-    weekly_prices_avg: contentData?.weekly_prices_avg,
-    monthly_prices_avg: contentData?.monthly_prices_avg,
-    weekly_price_paragraph: contentData?.weekly_price_paragraph,
-    monthly_price_paragraph: contentData?.monthly_price_paragraph
-  });
-  
-  console.log('Transformed Data:', {
-    weeklyPriceData,
-    monthlyPriceData
-  });
 
   // Weather data from Real API or hardcoded fallback
   const weatherData = flightData?.temperature?.map((temp: any) => ({
