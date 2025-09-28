@@ -115,10 +115,10 @@ export function generateDatasetSchema({
     "url": pageUrl,
     "creator": {
       "@type": "Organization",
-      "name": "Airlinesmap.com",
-      "url": "https://airlinesmap.com"
+      "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
+      "url": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"
     },
-    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "license": process.env.NEXT_PUBLIC_DATASET_LICENSE || "https://creativecommons.org/licenses/by/4.0/",
     "variableMeasured": [
       { 
         "@type": "PropertyValue", 
@@ -151,10 +151,10 @@ export function generateDatasetSchema({
     "url": pageUrl,
     "creator": {
       "@type": "Organization",
-      "name": "Airlinesmap.com",
-      "url": "https://airlinesmap.com"
+      "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
+      "url": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"
     },
-    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "license": process.env.NEXT_PUBLIC_DATASET_LICENSE || "https://creativecommons.org/licenses/by/4.0/",
     "variableMeasured": [
       { 
         "@type": "PropertyValue", 

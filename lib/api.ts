@@ -406,3 +406,20 @@ export async function fetchAirlineContactInfo(iataCode: string) {
     return null;
   }
 }
+
+// Fetch city information by IATA code
+export async function fetchCityByIata(city_iata: string, lang_id: 1 | 2 | 3 | 4, domain_id: 1 | 2 = 1) {
+  const isServer = typeof window === 'undefined';
+  if (isServer) {
+    const url = `${process.env.NEXT_PUBLIC_API_REAL || 'https://api.triposia.com'}/real/city?city_iata=${city_iata}&lang_id=${lang_id}&domain_id=${domain_id}`;
+    const res = await fetch(url, {
+      next: { revalidate: 300 }
+    });
+    if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+    const data = await res.json() as any;
+    return data;
+  } else {
+    const data = await fetchJSON<any>(`api/city-by-iata?city_iata=${city_iata}&lang_id=${lang_id}&domain_id=${domain_id}`);
+    return data;
+  }
+}

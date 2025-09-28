@@ -24,6 +24,7 @@ import {
 import { Search as SearchIcon, FlightTakeoff, LocationOn, SwapHoriz } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { enUS } from 'date-fns/locale';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { addDays } from 'date-fns';
@@ -34,6 +35,28 @@ const UnifiedAirportPopup = dynamic(() => import('./UnifiedAirportPopup'), {
   ssr: false,
   loading: () => null
 });
+
+// Fallback date input component
+const FallbackDateInput = ({ label, value, onChange }: { label: string; value: Date | null; onChange: (date: Date | null) => void }) => (
+  <TextField
+    label={label}
+    type="date"
+    value={value ? value.toISOString().split('T')[0] : ''}
+    onChange={(e) => {
+      const date = e.target.value ? new Date(e.target.value) : null;
+      onChange(date);
+    }}
+    sx={{
+      width: '100%',
+      '& .MuiOutlinedInput-root': {
+        backgroundColor: 'white',
+        height: { xs: '64px', md: '56px' },
+        fontSize: { xs: '16px', md: '14px' },
+        borderRadius: '12px',
+      }
+    }}
+  />
+);
 
 interface AirportOption {
   code: string;
@@ -77,14 +100,29 @@ const FlightSearchBox = memo<FlightSearchBoxProps>(({
   const [travelerDialogOpen, setTravelerDialogOpen] = useState(false);
   const [includeHotels, setIncludeHotels] = useState(false);
   const [unifiedPopupOpen, setUnifiedPopupOpen] = useState(false);
+  const [datePickersAvailable, setDatePickersAvailable] = useState(true);
 
   // Sync dateRange with individual dates
   useEffect(() => {
     setDateRange([departureDate, returnDate]);
   }, [departureDate, returnDate]);
 
+  // Check if date pickers are available
+  useEffect(() => {
+    try {
+      // Test if MUI X Date Pickers are available
+      if (typeof window !== 'undefined') {
+        setDatePickersAvailable(true);
+      }
+    } catch (error) {
+      console.warn('Date pickers not available, using fallback:', error);
+      setDatePickersAvailable(false);
+    }
+  }, []);
+
   // Handle date range changes
-  const handleDateRangeChange = (newValue: [Date | null, Date | null]) => {
+  const handleDateRangeChange = (newValue: [Date | null, Date | null] | null) => {
+    if (!newValue) return;
     setDateRange(newValue);
     setDepartureDate(newValue[0]);
     setReturnDate(newValue[1]);
@@ -534,13 +572,20 @@ const FlightSearchBox = memo<FlightSearchBoxProps>(({
             minWidth: { xs: "100%", sm: 200 },
             width: { xs: "100%", sm: "auto" }
           }}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              {tripType === 1 ? (
-                // One Way - Single Date Picker
-                <DatePicker
+            {datePickersAvailable ? (
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enUS}>
+                {tripType === 1 ? (
+                  // One Way - Single Date Picker
+                  <DatePicker
                   label={t.flightSearch.departure}
                   value={departureDate}
-                  onChange={(newValue: Date | null) => setDepartureDate(newValue)}
+                  onChange={(newValue: Date | null) => {
+                    try {
+                      setDepartureDate(newValue);
+                    } catch (error) {
+                      console.error('Date picker error:', error);
+                    }
+                  }}
                   sx={{
                     width: '100%',
                     '& .MuiOutlinedInput-root': {
@@ -587,7 +632,13 @@ const FlightSearchBox = memo<FlightSearchBoxProps>(({
                 // Round Trip - Date Range Picker (Single Input)
                 <DateRangePicker
                   value={dateRange}
-                  onChange={handleDateRangeChange}
+                  onChange={(newValue) => {
+                    try {
+                      handleDateRangeChange(newValue);
+                    } catch (error) {
+                      console.error('Date range picker error:', error);
+                    }
+                  }}
                   sx={{
                     width: '100%',
                     '& .MuiOutlinedInput-root': {
@@ -631,7 +682,30 @@ const FlightSearchBox = memo<FlightSearchBoxProps>(({
                   }}
                 />
               )}
-            </LocalizationProvider>
+              </LocalizationProvider>
+            ) : (
+              // Fallback date inputs
+              tripType === 1 ? (
+                <FallbackDateInput
+                  label={t.flightSearch.departure}
+                  value={departureDate}
+                  onChange={setDepartureDate}
+                />
+              ) : (
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <FallbackDateInput
+                    label={t.flightSearch.departure}
+                    value={departureDate}
+                    onChange={setDepartureDate}
+                  />
+                  <FallbackDateInput
+                    label={t.flightSearch.return}
+                    value={returnDate}
+                    onChange={setReturnDate}
+                  />
+                </Box>
+              )
+            )}
           </Box>
 
           {/* Travelers & Class */}

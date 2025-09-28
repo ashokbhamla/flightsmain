@@ -1,10 +1,13 @@
+'use client';
+
 import { Locale } from '@/lib/i18n';
 import { Typography, Box, Container, Grid, Card, CardContent, Button } from '@mui/material';
 import FlightSearchBox from '@/components/FlightSearchBox';
 import ClientPriceGraph from '@/components/ClientPriceGraph';
 import FlightTabs from '@/components/FlightTabs';
 import { getAirportImageUrl } from '@/lib/cdn';
-import { memo } from 'react';
+import { fetchCityByIata } from '@/lib/api';
+import { memo, useState, useEffect } from 'react';
 
 interface FlightTemplateProps {
   locale: Locale;
@@ -113,49 +116,12 @@ const FlightTemplate = memo(function FlightTemplate({
   arrivalIata,
   onAction 
 }: FlightTemplateProps) {
-  // Helper function to get city name from IATA code
-  const getCityName = (iataCode: string): string => {
-    const cityMap: { [key: string]: string } = {
-      'LAX': 'Los Angeles',
-      'WAS': 'Washington, D.C.',
-      'BWI': 'Baltimore',
-      'IAD': 'Washington Dulles',
-      'DCA': 'Washington Reagan',
-      'JFK': 'New York',
-      'ORD': 'Chicago',
-      'DFW': 'Dallas',
-      'ATL': 'Atlanta',
-      'BOS': 'Boston',
-      'MIA': 'Miami',
-      'SFO': 'San Francisco',
-      'SEA': 'Seattle',
-      'DEN': 'Denver',
-      'LAS': 'Las Vegas',
-      'PHX': 'Phoenix',
-      'MCO': 'Orlando',
-      'CLT': 'Charlotte',
-      'IAH': 'Houston',
-      'DTW': 'Detroit',
-      'DEL': 'Delhi',
-      'BOM': 'Mumbai',
-      'HYD': 'Hyderabad',
-      'BLR': 'Bangalore',
-      'CCU': 'Kolkata',
-      'MAA': 'Chennai',
-      'AMD': 'Ahmedabad',
-      'PNQ': 'Pune',
-      'COK': 'Kochi',
-      'GOI': 'Goa',
-      'IXZ': 'Port Blair'
-    };
-    return cityMap[iataCode] || iataCode;
-}
 
   // Use passed props or fallback to params
   const finalDepartureIata = departureIata || params.departureIata || params.slug;
   const finalArrivalIata = arrivalIata || params.arrivalIata || '';
-  const finalDepartureCityName = departureCityName || getCityName(finalDepartureIata);
-  const finalArrivalCityName = arrivalCityName || getCityName(finalArrivalIata);
+  const finalDepartureCityName = departureCityName || finalDepartureIata;
+  const finalArrivalCityName = arrivalCityName || finalArrivalIata;
 
   // Get flight data from API
   const actualFlightData = flightData || pageData || {};
@@ -163,6 +129,43 @@ const FlightTemplate = memo(function FlightTemplate({
   // Get city names from pageData, flightData API, or fallback to IATA lookup
   const departureCity = pageData?.departureCity || actualFlightData?.departure_city || finalDepartureCityName;
   const arrivalCity = pageData?.arrivalCity || actualFlightData?.arrival_city || finalArrivalCityName;
+
+  // Helper function to safely render content (handles both strings and objects)
+  const renderContent = (content: any): string => {
+    if (typeof content === 'string') {
+      return content;
+    }
+    if (content && typeof content === 'object') {
+      return content.content || content.text || content.description || content.html || JSON.stringify(content);
+    }
+    return '';
+  };
+
+  // Helper function to replace IATA codes with city names in text
+  const replaceIataWithCityName = (text: string): string => {
+    if (!text) return text;
+    // Replace the specific IATA code with the city name
+    return text.replace(new RegExp(finalDepartureIata, 'g'), departureCity);
+  };
+
+  // Fetch city-specific data for best_time_to_visit and weather
+  const [cityData, setCityData] = useState<any>(null);
+  
+  useEffect(() => {
+    const fetchCityData = async () => {
+      try {
+        const data = await fetchCityByIata(finalDepartureIata, 1, 1);
+        setCityData(data);
+      } catch (error) {
+        console.error('Error fetching city data:', error);
+      }
+    };
+    
+    if (finalDepartureIata) {
+      fetchCityData();
+    }
+  }, [finalDepartureIata]);
+
   
   const content = getFlightContent(locale, departureCity, arrivalCity, finalDepartureIata, finalArrivalIata);
   
@@ -270,7 +273,10 @@ const FlightTemplate = memo(function FlightTemplate({
       to: flight.iata_to,
       city: flight.airport?.city_name || flight.city_name_en || 'Unknown City',
       country: flight.airport?.country || 'Unknown Country',
-      country_code: flight.airport?.country_code || 'XX'
+      country_code: flight.airport?.country_code || 'XX',
+      // Add city names for display
+      departure_city_name: departureCity, // Use the already fetched city name
+      arrival_city_name: flight.city_name_en || flight.airport?.city_name || 'Unknown City'
     }));
   };
 
@@ -528,9 +534,8 @@ const FlightTemplate = memo(function FlightTemplate({
             mb: 4,
             lineHeight: 1.6
           }}
-        >
-          {pageData?.description || content.description}
-        </Typography>
+          dangerouslySetInnerHTML={{ __html: pageData?.description || content.description || '' }}
+        />
 
         {/* Airport Images Hero Section */}
         <Box sx={{ 
@@ -839,7 +844,7 @@ const FlightTemplate = memo(function FlightTemplate({
                    locale === 'fr' ? `Prix le moins cher le ${pageData.cheapest_day}` :
                    `Cheapest price on ${pageData.cheapest_day}`) : 
                   content.weeklyTitle}
-                description={pageData?.weekly_fares_graph?.paragraph || pageData?.weekly || content.weeklyDescription}
+                description={replaceIataWithCityName(pageData?.weekly_fares_graph?.paragraph || pageData?.weekly || content.weeklyDescription)}
                 data={weeklyPriceData}
                 yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
                             locale === 'ru' ? 'Цена (USD)' :
@@ -856,7 +861,7 @@ const FlightTemplate = memo(function FlightTemplate({
                    locale === 'fr' ? `Prix le moins cher en ${pageData.cheapest_month}` :
                    `Cheapest price in ${pageData.cheapest_month}`) : 
                   content.monthlyTitle}
-                description={pageData?.monthly_fares_graph?.paragraph || pageData?.monthly || content.monthlyDescription}
+                description={replaceIataWithCityName(pageData?.monthly_fares_graph?.paragraph || pageData?.monthly || content.monthlyDescription)}
                 data={monthlyPriceData}
                 yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
                             locale === 'ru' ? 'Цена (USD)' :
@@ -888,7 +893,7 @@ const FlightTemplate = memo(function FlightTemplate({
                   title={locale === 'es' ? 'Temperatura' : 
                          locale === 'ru' ? 'Температура' :
                          locale === 'fr' ? 'Température' : 'Temperature'}
-                  description={pageData?.temperature_description || content.weatherDescription}
+                  description={replaceIataWithCityName(pageData?.temperature_description || cityData?.weather?.temperature_description || content.weatherDescription)}
                 data={weatherData}
                 yAxisLabel={locale === 'es' ? 'Temperatura (°F)' : 
                             locale === 'ru' ? 'Температура (°F)' :
@@ -902,7 +907,7 @@ const FlightTemplate = memo(function FlightTemplate({
                 title={locale === 'es' ? 'Precipitación' : 
                        locale === 'ru' ? 'Осадки' :
                        locale === 'fr' ? 'Précipitations' : 'Rainfall'}
-                description={pageData?.rainfall_description || content.rainfallDescription}
+                description={replaceIataWithCityName(pageData?.rainfall_description || cityData?.weather?.rainfall_description || content.rainfallDescription)}
                 data={rainfallDataTransformed}
                 yAxisLabel={locale === 'es' ? 'Precipitación (pulgadas)' : 
                             locale === 'ru' ? 'Осадки (дюймы)' :
@@ -932,7 +937,7 @@ const FlightTemplate = memo(function FlightTemplate({
             </Typography>
             
             <div 
-              dangerouslySetInnerHTML={{ __html: pageData.destinations }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(pageData.destinations) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -960,7 +965,7 @@ const FlightTemplate = memo(function FlightTemplate({
             </Typography>
             
             <div 
-              dangerouslySetInnerHTML={{ __html: pageData.destinations_links }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(pageData.destinations_links) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -988,7 +993,7 @@ const FlightTemplate = memo(function FlightTemplate({
             </Typography>
             
             <div 
-              dangerouslySetInnerHTML={{ __html: pageData.places_to_visit }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(pageData.places_to_visit) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -1016,7 +1021,7 @@ const FlightTemplate = memo(function FlightTemplate({
             </Typography>
             
             <div 
-              dangerouslySetInnerHTML={{ __html: pageData.airlines }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(pageData.airlines) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -1027,7 +1032,7 @@ const FlightTemplate = memo(function FlightTemplate({
         )}
 
         {/* Best Time to Visit */}
-        {pageData?.best_time_visit && (
+        {(pageData?.best_time_visit || cityData?.best_time_to_visit) && (
           <Box sx={{ mb: 6 }}>
             <Typography 
               variant="h2" 
@@ -1044,7 +1049,9 @@ const FlightTemplate = memo(function FlightTemplate({
             </Typography>
             
             <div 
-              dangerouslySetInnerHTML={{ __html: pageData.best_time_visit }} 
+              dangerouslySetInnerHTML={{ 
+                __html: renderContent(pageData.best_time_visit || cityData?.best_time_to_visit) 
+              }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -1070,7 +1077,7 @@ const FlightTemplate = memo(function FlightTemplate({
             </Typography>
             
             <div 
-              dangerouslySetInnerHTML={{ __html: pageData.places }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(pageData.places) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -1096,7 +1103,7 @@ const FlightTemplate = memo(function FlightTemplate({
             </Typography>
             
             <div 
-              dangerouslySetInnerHTML={{ __html: pageData.city }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(pageData.city) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -1122,7 +1129,7 @@ const FlightTemplate = memo(function FlightTemplate({
             </Typography>
             
             <div 
-              dangerouslySetInnerHTML={{ __html: pageData.airlines }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(pageData.airlines) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -1148,7 +1155,7 @@ const FlightTemplate = memo(function FlightTemplate({
             </Typography>
             
             <div 
-              dangerouslySetInnerHTML={{ __html: pageData.hotels }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(pageData.hotels) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -1159,7 +1166,93 @@ const FlightTemplate = memo(function FlightTemplate({
         )}
 
         {/* Frequently Asked Questions */}
-        {pageData?.faqs && pageData.faqs.length > 0 && (
+        {(() => {
+          // Check if we have FAQs from API
+          const apiFaqs = pageData?.faqs || [];
+          const validFaqs = apiFaqs.filter((faq: any) => {
+            // Filter out malformed FAQ entries (HTML tags as questions)
+            const question = faq.q || faq.question || '';
+            const answer = faq.a || faq.answer || '';
+            
+            // Skip if question is empty or contains HTML structure markers
+            if (!question || 
+                question.trim() === '' || 
+                question.includes('DOCTYPE') ||
+                question.includes('```html') ||
+                question.includes('frequently asked questions') ||
+                question.includes('formatted in HTML') ||
+                question.includes('<!DOCTYPE') ||
+                question.includes('<html') ||
+                question.includes('<head') ||
+                question.includes('<body') ||
+                question.includes('<title') ||
+                question.includes('<meta') ||
+                question.includes('</head') ||
+                question.includes('</body') ||
+                question.includes('</html') ||
+                question.includes('<h1>') ||
+                question.includes('<h2>') ||
+                question.includes('<h3>') ||
+                question.includes('<h4>') ||
+                question.includes('<h5>') ||
+                question.includes('<h6>')) {
+              return false;
+            }
+            
+            // Skip if answer is empty or contains HTML structure markers
+            if (!answer || 
+                answer.trim() === '' || 
+                answer.includes('DOCTYPE') ||
+                answer.includes('```html') ||
+                answer.includes('<!DOCTYPE') ||
+                answer.includes('<html') ||
+                answer.includes('<head') ||
+                answer.includes('<body') ||
+                answer.includes('<title') ||
+                answer.includes('<meta') ||
+                answer.includes('</head') ||
+                answer.includes('</body') ||
+                answer.includes('</html') ||
+                answer.includes('<h1>') ||
+                answer.includes('<h2>') ||
+                answer.includes('<h3>') ||
+                answer.includes('<h4>') ||
+                answer.includes('<h5>') ||
+                answer.includes('<h6>')) {
+              return false;
+            }
+            
+            return true;
+          });
+
+          // If no valid FAQs from API, use fallback FAQs
+          const faqsToShow = validFaqs.length > 0 ? validFaqs : [
+            {
+              q: `What airlines fly from ${departureCity} Airport?`,
+              a: `Several airlines operate flights from ${departureCity} Airport, including major international carriers and regional airlines. You can find flights to various destinations across different continents.`
+            },
+            {
+              q: `How early should I arrive at ${departureCity} Airport?`,
+              a: `We recommend arriving at least 2-3 hours before your international flight and 1-2 hours before domestic flights to allow time for check-in, security screening, and boarding.`
+            },
+            {
+              q: `What facilities are available at ${departureCity} Airport?`,
+              a: `${departureCity} Airport offers various amenities including duty-free shopping, restaurants, lounges, free Wi-Fi, and car rental services to make your travel experience comfortable.`
+            },
+            {
+              q: `Can I find direct flights from ${departureCity}?`,
+              a: `Yes, ${departureCity} Airport offers direct flights to many destinations. Check our flight search tool to find direct routes to your preferred destination.`
+            },
+            {
+              q: `What is the best time to book flights from ${departureCity}?`,
+              a: `Generally, booking flights 2-3 months in advance can help you find better deals. Mid-week flights (Tuesday-Thursday) often offer lower prices compared to weekend travel.`
+            }
+          ];
+
+          // Only show FAQ section if there are FAQs to display
+          if (faqsToShow.length === 0) return null;
+
+          return (
           <Box sx={{ mb: 6 }}>
             <Typography 
               variant="h2" 
@@ -1173,7 +1266,7 @@ const FlightTemplate = memo(function FlightTemplate({
               {content.faqTitle}
             </Typography>
             
-            {pageData.faqs.map((faq: any, index: number) => (
+              {faqsToShow.map((faq: any, index: number) => (
               <Box key={index} sx={{ mb: 3 }}>
                 <Typography 
                   variant="h4" 
@@ -1196,13 +1289,14 @@ const FlightTemplate = memo(function FlightTemplate({
               </Box>
             ))}
           </Box>
-        )}
+          );
+        })()}
 
         {/* Content from API */}
         {pageData?.content && (
           <Box sx={{ mb: 6 }}>
             <div 
-              dangerouslySetInnerHTML={{ __html: pageData.content }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(pageData.content) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,

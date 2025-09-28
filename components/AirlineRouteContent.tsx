@@ -97,16 +97,6 @@ export default function AirlineRouteContent({
 
 
 
-  const faqs = useMultiLanguageContent({
-    locale,
-    apiContent: contentData?.faqs,
-    fallbackTranslations: {
-      en: 'Frequently Asked Questions',
-      es: 'Preguntas Frecuentes',
-      ru: 'Часто Задаваемые Вопросы',
-      fr: 'Questions Fréquemment Posées'
-    }
-  });
 
   return (
     <Container 
@@ -388,37 +378,6 @@ export default function AirlineRouteContent({
 
 
 
-      {/* FAQ Section */}
-      {contentData?.faqs && contentData.faqs.length > 0 && (
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 3,
-              color: '#1a1a1a'
-            }}
-          >
-            {faqs}
-          </Typography>
-          <div 
-            dangerouslySetInnerHTML={{ 
-              __html: contentData.faqs.map((faq: any) => 
-                `<div style="margin-bottom: 1.5rem;">
-                  <h3 style="font-weight: 600; color: #1a1a1a; margin-bottom: 0.5rem;">${faq.q || ''}</h3>
-                  <p style="color: #666; line-height: 1.6;">${faq.a || ''}</p>
-                </div>`
-              ).join('') 
-            }} 
-            style={{ 
-              fontSize: '1.1rem',
-              lineHeight: 1.6,
-              color: '#666'
-            }}
-          />
-        </Box>
-      )}
     </Container>
   );
 }

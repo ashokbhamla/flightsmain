@@ -36,6 +36,30 @@ const FlightCards = dynamic(() => import('@/components/FlightCards'), {
   loading: () => <div>Loading flight cards...</div>
 });
 
+// Helper function to decode and clean HTML content
+function renderContent(content: any): string {
+  if (typeof content === 'string') {
+    // Remove markdown code blocks
+    let cleaned = content.replace(/```html\n?/g, '').replace(/```\n?/g, '');
+    
+    // Decode HTML entities
+    cleaned = cleaned
+      .replace(/\\u003C/g, '<')
+      .replace(/\\u003E/g, '>')
+      .replace(/\\u0026/g, '&')
+      .replace(/\\u0027/g, "'")
+      .replace(/\\u0022/g, '"')
+      .replace(/\\n/g, '\n')
+      .replace(/\\t/g, '\t');
+    
+    return cleaned;
+  }
+  if (content && typeof content === 'object') {
+    return content.content || content.text || content.description || content.html || JSON.stringify(content);
+  }
+  return '';
+}
+
 // Helper function to get city name from IATA code
 function getCityName(iataCode: string): string {
   const cityMap: { [key: string]: string } = {
@@ -747,9 +771,12 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     }
   ];
 
-  // Use actual API data for charts
-  // Weekly data from Real API
-  const weeklyPriceData = flightData?.weeks?.map((week: any) => ({
+  // Use actual API data for charts - prioritize content API data over flight data
+  // Weekly data from Content API (weekly_prices_avg) or Real API fallback
+  const weeklyPriceData = contentData?.weekly_prices_avg?.map((week: any) => ({
+    name: week.day.substring(0, 3), // Extract day name (Mon, Tue, etc.)
+    value: week.avg_price
+  })) || flightData?.weeks?.map((week: any) => ({
     name: week.name.split(' ')[0], // Extract day name (Mon, Tue, etc.)
     value: week.value
   })) || [
@@ -762,8 +789,11 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     { name: 'Sun', value: 8 }
   ];
 
-  // Monthly data from Real API
-  const monthlyPriceData = flightData?.months?.map((month: any) => ({
+  // Monthly data from Content API (monthly_prices_avg) or Real API fallback
+  const monthlyPriceData = contentData?.monthly_prices_avg?.map((month: any) => ({
+    name: month.month.substring(0, 3), // Extract month name (Jan, Feb, etc.)
+    value: month.avg_price
+  })) || flightData?.months?.map((month: any) => ({
     name: month.name.split(' ')[0], // Extract month name (Jan, Feb, etc.)
     value: month.price
   })) || [
@@ -781,6 +811,20 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     { name: 'Dec', value: 170 }
   ];
 
+  // Debug logging
+  console.log('Content API Data:', {
+    weekly_prices_avg: contentData?.weekly_prices_avg,
+    monthly_prices_avg: contentData?.monthly_prices_avg,
+    weekly_price_paragraph: contentData?.weekly_price_paragraph,
+    monthly_price_paragraph: contentData?.monthly_price_paragraph
+  });
+  
+  console.log('Transformed Data:', {
+    weeklyPriceData,
+    monthlyPriceData
+  });
+
+  // Weather data from Real API or hardcoded fallback
   const weatherData = flightData?.temperature?.map((temp: any) => ({
     name: temp.name.split(' ')[0], // Extract month name
     value: Math.round(temp.value) // Convert to integer
@@ -799,6 +843,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     { name: 'Dec', value: 59 }
   ];
 
+  // Rainfall data from Real API or hardcoded fallback
   const rainfallData = flightData?.rainfall?.map((rain: any) => ({
     name: rain.name.split(' ')[0], // Extract month name
     value: Math.round(rain.value * 10) / 10 // Round to 1 decimal
@@ -833,44 +878,41 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     // Remove duplicate sections that cause content duplication
     hotels: null,
     airlines: null,
-    best_time_visit: null,
-    departure_terminal_paragraph: null,
-    arrival_terminal_paragraph: null,
-    terminal_contact_paragraph: null,
-    faqs: null
+    best_time_visit: null
+    // Keep faqs for display
   } : contentData;
 
-  // Use fallback price cards if needed
+  // Use dynamic price cards from API data
   const finalPriceCards = contentData ? [
     {
       id: 1,
       type: 'round-trip',
       price: contentData?.avragefares ? `$${contentData.avragefares}` : (flightData?.round_trip_start ? `$${flightData.round_trip_start}` : '$189'),
-      description: contentData?.cheap_flights ? stripHtml(contentData.cheap_flights) : (t?.flightPage?.roundTrip || 'Round-trip from:').replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalCity),
+      description: `Round-trip ${airlineName} flights from ${departureCity} to ${arrivalCity}`,
       buttonText: t.searchDeals,
       buttonColor: '#10b981'
     },
     {
       id: 2,
       type: 'one-way',
-      price: flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$122',
-      description: contentData?.direct_flights ? stripHtml(contentData.direct_flights) : (t?.flightPage?.oneWayFlight || 'One-way flight from {from} {code} to {to}').replace('{airlineName}', airlineName).replace('{from}', departureCity).replace('{to}', arrivalCity),
+      price: contentData?.avragefares ? `$${Math.round(contentData.avragefares * 0.7)}` : (flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$122'),
+      description: `One-way ${airlineName} flight from ${departureCity} to ${arrivalCity}`,
       buttonText: t.searchDeals,
       buttonColor: '#1e3a8a'
     },
     {
       id: 3,
       type: 'popular',
-      month: contentData?.cheapest_month || flightData?.popular_month || 'April',
-      description: (t?.flightPage?.cheapestMonthDesc || 'Cheapest month is {month} from {departureCity}. Maximum price drop flights to {departureCity} in month of {month}.').replace('{month}', contentData?.cheapest_month || flightData?.popular_month || 'April').replace('{departureCity}', departureCity),
+      month: contentData?.cheapest_month || flightData?.popular_month || 'December',
+      description: `Cheapest month is ${contentData?.cheapest_month || flightData?.popular_month || 'December'} from ${departureCity}. Maximum price drop flights to ${departureCity} in month of ${contentData?.cheapest_month || flightData?.popular_month || 'December'}.`,
       buttonText: t.viewPopular,
       buttonColor: '#ff6b35'
     },
     {
       id: 4,
       type: 'cheapest',
-      month: contentData?.cheapest_day || flightData?.cheapest_day || 'Monday',
-      description: (t?.flightPage?.cheapestDayDesc || 'Cheapest week day is {day} from {departureCity}. Maximum price drop flights to {departureCity} on {day}.').replace('{day}', contentData?.cheapest_day || flightData?.cheapest_day || 'Monday').replace('{departureCity}', departureCity),
+      month: contentData?.cheapest_day || flightData?.cheapest_day || 'Sunday',
+      description: `Cheapest week day is ${contentData?.cheapest_day || flightData?.cheapest_day || 'Sunday'} from ${departureCity}. Maximum price drop flights to ${departureCity} on ${contentData?.cheapest_day || flightData?.cheapest_day || 'Sunday'}.`,
       buttonText: t.findDeals,
       buttonColor: '#10b981'
     }
@@ -1089,7 +1131,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   mb: 1
                 }
               }}
-              dangerouslySetInnerHTML={{ __html: contentData.booking_steps }}
+              dangerouslySetInnerHTML={{ __html: renderContent(contentData.booking_steps) }}
             />
           </Box>
         )}
@@ -1130,7 +1172,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   mb: 1
                 }
               }}
-              dangerouslySetInnerHTML={{ __html: contentData.cancellation }}
+              dangerouslySetInnerHTML={{ __html: renderContent(contentData.cancellation) }}
             />
           </Box>
         )}
@@ -1171,7 +1213,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   mb: 1
                 }
               }}
-              dangerouslySetInnerHTML={{ __html: contentData.classes }}
+              dangerouslySetInnerHTML={{ __html: renderContent(contentData.classes) }}
             />
           </Box>
         )}
@@ -1212,7 +1254,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   mb: 1
                 }
               }}
-              dangerouslySetInnerHTML={{ __html: contentData.destinations_overview }}
+              dangerouslySetInnerHTML={{ __html: renderContent(contentData.destinations_overview) }}
             />
           </Box>
         )}
@@ -1552,6 +1594,11 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             {t.flightPage.priceTrends}
           </Typography>
           
+          {/* Debug Information */}
+          <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
+            Debug: Weekly data count: {weeklyPriceData?.length || 0}, Monthly data count: {monthlyPriceData?.length || 0}
+          </Typography>
+          
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
@@ -1634,7 +1681,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             </Typography>
             
             <div 
-              dangerouslySetInnerHTML={{ __html: fallbackContent.description }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(fallbackContent.description) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -1644,7 +1691,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             />
 
             <div 
-              dangerouslySetInnerHTML={{ __html: fallbackContent.pageContent }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(fallbackContent.pageContent) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -1673,7 +1720,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             
             {contentData?.description && (
             <div 
-              dangerouslySetInnerHTML={{ __html: contentData.description }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(contentData.description) }} 
                 style={{ 
                   fontSize: '1.1rem',
                   lineHeight: 1.6,
@@ -1685,7 +1732,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             
             {contentData?.destinations && (
               <div 
-                dangerouslySetInnerHTML={{ __html: contentData.destinations }} 
+                dangerouslySetInnerHTML={{ __html: renderContent(contentData.destinations) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -1700,35 +1747,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
 
 
 
-        {/* FAQ Section */}
-        {finalContentData?.faqs && finalContentData.faqs.length > 0 && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
-              {t.flightPage.faqs}
-            </Typography>
-            <div 
-              dangerouslySetInnerHTML={{ __html: finalContentData.faqs.map((faq: any) => 
-                `<div style="margin-bottom: 1.5rem;">
-                  <h3 style="font-weight: 600; color: #1a1a1a; margin-bottom: 0.5rem;">${faq.q || ''}</h3>
-                  <p style="color: #666; line-height: 1.6;">${faq.a || ''}</p>
-                </div>`
-              ).join('') }} 
-              style={{ 
-                fontSize: '1.1rem',
-                lineHeight: 1.6,
-                color: '#666'
-              }}
-            />
-          </Box>
-        )}
 
         {/* Places Section */}
         {contentData?.places && (
@@ -1745,7 +1763,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               {(t?.flightPage?.placesToVisit || 'Places to Visit in {arrivalCity}').replace('{arrivalCity}', arrivalCity)}
             </Typography>
             <div 
-              dangerouslySetInnerHTML={{ __html: contentData.places }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(contentData.places) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -1771,7 +1789,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               {(t?.flightPage?.aboutCity || 'About {arrivalCity}').replace('{arrivalCity}', arrivalCity)}
             </Typography>
             <div 
-              dangerouslySetInnerHTML={{ __html: contentData.city }} 
+              dangerouslySetInnerHTML={{ __html: renderContent(contentData.city) }} 
               style={{ 
                 fontSize: '1.1rem',
                 lineHeight: 1.6,
@@ -1781,31 +1799,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           </Box>
         )}
 
-        {/* Departure Information */}
-        {contentData?.departure_paragraph && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
-              {t.flightPage.departureInfo}
-            </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                color: '#666',
-                lineHeight: 1.6,
-                fontSize: '1.1rem'
-              }}
-              dangerouslySetInnerHTML={{ __html: contentData.departure_paragraph }}
-            />
-          </Box>
-        )}
 
         {/* Arrival Information */}
         {contentData?.arrival_paragraph && (
@@ -1828,7 +1821,60 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 lineHeight: 1.6,
                 fontSize: '1.1rem'
               }}
-              dangerouslySetInnerHTML={{ __html: contentData.arrival_paragraph }}
+              dangerouslySetInnerHTML={{ __html: renderContent(contentData.arrival_paragraph) }}
+            />
+          </Box>
+        )}
+
+        {/* Arrival Terminal Information */}
+        {contentData?.arrival_terminal_paragraph && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 3,
+                color: '#1a1a1a'
+              }}
+            >
+              Arrival Terminal Information
+            </Typography>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                color: '#666',
+                lineHeight: 1.6,
+                fontSize: '1.1rem'
+              }}
+              dangerouslySetInnerHTML={{ __html: renderContent(contentData.arrival_terminal_paragraph) }}
+            />
+          </Box>
+        )}
+
+
+        {/* Terminal Contact Information */}
+        {contentData?.terminal_contact_paragraph && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 3,
+                color: '#1a1a1a'
+              }}
+            >
+              Terminal Contact Information
+            </Typography>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                color: '#666',
+                lineHeight: 1.6,
+                fontSize: '1.1rem'
+              }}
+              dangerouslySetInnerHTML={{ __html: renderContent(contentData.terminal_contact_paragraph) }}
             />
           </Box>
         )}
@@ -1998,6 +2044,44 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           </Box>
         </Box>
 
+        {/* FAQ Section - Bottom of Page */}
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: '1.8rem',
+              fontWeight: 600,
+              mb: 3,
+              color: '#1a1a1a'
+            }}
+          >
+            {t.flightPage.faqs}
+          </Typography>
+          
+          {/* Debug Information */}
+          <Typography variant="body1" sx={{ color: '#666', mb: 2 }}>
+            Debug: FAQs available: {finalContentData?.faqs ? 'Yes' : 'No'}, 
+            Count: {finalContentData?.faqs?.length || 0}
+          </Typography>
+          
+          {finalContentData?.faqs && finalContentData.faqs.length > 0 ? (
+            <div 
+              dangerouslySetInnerHTML={{ 
+                __html: finalContentData.faqs.map((faq: any) => 
+                  `<div style="margin-bottom: 1.5rem; padding: 1rem 0; border-bottom: 1px solid #e0e0e0;">
+                    <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: #333;">${renderContent(faq.q || faq.question)}</h3>
+                    <p style="font-size: 1rem; line-height: 1.6; color: #555; margin: 0;">${renderContent(faq.a || faq.answer)}</p>
+                  </div>`
+                ).join('') 
+              }} 
+            />
+          ) : (
+            <Typography variant="body1" sx={{ color: '#666' }}>
+              No FAQs available from the API.
+            </Typography>
+          )}
+        </Box>
+
     </Container>
       
       <SchemaOrg data={breadcrumbSchema([
@@ -2012,8 +2096,8 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         <SchemaOrg data={{
           "@context": "https://schema.org",
           "@type": "Product",
-          "name": (t?.schemaProductName || '{airlineName} flights from {departureCity} to {arrivalCity}').replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalCity),
-          "description": contentData?.description?.replace(/<[^>]*>/g, '') || (t?.schemaProductDescription || 'Find cheap {airlineName} flights from {departureCity} to {arrivalCity}').replace('{airlineName}', airlineName).replace('{departureCity}', departureCity).replace('{arrivalCity}', arrivalCity),
+          "name": contentData?.title || `${airlineName} flights from ${departureCity} to ${arrivalCity}`,
+          "description": contentData?.metadescription?.replace(/<[^>]*>/g, '') || contentData?.description?.replace(/<[^>]*>/g, '') || `Find cheap ${airlineName} flights from ${departureCity} to ${arrivalCity}`,
           "image": [
             getAirlineLogoUrl(airlineCode, 'large'),
             getAirportImageUrl(departureIata),
@@ -2025,26 +2109,35 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           },
           "aggregateRating": {
             "@type": "AggregateRating",
-            "ratingValue": "4.2",
-            "reviewCount": "89"
+            "ratingValue": process.env.NEXT_PUBLIC_DEFAULT_RATING || "4.2",
+            "reviewCount": process.env.NEXT_PUBLIC_DEFAULT_REVIEW_COUNT || "89"
           },
-          "offers": flightData.oneway_flights?.map((flight: any) => ({
+          "offers": normalizedFlights.slice(0, 10).map((flight: any) => ({
             "@type": "Offer",
-            "price": flight.price || "0",
-            "priceCurrency": flight.currency || "USD",
+            "itemOffered": {
+              "@type": "Flight",
+              "name": `${airlineName} flight from ${flight.from} to ${flight.to}`,
+              "provider": {
+                "@type": "Airline",
+                "name": airlineName,
+                "iataCode": airlineCode.toUpperCase()
+              }
+            },
+            "price": flight.price?.replace('$', '') || "0",
+            "priceCurrency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
             "availability": "https://schema.org/InStock",
             "seller": {
               "@type": "Organization",
               "name": airlineName
             },
-            "validFrom": flight.iso_date || new Date().toISOString(),
-            "description": (t?.schemaFlightDescription || '{airlineName} flight from {departureCity} to {arrivalCity}').replace('{airlineName}', airlineName).replace('{departureCity}', getCityName(flight.iata_from || departureIata)).replace('{arrivalCity}', getCityName(flight.iata_to || arrivalIata)),
+            "validFrom": new Date().toISOString(),
+            "description": `${airlineName} flight from ${flight.from} to ${flight.to}`,
             "shippingDetails": {
               "@type": "OfferShippingDetails",
               "shippingRate": {
                 "@type": "MonetaryAmount",
                 "value": "0",
-                "currency": "USD"
+                "currency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD"
               },
               "deliveryTime": {
                 "@type": "ShippingDeliveryTime",
@@ -2057,11 +2150,11 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             "hasMerchantReturnPolicy": {
               "@type": "MerchantReturnPolicy",
               "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-              "merchantReturnDays": 24,
-              "returnMethod": "https://schema.org/ReturnByMail",
-              "returnFees": "https://schema.org/FreeReturn"
+              "merchantReturnDays": parseInt(process.env.NEXT_PUBLIC_RETURN_DAYS || "24"),
+              "returnMethod": process.env.NEXT_PUBLIC_RETURN_METHOD || "https://schema.org/ReturnByMail",
+              "returnFees": process.env.NEXT_PUBLIC_RETURN_FEES || "https://schema.org/FreeReturn"
             }
-          })) || []
+          }))
         }} />
       )}
 
@@ -2142,7 +2235,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 "offers": {
                   "@type": "Offer",
                   "price": flight.price || "0",
-                  "priceCurrency": flight.currency || "USD",
+                  "priceCurrency": flight.currency || process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
                   "availability": "https://schema.org/InStock"
                 }
               }
@@ -2175,7 +2268,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 "offers": {
                   "@type": "Offer",
                   "price": flight.price || "0",
-                  "priceCurrency": flight.currency || "USD",
+                  "priceCurrency": flight.currency || process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
                   "availability": "https://schema.org/InStock"
                 }
               }
@@ -2208,7 +2301,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 "offers": {
                   "@type": "Offer",
                   "price": flight.price || "0",
-                  "priceCurrency": flight.currency || "USD",
+                  "priceCurrency": flight.currency || process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
                   "availability": "https://schema.org/InStock"
                 }
               }
@@ -2241,7 +2334,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 "offers": {
                   "@type": "Offer",
                   "price": flight.price || "0",
-                  "priceCurrency": flight.currency || "USD",
+                  "priceCurrency": flight.currency || process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
                   "availability": "https://schema.org/InStock"
                 }
               }
@@ -2254,14 +2347,23 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       <SchemaOrg data={{
         "@context": "https://schema.org",
         "@type": "FAQPage",
-        "mainEntity": contentData?.faqs?.map((faq: any) => ({
-          "@type": "Question",
-          "name": faq.q?.replace(/<[^>]*>/g, '') || '',
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": faq.a?.replace(/<[^>]*>/g, '') || ''
-          }
-        })) || [
+        "mainEntity": finalContentData?.faqs?.map((faq: any) => {
+          const question = renderContent(faq.q || faq.question);
+          const answer = renderContent(faq.a || faq.answer);
+          
+          // Remove HTML tags and clean up the text
+          const cleanQuestion = question.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+          const cleanAnswer = answer.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+          
+          return {
+            "@type": "Question",
+            "name": cleanQuestion,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": cleanAnswer
+            }
+          };
+        }) || [
           {
             "@type": "Question",
             "name": `How long is the ${airlineName} flight from ${departureCity} to ${arrivalCity}?`,
@@ -2346,13 +2448,13 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               "offers": [{
                 "@type": "Offer",
                 "price": flight.price || "0",
-                "priceCurrency": "USD",
+                "priceCurrency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
                 "shippingDetails": {
                   "@type": "OfferShippingDetails",
                   "shippingRate": {
                     "@type": "MonetaryAmount",
                     "value": "0",
-                    "currency": "USD"
+                    "currency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD"
                   },
                   "deliveryTime": {
                     "@type": "ShippingDeliveryTime",
@@ -2403,8 +2505,8 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
         "url": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com",
         "logo": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/logo.png`,
-        "description": "Compare airlines and find the best flight deals",
-        "foundingDate": "2020",
+        "description": process.env.NEXT_PUBLIC_COMPANY_DESCRIPTION || "Compare airlines and find the best flight deals",
+        "foundingDate": process.env.NEXT_PUBLIC_COMPANY_FOUNDING_DATE || "2020",
         "contactPoint": {
           "@type": "ContactPoint",
           "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-319-6206",
@@ -2514,7 +2616,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         "@type": "TravelAgency",
         "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
         "url": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com",
-        "description": "Compare airlines and find the best flight deals",
+        "description": process.env.NEXT_PUBLIC_COMPANY_DESCRIPTION || "Compare airlines and find the best flight deals",
         "address": {
           "@type": "PostalAddress",
           "streetAddress": process.env.NEXT_PUBLIC_ADDRESS || "8th the green suite b",
@@ -2549,7 +2651,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               "shippingRate": {
                 "@type": "MonetaryAmount",
                 "value": "0",
-                "currency": "USD"
+                "currency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD"
               },
               "deliveryTime": {
                 "@type": "ShippingDeliveryTime",
@@ -2562,9 +2664,9 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             "hasMerchantReturnPolicy": {
               "@type": "MerchantReturnPolicy",
               "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-              "merchantReturnDays": 24,
-              "returnMethod": "https://schema.org/ReturnByMail",
-              "returnFees": "https://schema.org/FreeReturn"
+              "merchantReturnDays": parseInt(process.env.NEXT_PUBLIC_RETURN_DAYS || "24"),
+              "returnMethod": process.env.NEXT_PUBLIC_RETURN_METHOD || "https://schema.org/ReturnByMail",
+              "returnFees": process.env.NEXT_PUBLIC_RETURN_FEES || "https://schema.org/FreeReturn"
             },
             "priceCurrency": "USD"
           }))

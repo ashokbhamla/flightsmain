@@ -70,7 +70,10 @@ const FlightTabs = memo(function FlightTabs({ flightData, departureCity, arrival
       stops: flight.stops === 0 ? 'Non-stop' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`,
       duration: flight.duration,
       dealFound: 'Just now',
-      bookingPlatform: `${flight.airline}.com`
+      bookingPlatform: `${flight.airline}.com`,
+      // Add city names for display
+      departure_city_name: (flight as any).departure_city_name || departureCity,
+      arrival_city_name: (flight as any).arrival_city_name || arrivalCity
     }));
   }, [departureCity, arrivalCity, arrivalIata]);
 

@@ -20,6 +20,8 @@ interface FlightCardProps {
     duration: string;
     dealFound: string;
     bookingPlatform: string;
+    departure_city_name?: string;
+    arrival_city_name?: string;
   };
   onBook?: (flightId: number) => void;
 }
@@ -97,7 +99,7 @@ export default function FlightCard({ flight, onBook }: FlightCardProps) {
                 fontSize: '0.8rem',
                 mb: 0.5
               }}>
-                {getCityName(flight.departureRoute.split(' - ')[0])}
+                {flight.departure_city_name || getCityName(flight.departureRoute.split(' - ')[0])}
               </Typography>
               <Typography variant="body2" sx={{ 
                 color: '#666',
@@ -183,7 +185,7 @@ export default function FlightCard({ flight, onBook }: FlightCardProps) {
                 fontSize: '0.8rem',
                 mb: 0.5
               }}>
-                {getCityName(flight.departureRoute.split(' - ')[1])}
+                {flight.arrival_city_name || getCityName(flight.departureRoute.split(' - ')[1])}
               </Typography>
               <Typography variant="h5" sx={{ 
                 fontWeight: 700, 
