@@ -1,11 +1,11 @@
 steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/finalcms:$COMMIT_SHA', '.']
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/airlinesmap:$COMMIT_SHA', '.']
   
   # Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/finalcms:$COMMIT_SHA']
+    args: ['push', 'gcr.io/$PROJECT_ID/airlinesmap:$COMMIT_SHA']
   
   # Deploy container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -13,9 +13,9 @@ steps:
     args:
       - 'run'
       - 'deploy'
-      - 'finalcms'
+      - 'airlinesmap'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/finalcms:$COMMIT_SHA'
+      - 'gcr.io/$PROJECT_ID/airlinesmap:$COMMIT_SHA'
       - '--region'
       - 'us-central1'
       - '--platform'
@@ -37,4 +37,4 @@ steps:
       - '300'
 
 images:
-  - 'gcr.io/$PROJECT_ID/finalcms:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/airlinesmap:$COMMIT_SHA'
