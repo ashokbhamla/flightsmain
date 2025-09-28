@@ -184,7 +184,7 @@ const FlightTemplate = memo(function FlightTemplate({
     {
       id: 1,
       type: 'average',
-      price: actualFlightData?.average_fare ? `$${actualFlightData.average_fare}` : '$189',
+      price: pageData?.avragefares ? `$${pageData.avragefares}` : '$189',
       title: locale === 'es' ? 'Precio promedio desde:' : 
              locale === 'ru' ? 'Средняя цена от:' :
              locale === 'fr' ? 'Prix moyen à partir de:' : 'Average price start from:',
@@ -197,7 +197,7 @@ const FlightTemplate = memo(function FlightTemplate({
     {
       id: 2,
       type: 'oneway',
-      price: actualFlightData?.oneway_trip_start ? `$${actualFlightData.oneway_trip_start}` : '$122',
+      price: pageData?.avragefares ? `$${Math.round(pageData.avragefares * 0.7)}` : '$122',
       title: locale === 'es' ? 'Solo ida desde:' : 
              locale === 'ru' ? 'В одну сторону от:' :
              locale === 'fr' ? 'Aller simple depuis:' : 'One-way from:',
@@ -210,7 +210,7 @@ const FlightTemplate = memo(function FlightTemplate({
     {
       id: 3,
       type: 'cheapest-day',
-      day: actualFlightData?.cheapest_day || (locale === 'es' ? 'Miércoles' :
+      day: pageData?.cheapest_day || (locale === 'es' ? 'Miércoles' :
              locale === 'ru' ? 'Среда' :
              locale === 'fr' ? 'Mercredi' : 'Wednesday'),
       title: locale === 'es' ? 'Día más barato:' : 
@@ -228,7 +228,7 @@ const FlightTemplate = memo(function FlightTemplate({
     {
       id: 4,
       type: 'cheapest-month',
-      month: actualFlightData?.cheapest_month || (locale === 'es' ? 'Enero' :
+      month: pageData?.cheapest_month || (locale === 'es' ? 'Enero' :
              locale === 'ru' ? 'Январь' :
              locale === 'fr' ? 'Janvier' : 'January'),
       title: locale === 'es' ? 'Más barato en:' : 
@@ -264,7 +264,13 @@ const FlightTemplate = memo(function FlightTemplate({
       localized_price: `$${flight.price}`,
       airline: flight.airlineroutes?.[0]?.carrier_name || 'Unknown',
       airline_iata: flight.airlineroutes?.[0]?.carrier || 'XX',
-      city_name_en: flight.city_name_en || flight.airport?.city_name || 'Unknown City'
+      city_name_en: flight.city_name_en || flight.airport?.city_name || 'Unknown City',
+      // Add normalized flight properties for FlightRouteCard
+      from: flight.iata_from,
+      to: flight.iata_to,
+      city: flight.airport?.city_name || flight.city_name_en || 'Unknown City',
+      country: flight.airport?.country || 'Unknown Country',
+      country_code: flight.airport?.country_code || 'XX'
     }));
   };
 
@@ -796,10 +802,10 @@ const FlightTemplate = memo(function FlightTemplate({
         {transformedFlights.length > 0 && (
           <FlightTabs 
             flightData={{
-              oneway_flights: Array.isArray(flightData) ? transformedFlights : transformApiFlightData(flightData?.oneway_flights || []),
-              last_minute_flights: Array.isArray(flightData) ? transformedFlights : transformApiFlightData(flightData?.last_minute_flights || []),
-              cheap_flights: Array.isArray(flightData) ? transformedFlights : transformApiFlightData(flightData?.cheap_flights || []),
-              best_flights: Array.isArray(flightData) ? transformedFlights : transformApiFlightData(flightData?.best_flights || [])
+              oneway_flights: transformedFlights,
+              last_minute_flights: transformedFlights,
+              cheap_flights: transformedFlights,
+              best_flights: transformedFlights
             }}
             departureCity={departureCity}
             arrivalCity={arrivalCity}
