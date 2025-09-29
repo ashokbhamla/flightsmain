@@ -400,8 +400,8 @@ export async function generateMetadata({ params }: { params: { locale: string; a
     // Get translations for the current locale
     const t = getTranslations(locale);
     
-    // Use translated text with real API data, fallback to API content if needed
-    const title = arrivalIata ? 
+    // Use dynamic data from content API for title and description
+    const title = contentData?.title || (arrivalIata ? 
       t.flightPage.title
         .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
         .replace('{departureCity}', flightData?.metadata?.departure_city || contentData?.departure_city || getCityName(departureIata))
@@ -409,10 +409,10 @@ export async function generateMetadata({ params }: { params: { locale: string; a
       t.flightPage.title
         .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
         .replace('{departureCity}', flightData?.metadata?.departure_city || contentData?.departure_city || getCityName(departureIata))
-        .replace('{arrivalCity}', t.flightPage.destinationsWorldwide);
+        .replace('{arrivalCity}', t.flightPage.destinationsWorldwide));
 
-    // Use translated text with real API data, fallback to API content if needed
-    const description = arrivalIata ?
+    // Use dynamic data from content API for description
+    const description = contentData?.meta_description || (arrivalIata ?
       t.flightPage.description
         .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
         .replace('{departureCity}', flightData?.metadata?.departure_city || contentData?.departure_city || getCityName(departureIata))
@@ -420,7 +420,7 @@ export async function generateMetadata({ params }: { params: { locale: string; a
       t.flightPage.description
         .replace('{airlineName}', getAirlineName(airlineCode, contentData, airlineContactInfo))
         .replace('{departureCity}', flightData?.metadata?.departure_city || contentData?.departure_city || getCityName(departureIata))
-        .replace('{arrivalCity}', t.flightPage.destinationsWorldwide);
+        .replace('{arrivalCity}', t.flightPage.destinationsWorldwide));
     
     return {
       title,
@@ -796,32 +796,32 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   {
     id: 1,
       type: 'round-trip',
-      price: contentData?.avragefares ? `$${contentData.avragefares}` : (flightData?.round_trip_start ? `$${flightData.round_trip_start}` : '$189'),
-      description: contentData?.cheap_flights ? stripHtml(contentData.cheap_flights) : `Round-trip ${airlineName} flights from ${departureCity} to ${arrivalCity}`,
+      price: flightData?.round_trip_start ? `$${flightData.round_trip_start}` : '$104',
+      description: contentData?.cheap_flights ? stripHtml(contentData.cheap_flights) : `Round-trip ${airlineName} flights from ${departureCity} (${departureIata}) to ${arrivalCity} (${arrivalIata})`,
       buttonText: t.searchDeals,
       buttonColor: '#10b981'
   },
   {
     id: 2,
       type: 'one-way',
-      price: flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$122',
-      description: contentData?.direct_flights ? stripHtml(contentData.direct_flights) : `One-way ${airlineName} flight from ${departureCity} to ${arrivalCity}`,
+      price: flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$72',
+      description: contentData?.direct_flights ? stripHtml(contentData.direct_flights) : `One-way ${airlineName} flight from ${departureCity} (${departureIata}) to ${arrivalCity} (${arrivalIata})`,
       buttonText: t.searchDeals,
       buttonColor: '#1e3a8a'
   },
   {
     id: 3,
       type: 'popular',
-      month: contentData?.cheapest_month || flightData?.popular_month || 'April',
-      description: `Cheapest month is ${contentData?.cheapest_month || flightData?.popular_month || 'April'} from ${departureCity}. Maximum price drop flights to ${departureCity} in month of ${contentData?.cheapest_month || flightData?.popular_month || 'April'}.`,
+      month: flightData?.popular_month || 'December',
+      description: `Cheapest month is ${flightData?.popular_month || 'December'} from ${departureCity} (${departureIata}). Maximum price drop flights to ${arrivalCity} (${arrivalIata}) in month of ${flightData?.popular_month || 'December'}.`,
       buttonText: t.viewPopular,
       buttonColor: '#ff6b35'
   },
   {
     id: 4,
       type: 'cheapest',
-      month: contentData?.cheapest_day || flightData?.cheapest_day || 'Monday',
-      description: `Cheapest week day is ${contentData?.cheapest_day || flightData?.cheapest_day || 'Monday'} from ${departureCity}. Maximum price drop flights to ${departureCity} on ${contentData?.cheapest_day || flightData?.cheapest_day || 'Monday'}.`,
+      month: flightData?.cheapest_day || 'Tuesday',
+      description: `Cheapest week day is ${flightData?.cheapest_day || 'Tuesday'} from ${departureCity} (${departureIata}). Maximum price drop flights to ${arrivalCity} (${arrivalIata}) on ${flightData?.cheapest_day || 'Tuesday'}.`,
       buttonText: t.findDeals,
       buttonColor: '#10b981'
     }
@@ -1025,6 +1025,34 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           locale={locale}
           />
 
+        {/* Main Page Heading and Description */}
+        <Box sx={{ mb: 6, textAlign: 'center' }}>
+          <Typography 
+            variant="h1" 
+            sx={{ 
+              fontSize: '2.5rem',
+              fontWeight: 700,
+              mb: 3,
+              color: '#1a1a1a',
+              lineHeight: 1.2
+            }}
+          >
+            {contentData?.title || `${airlineName} flights from ${departureCity} to ${arrivalCity}`}
+          </Typography>
+          
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontSize: '1.2rem',
+              color: '#666',
+              maxWidth: '800px',
+              mx: 'auto',
+              lineHeight: 1.6
+            }}
+          >
+            {contentData?.description || `Find the best ${airlineName} flight deals from ${departureCity} (${departureIata}) to ${arrivalCity} (${arrivalIata}). Compare prices, book your tickets, and enjoy a comfortable journey.`}
+          </Typography>
+        </Box>
 
         {/* Cheap Flight Deals */}
         <Box sx={{ mb: 6 }}>
@@ -1642,17 +1670,13 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             {t.flightPage.priceTrends}
           </Typography>
           
-          {/* Debug Information */}
-          <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
-            Debug: Weekly data count: {weeklyPriceData?.length || 0}, Monthly data count: {monthlyPriceData?.length || 0}
-          </Typography>
           
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
                 title={t.flightPage.weeklyTrends}
                 description={
-                  contentData?.weekly_price_paragraph || `Track weekly price fluctuations for ${airlineName} flights from ${departureCity} to ${arrivalCity}. With average fares around $${flightData?.average_fare || 'N/A'}, the cheapest day to fly is typically ${flightData?.cheapest_day || 'mid-week'}. Prices typically vary by day of the week, with mid-week flights often offering better deals.`
+                  contentData?.weekly || `Track weekly price fluctuations for ${airlineName} flights from ${departureCity} to ${arrivalCity}. With average fares around $${flightData?.average_fare || 'N/A'}, the cheapest day to fly is typically ${flightData?.cheapest_day || 'mid-week'}. Prices typically vary by day of the week, with mid-week flights often offering better deals.`
                 }
                 data={weeklyPriceData}
                 yAxisLabel="Price (USD)"
@@ -1664,7 +1688,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               <ClientPriceGraph
                 title={t.flightPage.monthlyTrends}
                 description={
-                  contentData?.monthly_price_paragraph || `Monitor monthly price patterns to identify the best time to book your ${airlineName} flight from ${departureCity} to ${arrivalCity}. With average fares around $${flightData?.average_fare || 'N/A'}, the cheapest month to fly is typically ${flightData?.cheapest_month || 'off-season'}. Seasonal variations and holiday periods significantly impact pricing.`
+                  contentData?.monthly || `Monitor monthly price patterns to identify the best time to book your ${airlineName} flight from ${departureCity} to ${arrivalCity}. With average fares around $${flightData?.average_fare || 'N/A'}, the cheapest month to fly is typically ${flightData?.cheapest_month || 'off-season'}. Seasonal variations and holiday periods significantly impact pricing.`
                 }
                 data={monthlyPriceData}
                 yAxisLabel="Price (USD)"
@@ -1693,7 +1717,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
                 title={`${t.flightPage.weatherIn || 'Weather in'} ${departureCity}`}
-                description={generateWeatherDescription(weatherData, departureCity, t)}
+                description={contentData?.temperature || generateWeatherDescription(weatherData, departureCity, t)}
                 data={weatherData}
                 yAxisLabel="Temperature (°F)"
                 showPrices={false}
@@ -1703,7 +1727,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
                 title={`${t.flightPage.averageRainfallIn || 'Average Rainfall in'} ${departureCity}`}
-                description={generateRainfallDescription(rainfallData, departureCity, t)}
+                description={contentData?.rainfall || generateRainfallDescription(rainfallData, departureCity, t)}
                 data={rainfallData}
                 yAxisLabel="Rainfall (inches)"
                 showPrices={false}
@@ -2106,19 +2130,14 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             {t.flightPage.faqs}
           </Typography>
           
-          {/* Debug Information */}
-          <Typography variant="body1" sx={{ color: '#666', mb: 2 }}>
-            Debug: FAQs available: {finalContentData?.faqs ? 'Yes' : 'No'}, 
-            Count: {finalContentData?.faqs?.length || 0}
-          </Typography>
           
-          {finalContentData?.faqs && finalContentData.faqs.length > 0 ? (
+          {contentData?.faqs && contentData.faqs.length > 0 ? (
             <div 
               dangerouslySetInnerHTML={{ 
-                __html: finalContentData.faqs.map((faq: any) => 
+                __html: contentData.faqs.map((faq: any) => 
                   `<div style="margin-bottom: 1.5rem; padding: 1rem 0; border-bottom: 1px solid #e0e0e0;">
-                    <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: #333;">${renderContent(faq.q || faq.question)}</h3>
-                    <p style="font-size: 1rem; line-height: 1.6; color: #555; margin: 0;">${renderContent(faq.a || faq.answer)}</p>
+                    <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: #333;">${renderContent(faq.title || faq.q || faq.question)}</h3>
+                    <p style="font-size: 1rem; line-height: 1.6; color: #555; margin: 0;">${renderContent(faq.content || faq.a || faq.answer)}</p>
                   </div>`
                 ).join('') 
               }} 
@@ -2546,9 +2565,9 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       <SchemaOrg data={{
         "@context": "https://schema.org",
         "@type": "FAQPage",
-        "mainEntity": finalContentData?.faqs?.map((faq: any) => {
-          const question = renderContent(faq.q || faq.question);
-          const answer = renderContent(faq.a || faq.answer);
+        "mainEntity": contentData?.faqs?.map((faq: any) => {
+          const question = renderContent(faq.title || faq.q || faq.question);
+          const answer = renderContent(faq.content || faq.a || faq.answer);
           
           // Remove HTML tags and clean up the text
           const cleanQuestion = question.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
@@ -2875,6 +2894,101 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       {/* Dataset Schemas for Graphs */}
       <SchemaOrg data={datasetSchemas.monthly} />
       <SchemaOrg data={datasetSchemas.weekly} />
+
+      {/* Content Schema */}
+      <SchemaOrg data={{
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": contentData?.title || `${airlineName} flights from ${departureCity} to ${arrivalCity}`,
+        "description": contentData?.meta_description || contentData?.description || `Find the best ${airlineName} flight deals from ${departureCity} to ${arrivalCity}`,
+        "author": {
+          "@type": "Organization",
+          "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
+          "logo": {
+            "@type": "ImageObject",
+            "url": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/logo.png`
+          }
+        },
+        "datePublished": new Date().toISOString(),
+        "dateModified": new Date().toISOString(),
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/airlines/${airlineCode}/${params.route}`
+        }
+      }} />
+
+      {/* Flight List Schema */}
+      <SchemaOrg data={{
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": `${airlineName} Flights from ${departureCity} to ${arrivalCity}`,
+        "description": `Available ${airlineName} flights from ${departureCity} (${departureIata}) to ${arrivalCity} (${arrivalIata})`,
+        "numberOfItems": normalizedFlights.length,
+        "itemListElement": normalizedFlights.map((flight, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "Flight",
+            "name": `${airlineName} Flight ${flight.airline || 'XX'}${index + 1}`,
+            "flightNumber": `${flight.airline || 'XX'}${index + 1}`,
+            "departureTime": '09:00',
+            "arrivalTime": '11:00',
+            "duration": '2h 30m',
+            "price": {
+              "@type": "PriceSpecification",
+              "price": flight.price || 100,
+              "priceCurrency": 'USD'
+            },
+            "departureAirport": {
+              "@type": "Airport",
+              "name": `${departureCity} Airport`,
+              "iataCode": flight.from
+            },
+            "arrivalAirport": {
+              "@type": "Airport",
+              "name": `${arrivalCity} Airport`,
+              "iataCode": flight.to
+            }
+          }
+        }))
+      }} />
+
+      {/* Price Data Schema */}
+      <SchemaOrg data={{
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        "name": `${airlineName} Flight Price Data - ${departureCity} to ${arrivalCity}`,
+        "description": `Historical price data for ${airlineName} flights from ${departureCity} to ${arrivalCity}`,
+        "url": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/airlines/${airlineCode}/${params.route}`,
+        "creator": {
+          "@type": "Organization",
+          "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap"
+        },
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "variableMeasured": [
+          {
+            "@type": "PropertyValue",
+            "name": "Weekly Price Average",
+            "description": "Average flight prices by day of the week",
+            "unitText": "USD"
+          },
+          {
+            "@type": "PropertyValue",
+            "name": "Monthly Price Average", 
+            "description": "Average flight prices by month",
+            "unitText": "USD"
+          }
+        ],
+        "distribution": {
+          "@type": "DataDownload",
+          "encodingFormat": "application/json",
+          "contentUrl": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/api/airlines/${airlineCode}/${params.route}/prices`
+        }
+      }} />
 
     </Box>
   );

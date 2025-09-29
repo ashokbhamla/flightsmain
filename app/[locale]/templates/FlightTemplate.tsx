@@ -146,8 +146,12 @@ const FlightTemplate = memo(function FlightTemplate({
   // Helper function to replace IATA codes with city names in text
   const replaceIataWithCityName = (text: any): string => {
     if (!text || typeof text !== 'string') return '';
-    // Replace the specific IATA code with the city name
-    return text.replace(new RegExp(finalDepartureIata, 'g'), departureCity);
+    // Replace both departure and arrival IATA codes with city names
+    let result = text.replace(new RegExp(finalDepartureIata, 'g'), departureCity);
+    if (arrivalIata) {
+      result = result.replace(new RegExp(arrivalIata, 'g'), arrivalCity);
+    }
+    return result;
   };
 
   // Fetch city-specific data for best_time_to_visit and weather
@@ -184,12 +188,12 @@ const FlightTemplate = memo(function FlightTemplate({
   
   
 
-  // Price cards data from API - Updated to use correct API fields
+  // Price cards data from API - Updated to use real API data
   const priceCards = [
     {
       id: 1,
       type: 'average',
-      price: pageData?.avragefares ? `$${pageData.avragefares}` : '$189',
+      price: flightData?.round_trip_start ? `$${flightData.round_trip_start}` : '$189',
       title: locale === 'es' ? 'Precio promedio desde:' : 
              locale === 'ru' ? 'Средняя цена от:' :
              locale === 'fr' ? 'Prix moyen à partir de:' : 'Average price start from:',
@@ -202,7 +206,7 @@ const FlightTemplate = memo(function FlightTemplate({
     {
       id: 2,
       type: 'oneway',
-      price: pageData?.avragefares ? `$${Math.round(pageData.avragefares * 0.7)}` : '$122',
+      price: flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$122',
       title: locale === 'es' ? 'Solo ida desde:' : 
              locale === 'ru' ? 'В одну сторону от:' :
              locale === 'fr' ? 'Aller simple depuis:' : 'One-way from:',
@@ -215,7 +219,7 @@ const FlightTemplate = memo(function FlightTemplate({
     {
       id: 3,
       type: 'cheapest-day',
-      day: pageData?.cheapest_day || (locale === 'es' ? 'Miércoles' :
+      day: flightData?.cheapest_day || (locale === 'es' ? 'Miércoles' :
              locale === 'ru' ? 'Среда' :
              locale === 'fr' ? 'Mercredi' : 'Wednesday'),
       title: locale === 'es' ? 'Día más barato:' : 
@@ -233,9 +237,17 @@ const FlightTemplate = memo(function FlightTemplate({
     {
       id: 4,
       type: 'cheapest-month',
-      month: pageData?.cheapest_month || (locale === 'es' ? 'Enero' :
-             locale === 'ru' ? 'Январь' :
-             locale === 'fr' ? 'Janvier' : 'January'),
+      month: (() => {
+        if (flightData?.months && Array.isArray(flightData.months) && flightData.months.length > 0) {
+          const cheapestMonth = flightData.months.reduce((min: any, month: any) => 
+            month.price < min.price ? month : min
+          );
+          return cheapestMonth.name.split(' ')[0]; // Extract month name
+        }
+        return locale === 'es' ? 'Enero' :
+               locale === 'ru' ? 'Январь' :
+               locale === 'fr' ? 'Janvier' : 'January';
+      })(),
       title: locale === 'es' ? 'Más barato en:' : 
              locale === 'ru' ? 'Дешевле в:' :
              locale === 'fr' ? 'Moins cher en:' : 'Cheapest In:',
@@ -733,7 +745,7 @@ const FlightTemplate = memo(function FlightTemplate({
                        locale === 'fr' ? `Prix le moins cher le ${pageData.cheapest_day}` :
                        `Cheapest price on ${pageData.cheapest_day}`) : 
                       content.weeklyTitle}
-                    description={replaceIataWithCityName(pageData?.weekly_fares_graph?.paragraph || pageData?.weekly || content.weeklyDescription)}
+                    description={replaceIataWithCityName(pageData?.weekly || content.weeklyDescription)}
                     data={weeklyPriceData}
                     yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
                                 locale === 'ru' ? 'Цена (USD)' :
@@ -752,7 +764,7 @@ const FlightTemplate = memo(function FlightTemplate({
                        locale === 'fr' ? `Prix le moins cher en ${pageData.cheapest_month}` :
                        `Cheapest price in ${pageData.cheapest_month}`) : 
                       content.monthlyTitle}
-                    description={replaceIataWithCityName(pageData?.monthly_fares_graph?.paragraph || pageData?.monthly || content.monthlyDescription)}
+                    description={replaceIataWithCityName(pageData?.monthly || content.monthlyDescription)}
                     data={monthlyPriceData}
                     yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
                                 locale === 'ru' ? 'Цена (USD)' :
@@ -788,7 +800,7 @@ const FlightTemplate = memo(function FlightTemplate({
                       title={locale === 'es' ? 'Temperatura' : 
                              locale === 'ru' ? 'Температура' :
                              locale === 'fr' ? 'Température' : 'Temperature'}
-                      description={replaceIataWithCityName(pageData?.temperature_description || cityData?.weather?.temperature_description || content.weatherDescription)}
+                      description={replaceIataWithCityName(pageData?.temperature || content.weatherDescription)}
                     data={weatherData}
                     yAxisLabel={locale === 'es' ? 'Temperatura (°F)' : 
                                 locale === 'ru' ? 'Температура (°F)' :
@@ -804,7 +816,7 @@ const FlightTemplate = memo(function FlightTemplate({
                     title={locale === 'es' ? 'Precipitación' : 
                            locale === 'ru' ? 'Осадки' :
                            locale === 'fr' ? 'Précipitations' : 'Rainfall'}
-                    description={replaceIataWithCityName(pageData?.rainfall_description || cityData?.weather?.rainfall_description || content.rainfallDescription)}
+                    description={replaceIataWithCityName(pageData?.rainfall || content.rainfallDescription)}
                     data={rainfallDataTransformed}
                     yAxisLabel={locale === 'es' ? 'Precipitación (pulgadas)' : 
                                 locale === 'ru' ? 'Осадки (дюймы)' :
@@ -1060,6 +1072,216 @@ const FlightTemplate = memo(function FlightTemplate({
                 lineHeight: 1.6,
                 color: '#666'
               }}
+            />
+          </Box>
+        )}
+
+        {/* Stats Section */}
+        {pageData?.stats && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? 'Estadísticas del Aeropuerto' : 
+               locale === 'ru' ? 'Статистика Аэропорта' :
+               locale === 'fr' ? 'Statistiques de l\'Aéroport' : 'Airport Statistics'}
+            </Typography>
+            <Box 
+              sx={{ 
+                color: '#4a5568',
+                lineHeight: 1.7,
+                '& h3, & h4, & h5, & h6': {
+                  color: '#1a1a1a',
+                  fontWeight: 600,
+                  mb: 2,
+                  mt: 3
+                },
+                '& p': {
+                  mb: 2
+                },
+                '& ul, & ol': {
+                  pl: 3,
+                  mb: 2
+                },
+                '& li': {
+                  mb: 1
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: pageData.stats }}
+            />
+          </Box>
+        )}
+
+        {/* City Information Section */}
+        {pageData?.city && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? `Acerca de ${arrivalCity}` : 
+               locale === 'ru' ? `О ${arrivalCity}` :
+               locale === 'fr' ? `À propos de ${arrivalCity}` : `About ${arrivalCity}`}
+            </Typography>
+            <Box 
+              sx={{ 
+                color: '#4a5568',
+                lineHeight: 1.7,
+                '& h3, & h4, & h5, & h6': {
+                  color: '#1a1a1a',
+                  fontWeight: 600,
+                  mb: 2,
+                  mt: 3
+                },
+                '& p': {
+                  mb: 2
+                },
+                '& ul, & ol': {
+                  pl: 3,
+                  mb: 2
+                },
+                '& li': {
+                  mb: 1
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: pageData.city }}
+            />
+          </Box>
+        )}
+
+        {/* Places to Visit Section */}
+        {pageData?.places && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? `Lugares para Visitar en ${arrivalCity}` : 
+               locale === 'ru' ? `Места для посещения в ${arrivalCity}` :
+               locale === 'fr' ? `Lieux à Visiter à ${arrivalCity}` : `Places to Visit in ${arrivalCity}`}
+            </Typography>
+            <Box 
+              sx={{ 
+                color: '#4a5568',
+                lineHeight: 1.7,
+                '& h3, & h4, & h5, & h6': {
+                  color: '#1a1a1a',
+                  fontWeight: 600,
+                  mb: 2,
+                  mt: 3
+                },
+                '& p': {
+                  mb: 2
+                },
+                '& ul, & ol': {
+                  pl: 3,
+                  mb: 2
+                },
+                '& li': {
+                  mb: 1
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: pageData.places }}
+            />
+          </Box>
+        )}
+
+        {/* Hotels Section */}
+        {pageData?.hotels && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? `Hoteles en ${arrivalCity}` : 
+               locale === 'ru' ? `Отели в ${arrivalCity}` :
+               locale === 'fr' ? `Hôtels à ${arrivalCity}` : `Hotels in ${arrivalCity}`}
+            </Typography>
+            <Box 
+              sx={{ 
+                color: '#4a5568',
+                lineHeight: 1.7,
+                '& h3, & h4, & h5, & h6': {
+                  color: '#1a1a1a',
+                  fontWeight: 600,
+                  mb: 2,
+                  mt: 3
+                },
+                '& p': {
+                  mb: 2
+                },
+                '& ul, & ol': {
+                  pl: 3,
+                  mb: 2
+                },
+                '& li': {
+                  mb: 1
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: pageData.hotels }}
+            />
+          </Box>
+        )}
+
+        {/* Airlines Section */}
+        {pageData?.airlines && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? `Aerolíneas que Vuelan de ${departureCity} a ${arrivalCity}` : 
+               locale === 'ru' ? `Авиакомпании, летающие из ${departureCity} в ${arrivalCity}` :
+               locale === 'fr' ? `Compagnies Aériennes Volant de ${departureCity} à ${arrivalCity}` : `Airlines Flying from ${departureCity} to ${arrivalCity}`}
+            </Typography>
+            <Box 
+              sx={{ 
+                color: '#4a5568',
+                lineHeight: 1.7,
+                '& h3, & h4, & h5, & h6': {
+                  color: '#1a1a1a',
+                  fontWeight: 600,
+                  mb: 2,
+                  mt: 3
+                },
+                '& p': {
+                  mb: 2
+                },
+                '& ul, & ol': {
+                  pl: 3,
+                  mb: 2
+                },
+                '& li': {
+                  mb: 1
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: pageData.airlines }}
             />
           </Box>
         )}
@@ -1519,6 +1741,234 @@ const FlightTemplate = memo(function FlightTemplate({
             {/* Dataset Schemas for Graphs */}
             <SchemaOrg data={datasetSchemas.monthly} />
             <SchemaOrg data={datasetSchemas.weekly} />
+
+            {/* Content Schema */}
+            <SchemaOrg data={{
+              "@context": "https://schema.org",
+              "@type": "Article",
+              "headline": pageData?.title || content.title,
+              "description": pageData?.description || content.description,
+              "author": {
+                "@type": "Organization",
+                "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/logo.png`
+                }
+              },
+              "datePublished": new Date().toISOString(),
+              "dateModified": new Date().toISOString(),
+              "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/flights/${departureIata}${arrivalIata ? `-${arrivalIata}` : ''}`
+              },
+              "about": {
+                "@type": "Place",
+                "name": arrivalCity,
+                "description": pageData?.city || `Information about ${arrivalCity}`
+              }
+            }} />
+
+            {/* Flight List Schema */}
+            {transformedFlights && transformedFlights.length > 0 && (
+              <SchemaOrg data={{
+                "@context": "https://schema.org",
+                "@type": "ItemList",
+                "name": `Flights from ${departureCity} to ${arrivalCity}`,
+                "description": `Available flights from ${departureCity} (${departureIata}) to ${arrivalCity} (${arrivalIata})`,
+                "numberOfItems": transformedFlights.length,
+                "itemListElement": transformedFlights.map((flight, index) => ({
+                  "@type": "ListItem",
+                  "position": index + 1,
+                  "item": {
+                    "@type": "Flight",
+                    "name": `${flight.airline || 'Airline'} Flight ${flight.airline_iata || 'XX'}${flight.id || index + 1}`,
+                    "flightNumber": `${flight.airline_iata || 'XX'}${flight.id || index + 1}`,
+                    "departureTime": flight.departure_time || '09:00',
+                    "arrivalTime": flight.arrival_time || '11:00',
+                    "duration": flight.duration || '2h 30m',
+                    "price": {
+                      "@type": "PriceSpecification",
+                      "price": flight.price || 100,
+                      "priceCurrency": flight.currency || 'USD'
+                    },
+                    "departureAirport": {
+                      "@type": "Airport",
+                      "name": `${departureCity} Airport`,
+                      "iataCode": flight.iata_from || departureIata
+                    },
+                    "arrivalAirport": {
+                      "@type": "Airport",
+                      "name": `${arrivalCity} Airport`,
+                      "iataCode": flight.iata_to || arrivalIata
+                    }
+                  }
+                }))
+              }} />
+            )}
+
+            {/* Price Data Schema */}
+            <SchemaOrg data={{
+              "@context": "https://schema.org",
+              "@type": "Dataset",
+              "name": `Flight Price Data - ${departureCity} to ${arrivalCity}`,
+              "description": `Historical price data for flights from ${departureCity} to ${arrivalCity}`,
+              "url": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/flights/${departureIata}${arrivalIata ? `-${arrivalIata}` : ''}`,
+              "creator": {
+                "@type": "Organization",
+                "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap"
+              },
+              "license": "https://creativecommons.org/licenses/by/4.0/",
+              "variableMeasured": [
+                {
+                  "@type": "PropertyValue",
+                  "name": "Weekly Price Average",
+                  "description": "Average flight prices by day of the week",
+                  "unitText": "USD"
+                },
+                {
+                  "@type": "PropertyValue",
+                  "name": "Monthly Price Average", 
+                  "description": "Average flight prices by month",
+                  "unitText": "USD"
+                },
+                {
+                  "@type": "PropertyValue",
+                  "name": "Temperature Data",
+                  "description": "Average temperature by month",
+                  "unitText": "°F"
+                },
+                {
+                  "@type": "PropertyValue",
+                  "name": "Rainfall Data",
+                  "description": "Average rainfall by month",
+                  "unitText": "inches"
+                }
+              ],
+              "distribution": {
+                "@type": "DataDownload",
+                "encodingFormat": "application/json",
+                "contentUrl": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/api/flight-data?arrival_iata=${arrivalIata}&departure_iata=${departureIata}`
+              }
+            }} />
+
+            {/* Place Schema for Destination */}
+            <SchemaOrg data={{
+              "@context": "https://schema.org",
+              "@type": "Place",
+              "name": arrivalCity,
+              "description": pageData?.city || `Information about ${arrivalCity}`,
+              "url": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/flights/${departureIata}${arrivalIata ? `-${arrivalIata}` : ''}`,
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": "0.0", // This would need to be fetched from city data
+                "longitude": "0.0"
+              },
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": arrivalCity,
+                "addressCountry": "Unknown"
+              }
+            }} />
+
+            {/* TravelAgency Schema */}
+            <SchemaOrg data={{
+              "@context": "https://schema.org",
+              "@type": "TravelAgency",
+              "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
+              "url": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com",
+              "description": process.env.NEXT_PUBLIC_COMPANY_DESCRIPTION || "Compare airlines and find the best flight deals",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": process.env.NEXT_PUBLIC_ADDRESS || "8th the green suite b",
+                "addressLocality": process.env.NEXT_PUBLIC_CITY || "Dover",
+                "addressRegion": process.env.NEXT_PUBLIC_STATE || "DE",
+                "postalCode": process.env.NEXT_PUBLIC_ZIP || "19901",
+                "addressCountry": process.env.NEXT_PUBLIC_COUNTRY || "US"
+              },
+              "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-302-123-4567",
+              "email": process.env.NEXT_PUBLIC_EMAIL || "info@airlinesmap.com",
+              "sameAs": [
+                process.env.NEXT_PUBLIC_FACEBOOK || "https://facebook.com/airlinesmap",
+                process.env.NEXT_PUBLIC_TWITTER || "https://twitter.com/airlinesmap",
+                process.env.NEXT_PUBLIC_INSTAGRAM || "https://instagram.com/airlinesmap"
+              ]
+            }} />
+
+            {/* Breadcrumb Schema */}
+            <SchemaOrg data={{
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Flights",
+                  "item": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/flights`
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 3,
+                  "name": `${departureCity} to ${arrivalCity}`,
+                  "item": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/flights/${departureIata}${arrivalIata ? `-${arrivalIata}` : ''}`
+                }
+              ]
+            }} />
+
+            {/* WebPage Schema */}
+            <SchemaOrg data={{
+              "@context": "https://schema.org",
+              "@type": "WebPage",
+              "name": pageData?.title || content.title,
+              "description": pageData?.description || content.description,
+              "url": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/flights/${departureIata}${arrivalIata ? `-${arrivalIata}` : ''}`,
+              "mainEntity": {
+                "@type": "Flight",
+                "departureAirport": {
+                  "@type": "Airport",
+                  "name": `${departureCity} Airport`,
+                  "iataCode": departureIata
+                },
+                "arrivalAirport": {
+                  "@type": "Airport",
+                  "name": `${arrivalCity} Airport`,
+                  "iataCode": arrivalIata
+                }
+              },
+              "breadcrumb": {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                  {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Flights",
+                    "item": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/flights`
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": `${departureCity} to ${arrivalCity}`,
+                    "item": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/flights/${departureIata}${arrivalIata ? `-${arrivalIata}` : ''}`
+                  }
+                ]
+              }
+            }} />
           </>
         );
       })()}
