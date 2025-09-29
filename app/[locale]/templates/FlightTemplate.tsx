@@ -144,8 +144,8 @@ const FlightTemplate = memo(function FlightTemplate({
   };
 
   // Helper function to replace IATA codes with city names in text
-  const replaceIataWithCityName = (text: string): string => {
-    if (!text) return text;
+  const replaceIataWithCityName = (text: any): string => {
+    if (!text || typeof text !== 'string') return '';
     // Replace the specific IATA code with the city name
     return text.replace(new RegExp(finalDepartureIata, 'g'), departureCity);
   };

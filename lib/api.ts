@@ -249,7 +249,7 @@ export async function fetchDestinationFlightData(iataFrom: string, lang_id: 1 | 
 }
 
 // New API functions for airline-specific pages
-export async function fetchAirlineContent(airlineCode: string, arrivalIata: string, departureIata: string, lang_id: 1 | 2, domain_id: 1 | 2 = 1) {
+export async function fetchAirlineContent(airlineCode: string, arrivalIata: string, departureIata: string, lang_id: 1 | 2 | 3 | 4, domain_id: 1 | 2 = 1) {
   const isServer = typeof window === 'undefined';
   
   if (isServer) {
@@ -266,7 +266,7 @@ export async function fetchAirlineContent(airlineCode: string, arrivalIata: stri
   }
 }
 
-export async function fetchAirlineData(airlineCode: string, arrivalIata: string, departureIata: string, lang_id: 1 | 2 = 1, domain_id: 1 | 2 = 1) {
+export async function fetchAirlineData(airlineCode: string, arrivalIata: string, departureIata: string, lang_id: 1 | 2 | 3 | 4 = 1, domain_id: 1 | 2 = 1) {
   const isServer = typeof window === 'undefined';
   
   if (isServer) {
@@ -284,7 +284,7 @@ export async function fetchAirlineData(airlineCode: string, arrivalIata: string,
 }
 
 // Fetch airline content for airport pages
-export async function fetchAirlineAirportContent(airlineCode: string, departureIata: string, lang_id: 1 | 2, domain_id: 1 | 2 = 1) {
+export async function fetchAirlineAirportContent(airlineCode: string, departureIata: string, lang_id: 1 | 2 | 3 | 4, domain_id: 1 | 2 = 1) {
   const isServer = typeof window === 'undefined';
   if (isServer) {
     const url = `${process.env.NEXT_PUBLIC_API_CONTENT || 'https://api.triposia.com'}/content/airlines?airline_code=${airlineCode}&departure_iata=${departureIata}&lang_id=${lang_id}&domain_id=${domain_id}`;
@@ -301,7 +301,7 @@ export async function fetchAirlineAirportContent(airlineCode: string, departureI
 }
 
 // Fetch airline data for airport pages
-export async function fetchAirlineAirportData(airlineCode: string, departureIata: string, lang_id: 1 | 2 = 1, domain_id: 1 | 2 = 1) {
+export async function fetchAirlineAirportData(airlineCode: string, departureIata: string, lang_id: 1 | 2 | 3 | 4 = 1, domain_id: 1 | 2 = 1) {
   const isServer = typeof window === 'undefined';
   if (isServer) {
     const url = `${process.env.NEXT_PUBLIC_API_REAL || 'https://api.triposia.com'}/real/airlines?airline_code=${airlineCode}&departure_iata=${departureIata}&lang_id=${lang_id}&domain_id=${domain_id}`;
