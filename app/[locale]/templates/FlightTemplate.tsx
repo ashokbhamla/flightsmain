@@ -1266,7 +1266,7 @@ const FlightTemplate = memo(function FlightTemplate({
           }
         ];
 
-        // Generate dataset schemas for graphs
+        // Generate dataset schemas for graphs using dynamic data
         const datasetSchemas = generateDatasetSchema({
           locale,
           airlineName: 'Various Airlines',
@@ -1274,15 +1274,40 @@ const FlightTemplate = memo(function FlightTemplate({
           arrivalCity: arrivalCityName || 'Various Destinations',
           pageUrl,
           monthlyPriceData: monthlyPriceData || [],
-          monthlyWeatherData: [], // Weather data not available in flight pages
-          monthlyRainfallData: [], // Rainfall data not available in flight pages
+          monthlyWeatherData: temperatureData || [], // Use temperature data from pageData
+          monthlyRainfallData: rainfallData || [], // Use rainfall data from pageData
           weeklyPriceData: weeklyPriceData || []
         });
 
         return (
           <>
-            {/* FAQ Schema */}
-            {faqsToShow && faqsToShow.length > 0 && (
+            {/* FAQ Schema - Dynamic from pageData.faqs */}
+            {pageData?.faqs && pageData.faqs.length > 0 && (
+              <SchemaOrg data={{
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": pageData.faqs.map((faq: any) => {
+                  const question = renderContent(faq.q || faq.question);
+                  const answer = renderContent(faq.a || faq.answer);
+                  
+                  // Remove HTML tags and clean up the text
+                  const cleanQuestion = question.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+                  const cleanAnswer = answer.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+                  
+                  return {
+                    "@type": "Question",
+                    "name": cleanQuestion,
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": cleanAnswer
+                    }
+                  };
+                })
+              }} />
+            )}
+
+            {/* Fallback FAQ Schema if no dynamic FAQs */}
+            {(!pageData?.faqs || pageData.faqs.length === 0) && faqsToShow && faqsToShow.length > 0 && (
               <SchemaOrg data={{
                 "@context": "https://schema.org",
                 "@type": "FAQPage",
@@ -1311,9 +1336,9 @@ const FlightTemplate = memo(function FlightTemplate({
               <SchemaOrg data={{
                 "@context": "https://schema.org",
                 "@type": "Airport",
-                "name": `${departureCityName} Airport`,
+                "name": pageData?.title || `${departureCityName} Airport`,
                 "iataCode": departureIata,
-                "description": `Find flights from ${departureCityName} Airport (${departureIata}) to destinations worldwide. Compare prices and book your next trip.`,
+                "description": pageData?.description || `Find flights from ${departureCityName} Airport (${departureIata}) to destinations worldwide. Compare prices and book your next trip.`,
                 "address": {
                   "@type": "PostalAddress",
                   "addressLocality": departureCityName,
@@ -1328,12 +1353,12 @@ const FlightTemplate = memo(function FlightTemplate({
                   {
                     "@type": "LocationFeatureSpecification", 
                     "name": "Airlines",
-                    "value": "Multiple Airlines"
+                    "value": pageData?.airlines ? renderContent(pageData.airlines).replace(/<[^>]*>/g, '').substring(0, 100) : "Multiple Airlines"
                   }
                 ],
                 "hasOfferCatalog": {
                   "@type": "OfferCatalog",
-                  "name": "Flight Deals",
+                  "name": pageData?.title || "Flight Deals",
                   "itemListElement": [
                     {
                       "@type": "Offer",
@@ -1350,8 +1375,52 @@ const FlightTemplate = memo(function FlightTemplate({
               }} />
             )}
 
-            {/* Flight Schema for Route Pairs */}
-            {arrivalIata && flightData && (
+            {/* Flight Schemas for Route Pairs - Individual flights */}
+            {arrivalIata && transformedFlights && transformedFlights.length > 0 && transformedFlights.map((flight, index) => (
+              <SchemaOrg key={`flight-${index}`} data={{
+                "@context": "https://schema.org",
+                "@type": "Flight",
+                "flightNumber": flight.airline_iata ? `${flight.airline_iata}${Math.floor(Math.random() * 9999) + 1000}` : `FL${index + 1}`,
+                "airline": {
+                  "@type": "Airline",
+                  "name": flight.airline || "Airline",
+                  "iataCode": flight.airline_iata || "XX"
+                },
+                "departureAirport": {
+                  "@type": "Airport",
+                  "name": `${flight.departure_city_name || departureCityName} Airport`,
+                  "iataCode": flight.iata_from || departureIata,
+                  "address": {
+                    "@type": "PostalAddress",
+                    "addressLocality": flight.departure_city_name || departureCityName,
+                    "addressCountry": flight.country_code || "Unknown"
+                  }
+                },
+                "arrivalAirport": {
+                  "@type": "Airport",
+                  "name": `${flight.arrival_city_name || arrivalCityName} Airport`,
+                  "iataCode": flight.iata_to || arrivalIata,
+                  "address": {
+                    "@type": "PostalAddress",
+                    "addressLocality": flight.arrival_city_name || arrivalCityName,
+                    "addressCountry": flight.country_code || "Unknown"
+                  }
+                },
+                "departureTime": flight.departure_time || "T06:00:00",
+                "arrivalTime": flight.arrival_time || "T08:00:00",
+                "offers": {
+                  "@type": "Offer",
+                  "price": flight.price || "Varies",
+                  "priceCurrency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
+                  "availability": "https://schema.org/InStock",
+                  "validFrom": new Date().toISOString().split('T')[0],
+                  "validThrough": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                }
+              }} />
+            ))}
+
+            {/* Fallback Flight Schema for Route Pairs if no individual flights */}
+            {arrivalIata && (!transformedFlights || transformedFlights.length === 0) && flightData && (
               <SchemaOrg data={{
                 "@context": "https://schema.org",
                 "@type": "Flight",
@@ -1394,25 +1463,57 @@ const FlightTemplate = memo(function FlightTemplate({
             <SchemaOrg data={{
               "@context": "https://schema.org",
               "@type": "Product",
-              "name": `Flight deals from ${departureCityName} to ${arrivalCityName || 'various destinations'}`,
-              "description": `Find the best flight deals and prices from ${departureCityName} to ${arrivalCityName || 'various destinations'}. Compare prices across multiple airlines and book your next trip.`,
+              "name": pageData?.title || `Flight deals from ${departureCityName} to ${arrivalCityName || 'various destinations'}`,
+              "description": pageData?.description || `Find the best flight deals and prices from ${departureCityName} to ${arrivalCityName || 'various destinations'}. Compare prices across multiple airlines and book your next trip.`,
               "brand": {
                 "@type": "Brand",
-                "name": "AirlinesMap"
+                "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap"
               },
-              "offers": {
+              "offers": transformedFlights && transformedFlights.length > 0 ? {
                 "@type": "AggregateOffer",
                 "priceCurrency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
-                "lowPrice": flightData?.cheapest_price ? `$${flightData.cheapest_price}` : "Varies",
-                "highPrice": flightData?.most_expensive_price ? `$${flightData.most_expensive_price}` : "Varies",
-                "offerCount": flightData?.total_flights || "Multiple",
+                "lowPrice": Math.min(...transformedFlights.map(f => parseFloat(f.price?.replace('$', '') || '0'))).toString(),
+                "highPrice": Math.max(...transformedFlights.map(f => parseFloat(f.price?.replace('$', '') || '0'))).toString(),
+                "offerCount": transformedFlights.length.toString(),
+                "availability": "https://schema.org/InStock",
+                "validFrom": new Date().toISOString().split('T')[0],
+                "validThrough": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+              } : {
+                "@type": "AggregateOffer",
+                "priceCurrency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
+                "lowPrice": pageData?.avragefares ? Math.round(pageData.avragefares * 0.7).toString() : "Varies",
+                "highPrice": pageData?.avragefares ? Math.round(pageData.avragefares * 1.3).toString() : "Varies",
+                "offerCount": "Multiple",
                 "availability": "https://schema.org/InStock"
               },
               "aggregateRating": {
                 "@type": "AggregateRating",
                 "ratingValue": process.env.NEXT_PUBLIC_DEFAULT_RATING || "4.5",
                 "reviewCount": process.env.NEXT_PUBLIC_DEFAULT_REVIEW_COUNT || "1000"
-              }
+              },
+              "category": "Travel",
+              "additionalProperty": [
+                {
+                  "@type": "PropertyValue",
+                  "name": "Departure City",
+                  "value": departureCityName
+                },
+                {
+                  "@type": "PropertyValue", 
+                  "name": "Arrival City",
+                  "value": arrivalCityName || "Various Destinations"
+                },
+                {
+                  "@type": "PropertyValue",
+                  "name": "Cheapest Day",
+                  "value": pageData?.cheapest_day || "Varies"
+                },
+                {
+                  "@type": "PropertyValue",
+                  "name": "Cheapest Month", 
+                  "value": pageData?.cheapest_month || "Varies"
+                }
+              ]
             }} />
 
             {/* Dataset Schemas for Graphs */}
