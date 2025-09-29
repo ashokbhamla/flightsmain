@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  // output: 'standalone', // Disabled for Vercel compatibility
   experimental: {
     optimizePackageImports: ['@mui/material', '@mui/icons-material', 'recharts'],
     turbo: {
