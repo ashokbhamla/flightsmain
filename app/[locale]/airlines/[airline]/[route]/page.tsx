@@ -1974,75 +1974,12 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           </Box>
         )}
 
-        {/* Popular Destinations Section */}
-        {(contentData?.destinations || contentData?.description) && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
-              {safeReplace(t?.flightPage?.popularDestinationsFrom || 'Popular Destinations from {departureCity}', { departureCity })}
-            </Typography>
-            
-            {contentData?.description && (
-            <div 
-              dangerouslySetInnerHTML={{ __html: renderContent(contentData.description) }} 
-                style={{ 
-                  fontSize: '1.1rem',
-                  lineHeight: 1.6,
-                  color: '#666',
-                  marginBottom: '1rem'
-                }}
-              />
-            )}
-            
-            {contentData?.destinations && (
-              <div 
-                dangerouslySetInnerHTML={{ __html: renderContent(contentData.destinations) }} 
-              style={{ 
-                fontSize: '1.1rem',
-                lineHeight: 1.6,
-                color: '#666'
-              }}
-            />
-            )}
-          </Box>
-        )}
 
 
 
 
 
 
-        {/* Places Section */}
-        {contentData?.places && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
-                color: '#1a1a1a'
-              }}
-            >
-              {safeReplace(t?.flightPage?.placesToVisit || 'Places to Visit in {arrivalCity}', { arrivalCity })}
-            </Typography>
-            <div 
-              dangerouslySetInnerHTML={{ __html: renderContent(contentData.places) }} 
-              style={{ 
-                fontSize: '1.1rem',
-                lineHeight: 1.6,
-                color: '#666'
-              }}
-            />
-          </Box>
-        )}
 
 
         {/* City Information Section */}
