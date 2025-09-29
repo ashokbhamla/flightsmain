@@ -297,55 +297,7 @@ export default function AirlineRouteContent({
         </Box>
       )}
 
-      {/* Popular Destinations - Only show if not already in description */}
-      {contentData?.destinations && !description.__html?.includes('destinations') && (
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 3,
-              color: '#1a1a1a'
-            }}
-          >
-{t.flightPage.popularDestinations} from {departureCity}
-          </Typography>
-          <div 
-            dangerouslySetInnerHTML={popularDestinations}
-            style={{ 
-              fontSize: '1.1rem',
-              lineHeight: 1.6,
-              color: '#666'
-            }}
-          />
-        </Box>
-      )}
 
-      {/* Places to Visit */}
-      {contentData?.places && (
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 3,
-              color: '#1a1a1a'
-            }}
-          >
-{t.flightPage.placesToVisit.replace('{arrivalCity}', arrivalCity)}
-          </Typography>
-          <div 
-            dangerouslySetInnerHTML={placesToVisit}
-            style={{ 
-              fontSize: '1.1rem',
-              lineHeight: 1.6,
-              color: '#666'
-            }}
-          />
-        </Box>
-      )}
 
 
       {/* City Information */}
