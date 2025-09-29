@@ -135,8 +135,8 @@ export async function generateMetadata({ params }: { params: { locale: string; s
       console.error('Error fetching metadata for airport page:', error);
     }
 
-    const title = contentData?.title || `${t.flightPage.flights} ${t.flightPage.from} ${cityName} (${airportCode})`;
-    const fullDescription = contentData?.description || `${t.flightPage.findBest} ${t.flightPage.flightDeals} ${t.flightPage.from} ${cityName} ${t.flightPage.to} ${t.flightPage.destinationsWorldwide}.`;
+    const title = contentData?.title || `${t?.flightPage?.flights || 'Flights'} ${t?.flightPage?.from || 'from'} ${cityName} (${airportCode})`;
+    const fullDescription = contentData?.description || `${t?.flightPage?.findBest || 'Find the best'} ${t?.flightPage?.flightDeals || 'flight deals'} ${t?.flightPage?.from || 'from'} ${cityName} ${t?.flightPage?.to || 'to'} ${t?.flightPage?.destinationsWorldwide || 'destinations worldwide'}.`;
     const metaDescription = truncateDescription(fullDescription, 158);
 
     return {
@@ -172,16 +172,16 @@ export async function generateMetadata({ params }: { params: { locale: string; s
     const contentData = await fetchFlightContent(arrivalIata, departureIata, getLanguageId(locale));
     
     return {
-      title: contentData?.title || `${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)} (${departureIata}) ${t.flightPage.to} ${getCityName(arrivalIata)} (${arrivalIata})`,
-      description: contentData?.description || `${t.flightPage.findBest} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}. ${t.flightPage.comparePricesBookTrip}.`,
+      title: contentData?.title || `${t?.flightPage?.flights || 'Flights'} ${t?.flightPage?.from || 'from'} ${getCityName(departureIata)} (${departureIata}) ${t?.flightPage?.to || 'to'} ${getCityName(arrivalIata)} (${arrivalIata})`,
+      description: contentData?.description || `${t?.flightPage?.findBest || 'Find the best'} ${t?.flightPage?.flightDeals || 'flight deals'} ${t?.flightPage?.from || 'from'} ${getCityName(departureIata)} ${t?.flightPage?.to || 'to'} ${getCityName(arrivalIata)}. ${t?.flightPage?.comparePricesBookTrip || 'Compare prices, book your next trip'}.`,
       keywords: contentData?.meta?.keywords?.join(', ') || `flights ${departureIata} ${arrivalIata}, ${getCityName(departureIata)} to ${getCityName(arrivalIata)} flights`,
       alternates: {
         canonical: canonicalUrl,
         languages: alternateUrls,
       },
       openGraph: {
-        title: contentData?.title || `${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}`,
-        description: contentData?.description || `${t.flightPage.findBest} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}.`,
+        title: contentData?.title || `${t?.flightPage?.flights || 'Flights'} ${t?.flightPage?.from || 'from'} ${getCityName(departureIata)} ${t?.flightPage?.to || 'to'} ${getCityName(arrivalIata)}`,
+        description: contentData?.description || `${t?.flightPage?.findBest || 'Find the best'} ${t?.flightPage?.flightDeals || 'flight deals'} ${t?.flightPage?.from || 'from'} ${getCityName(departureIata)} ${t?.flightPage?.to || 'to'} ${getCityName(arrivalIata)}.`,
         type: 'website',
         url: canonicalUrl,
         siteName: process.env.NEXT_PUBLIC_COMPANY_NAME || 'flightsearchs',
@@ -189,15 +189,15 @@ export async function generateMetadata({ params }: { params: { locale: string; s
       },
       twitter: {
         card: 'summary',
-        title: contentData?.title || `${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}`,
-        description: contentData?.description || `${t.flightPage.findBest} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}.`,
+        title: contentData?.title || `${t?.flightPage?.flights || 'Flights'} ${t?.flightPage?.from || 'from'} ${getCityName(departureIata)} ${t?.flightPage?.to || 'to'} ${getCityName(arrivalIata)}`,
+        description: contentData?.description || `${t?.flightPage?.findBest || 'Find the best'} ${t?.flightPage?.flightDeals || 'flight deals'} ${t?.flightPage?.from || 'from'} ${getCityName(departureIata)} ${t?.flightPage?.to || 'to'} ${getCityName(arrivalIata)}.`,
       },
     };
   } catch (error) {
     console.error('Error fetching metadata for flight page:', error);
     return {
-      title: `${t.flightPage.flights} ${t.flightPage.from} ${getCityName(departureIata)} (${departureIata}) ${t.flightPage.to} ${getCityName(arrivalIata)} (${arrivalIata})`,
-      description: `${t.flightPage.findBest} ${t.flightPage.flightDeals} ${t.flightPage.from} ${getCityName(departureIata)} ${t.flightPage.to} ${getCityName(arrivalIata)}.`,
+      title: `${t?.flightPage?.flights || 'Flights'} ${t?.flightPage?.from || 'from'} ${getCityName(departureIata)} (${departureIata}) ${t?.flightPage?.to || 'to'} ${getCityName(arrivalIata)} (${arrivalIata})`,
+      description: `${t?.flightPage?.findBest || 'Find the best'} ${t?.flightPage?.flightDeals || 'flight deals'} ${t?.flightPage?.from || 'from'} ${getCityName(departureIata)} ${t?.flightPage?.to || 'to'} ${getCityName(arrivalIata)}.`,
       alternates: {
         canonical: canonicalUrl,
         languages: alternateUrls,
