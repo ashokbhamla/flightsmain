@@ -167,12 +167,7 @@ export function generateDatasetSchema({
       "encodingFormat": "application/json",
       "contentUrl": pageUrl + "#monthly-data"
     },
-    "dataCatalog": {
-      "@type": "DataCatalog",
-      "name": "Monthly Flight Data Catalog",
-      "description": "Catalog of monthly flight data points",
-      "itemListElement": generateMonthlyDataItems(monthlyPriceData, monthlyWeatherData, monthlyRainfallData, t.months)
-    }
+    "hasPart": generateMonthlyDataItems(monthlyPriceData, monthlyWeatherData, monthlyRainfallData, t.months)
   };
 
   // Generate weekly dataset schema
@@ -203,12 +198,7 @@ export function generateDatasetSchema({
       "encodingFormat": "application/json",
       "contentUrl": pageUrl + "#weekly-data"
     },
-    "dataCatalog": {
-      "@type": "DataCatalog",
-      "name": "Weekly Flight Data Catalog",
-      "description": "Catalog of weekly flight data points",
-      "itemListElement": generateWeeklyDataItems(weeklyPriceData, t.days)
-    }
+    "hasPart": generateWeeklyDataItems(weeklyPriceData, t.days)
   };
 
   return {
@@ -236,31 +226,29 @@ function generateMonthlyDataItems(
     const rainfallValue = rainfallData[i]?.value || 0;
     
     items.push({
-      "@type": "ListItem",
-      "position": i + 1,
-      "item": {
-        "name": `${monthName} ${currentYear}`,
-        "additionalProperty": [
-          { 
-            "@type": "PropertyValue", 
-            "name": "price", 
-            "value": Math.round(priceValue), 
-            "unitText": "USD" 
-          },
-          { 
-            "@type": "PropertyValue", 
-            "name": "rainfall", 
-            "value": Math.round(rainfallValue * 10) / 10, 
-            "unitText": "inches" 
-          },
-          { 
-            "@type": "PropertyValue", 
-            "name": "temperature", 
-            "value": Math.round(weatherValue * 10) / 10, 
-            "unitText": "°F" 
-          }
-        ]
-      }
+      "@type": "Dataset",
+      "name": `${monthName} ${currentYear} Flight Data`,
+      "description": `Flight data for ${monthName} ${currentYear}`,
+      "variableMeasured": [
+        { 
+          "@type": "PropertyValue", 
+          "name": "price", 
+          "value": Math.round(priceValue), 
+          "unitText": "USD" 
+        },
+        { 
+          "@type": "PropertyValue", 
+          "name": "rainfall", 
+          "value": Math.round(rainfallValue * 10) / 10, 
+          "unitText": "inches" 
+        },
+        { 
+          "@type": "PropertyValue", 
+          "name": "temperature", 
+          "value": Math.round(weatherValue * 10) / 10, 
+          "unitText": "°F" 
+        }
+      ]
     });
   }
   
@@ -278,19 +266,17 @@ function generateWeeklyDataItems(priceData: GraphData[], dayNames: string[]) {
     const priceValue = priceData[i]?.value || 0;
     
     items.push({
-      "@type": "ListItem",
-      "position": i + 1,
-      "item": {
-        "name": `${dayName}`,
-        "additionalProperty": [
-          { 
-            "@type": "PropertyValue", 
-            "name": "price", 
-            "value": Math.round(priceValue), 
-            "unitText": "USD" 
-          }
-        ]
-      }
+      "@type": "Dataset",
+      "name": `${dayName} Flight Data`,
+      "description": `Flight data for ${dayName}`,
+      "variableMeasured": [
+        { 
+          "@type": "PropertyValue", 
+          "name": "price", 
+          "value": Math.round(priceValue), 
+          "unitText": "USD" 
+        }
+      ]
     });
   }
   
@@ -313,18 +299,13 @@ export function generateCombinedDatasetSchema(options: DatasetSchemaOptions) {
     "license": monthly.license,
     "variableMeasured": monthly.variableMeasured,
     "distribution": monthly.distribution,
-    "dataCatalog": {
-      "@type": "DataCatalog",
-      "name": "Combined Flight Data Catalog",
-      "description": "Catalog of combined monthly and weekly flight data points",
-      "itemListElement": [
-        ...monthly.dataCatalog.itemListElement,
-        ...weekly.dataCatalog.itemListElement.map((item, index) => ({
-          ...item,
-          "position": monthly.dataCatalog.itemListElement.length + index + 1
-        }))
-      ]
-    }
+    "hasPart": [
+      ...monthly.hasPart,
+      ...weekly.hasPart.map((item, index) => ({
+        ...item,
+        "position": monthly.hasPart.length + index + 1
+      }))
+    ]
   };
 }
 

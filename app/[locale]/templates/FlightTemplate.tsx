@@ -1306,6 +1306,50 @@ const FlightTemplate = memo(function FlightTemplate({
               }} />
             )}
 
+            {/* Airport Schema for Single Airport Pages */}
+            {!arrivalIata && (
+              <SchemaOrg data={{
+                "@context": "https://schema.org",
+                "@type": "Airport",
+                "name": `${departureCityName} Airport`,
+                "iataCode": departureIata,
+                "description": `Find flights from ${departureCityName} Airport (${departureIata}) to destinations worldwide. Compare prices and book your next trip.`,
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": departureCityName,
+                  "addressCountry": "Various"
+                },
+                "amenityFeature": [
+                  {
+                    "@type": "LocationFeatureSpecification",
+                    "name": "Flight Services",
+                    "value": "Domestic and International Flights"
+                  },
+                  {
+                    "@type": "LocationFeatureSpecification", 
+                    "name": "Airlines",
+                    "value": "Multiple Airlines"
+                  }
+                ],
+                "hasOfferCatalog": {
+                  "@type": "OfferCatalog",
+                  "name": "Flight Deals",
+                  "itemListElement": [
+                    {
+                      "@type": "Offer",
+                      "itemOffered": {
+                        "@type": "Service",
+                        "name": "Flight Booking",
+                        "description": "Book flights from this airport"
+                      },
+                      "price": pageData?.avragefares ? `$${pageData.avragefares}` : "Varies",
+                      "priceCurrency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD"
+                    }
+                  ]
+                }
+              }} />
+            )}
+
             {/* Flight Schema for Route Pairs */}
             {arrivalIata && flightData && (
               <SchemaOrg data={{
