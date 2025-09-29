@@ -5,6 +5,27 @@ interface GraphData {
   value: number;
 }
 
+interface ListItem {
+  "@type": "ListItem";
+  position: number;
+  item: {
+    name: string;
+    additionalProperty: Array<{
+      "@type": "PropertyValue";
+      name: string;
+      value: number;
+      unitText: string;
+    }>;
+  };
+}
+
+interface PropertyValue {
+  "@type": "PropertyValue";
+  name: string;
+  value: number;
+  unitText: string;
+}
+
 interface DatasetSchemaOptions {
   locale: Locale;
   airlineName: string;
@@ -139,7 +160,19 @@ export function generateDatasetSchema({
         "unitText": t.variables.temperature.unitText 
       }
     ],
-    "itemListElement": generateMonthlyDataItems(monthlyPriceData, monthlyWeatherData, monthlyRainfallData, t.months)
+    "distribution": {
+      "@type": "DataDownload",
+      "name": "Monthly Flight Data",
+      "description": "Monthly flight price, weather, and rainfall data",
+      "encodingFormat": "application/json",
+      "contentUrl": pageUrl + "#monthly-data"
+    },
+    "dataCatalog": {
+      "@type": "DataCatalog",
+      "name": "Monthly Flight Data Catalog",
+      "description": "Catalog of monthly flight data points",
+      "itemListElement": generateMonthlyDataItems(monthlyPriceData, monthlyWeatherData, monthlyRainfallData, t.months)
+    }
   };
 
   // Generate weekly dataset schema
@@ -163,7 +196,19 @@ export function generateDatasetSchema({
         "unitText": t.variables.price.unitText 
       }
     ],
-    "itemListElement": generateWeeklyDataItems(weeklyPriceData, t.days)
+    "distribution": {
+      "@type": "DataDownload",
+      "name": "Weekly Flight Data",
+      "description": "Weekly flight price data",
+      "encodingFormat": "application/json",
+      "contentUrl": pageUrl + "#weekly-data"
+    },
+    "dataCatalog": {
+      "@type": "DataCatalog",
+      "name": "Weekly Flight Data Catalog",
+      "description": "Catalog of weekly flight data points",
+      "itemListElement": generateWeeklyDataItems(weeklyPriceData, t.days)
+    }
   };
 
   return {
@@ -267,13 +312,19 @@ export function generateCombinedDatasetSchema(options: DatasetSchemaOptions) {
     "creator": monthly.creator,
     "license": monthly.license,
     "variableMeasured": monthly.variableMeasured,
-    "itemListElement": [
-      ...monthly.itemListElement,
-      ...weekly.itemListElement.map((item: any, index: number) => ({
-        ...item,
-        "position": monthly.itemListElement.length + index + 1
-      }))
-    ]
+    "distribution": monthly.distribution,
+    "dataCatalog": {
+      "@type": "DataCatalog",
+      "name": "Combined Flight Data Catalog",
+      "description": "Catalog of combined monthly and weekly flight data points",
+      "itemListElement": [
+        ...monthly.dataCatalog.itemListElement,
+        ...weekly.dataCatalog.itemListElement.map((item, index) => ({
+          ...item,
+          "position": monthly.dataCatalog.itemListElement.length + index + 1
+        }))
+      ]
+    }
   };
 }
 

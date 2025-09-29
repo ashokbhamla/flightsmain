@@ -8,6 +8,8 @@ import FlightTabs from '@/components/FlightTabs';
 import { getAirportImageUrl } from '@/lib/cdn';
 import { fetchCityByIata } from '@/lib/api';
 import { memo, useState, useEffect } from 'react';
+import SchemaOrg from '@/components/SchemaOrg';
+import { generateDatasetSchema } from '@/lib/datasetSchemaGenerator';
 
 interface FlightTemplateProps {
   locale: Locale;
@@ -353,87 +355,13 @@ const FlightTemplate = memo(function FlightTemplate({
   const weeklyPriceData = pageData?.weekly_fares_graph?.data?.map((day: any) => ({
     name: day.day || day.name,
     value: day.avg_fare || day.value
-  })) || [
-    { name: locale === 'es' ? 'Lun' : locale === 'ru' ? 'Пн' : locale === 'fr' ? 'Lun' : 'Mon', value: 245 },
-    { name: locale === 'es' ? 'Mar' : locale === 'ru' ? 'Вт' : locale === 'fr' ? 'Mar' : 'Tue', value: 189 },
-    { name: locale === 'es' ? 'Mié' : locale === 'ru' ? 'Ср' : locale === 'fr' ? 'Mer' : 'Wed', value: 198 },
-    { name: locale === 'es' ? 'Jue' : locale === 'ru' ? 'Чт' : locale === 'fr' ? 'Jeu' : 'Thu', value: 195 },
-    { name: locale === 'es' ? 'Vie' : locale === 'ru' ? 'Пт' : locale === 'fr' ? 'Ven' : 'Fri', value: 267 },
-    { name: locale === 'es' ? 'Sáb' : locale === 'ru' ? 'Сб' : locale === 'fr' ? 'Sam' : 'Sat', value: 289 },
-    { name: locale === 'es' ? 'Dom' : locale === 'ru' ? 'Вс' : locale === 'fr' ? 'Dim' : 'Sun', value: 312 }
-  ];
+  })) || [];
 
   const monthlyPriceData = pageData?.monthly_fares_graph?.data?.map((month: any) => ({
     name: month.month || month.name,
     value: month.avg_fare || month.value
-  })) || [
-    { name: locale === 'es' ? 'Ene' : locale === 'ru' ? 'Янв' : locale === 'fr' ? 'Jan' : 'Jan', value: 189 },
-    { name: locale === 'es' ? 'Feb' : locale === 'ru' ? 'Фев' : locale === 'fr' ? 'Fév' : 'Feb', value: 198 },
-    { name: locale === 'es' ? 'Mar' : locale === 'ru' ? 'Мар' : locale === 'fr' ? 'Mar' : 'Mar', value: 245 },
-    { name: locale === 'es' ? 'Abr' : locale === 'ru' ? 'Апр' : locale === 'fr' ? 'Avr' : 'Apr', value: 267 },
-    { name: locale === 'es' ? 'May' : locale === 'ru' ? 'Май' : locale === 'fr' ? 'Mai' : 'May', value: 289 },
-    { name: locale === 'es' ? 'Jun' : locale === 'ru' ? 'Июн' : locale === 'fr' ? 'Jun' : 'Jun', value: 312 },
-    { name: locale === 'es' ? 'Jul' : locale === 'ru' ? 'Июл' : locale === 'fr' ? 'Jul' : 'Jul', value: 345 },
-    { name: locale === 'es' ? 'Ago' : locale === 'ru' ? 'Авг' : locale === 'fr' ? 'Aoû' : 'Aug', value: 378 },
-    { name: locale === 'es' ? 'Sep' : locale === 'ru' ? 'Сен' : locale === 'fr' ? 'Sep' : 'Sep', value: 195 },
-    { name: locale === 'es' ? 'Oct' : locale === 'ru' ? 'Окт' : locale === 'fr' ? 'Oct' : 'Oct', value: 198 },
-    { name: locale === 'es' ? 'Nov' : locale === 'ru' ? 'Ноя' : locale === 'fr' ? 'Nov' : 'Nov', value: 245 },
-    { name: locale === 'es' ? 'Dic' : locale === 'ru' ? 'Дек' : locale === 'fr' ? 'Déc' : 'Dec', value: 267 }
-  ];
+  })) || [];
 
-  // Helper function to transform weather data
-  const transformWeatherData = (data: any[], fallbackData: any[]) => {
-    if (!data || !Array.isArray(data) || data.length === 0) {
-      return fallbackData;
-    }
-    
-    try {
-      const result = data.map((item: any, index: number) => {
-        // Try to extract name from various possible properties
-        let name = 'Unknown';
-        if (typeof item === 'string') {
-          name = item;
-        } else if (typeof item === 'object' && item !== null) {
-          name = item.name || item.month || item.label || item.month_name || item.monthName || 
-                 `Month ${index + 1}`;
-        }
-        
-        // Try to extract value from various possible properties
-        let value = 0;
-        if (typeof item === 'number') {
-          value = item;
-        } else if (typeof item === 'string') {
-          value = parseFloat(item) || 0;
-        } else if (typeof item === 'object' && item !== null) {
-          value = item.value || item.temp || item.temperature || item.avg_temp || item.avg_temperature || 
-                  item.avg || item.avgTemp || item.avgTemperature || item.temp_value || 
-                  item.temperature_value || item.avg_temp_value || item.avg_temperature_value || 0;
-        }
-        
-        return { name: String(name), value: Number(value) || 0 };
-      });
-      
-      return result;
-    } catch (error) {
-      return fallbackData;
-    }
-  };
-
-  // Fallback temperature data
-  const fallbackTemperatureData = [
-    { name: locale === 'es' ? 'Ene' : locale === 'ru' ? 'Янв' : locale === 'fr' ? 'Jan' : 'Jan', value: 35 },
-    { name: locale === 'es' ? 'Feb' : locale === 'ru' ? 'Фев' : locale === 'fr' ? 'Fév' : 'Feb', value: 38 },
-    { name: locale === 'es' ? 'Mar' : locale === 'ru' ? 'Мар' : locale === 'fr' ? 'Mar' : 'Mar', value: 47 },
-    { name: locale === 'es' ? 'Abr' : locale === 'ru' ? 'Апр' : locale === 'fr' ? 'Avr' : 'Apr', value: 58 },
-    { name: locale === 'es' ? 'May' : locale === 'ru' ? 'Май' : locale === 'fr' ? 'Mai' : 'May', value: 68 },
-    { name: locale === 'es' ? 'Jun' : locale === 'ru' ? 'Июн' : locale === 'fr' ? 'Jun' : 'Jun', value: 77 },
-    { name: locale === 'es' ? 'Jul' : locale === 'ru' ? 'Июл' : locale === 'fr' ? 'Jul' : 'Jul', value: 82 },
-    { name: locale === 'es' ? 'Ago' : locale === 'ru' ? 'Авг' : locale === 'fr' ? 'Aoû' : 'Aug', value: 80 },
-    { name: locale === 'es' ? 'Sep' : locale === 'ru' ? 'Сен' : locale === 'fr' ? 'Sep' : 'Sep', value: 73 },
-    { name: locale === 'es' ? 'Oct' : locale === 'ru' ? 'Окт' : locale === 'fr' ? 'Oct' : 'Oct', value: 61 },
-    { name: locale === 'es' ? 'Nov' : locale === 'ru' ? 'Ноя' : locale === 'fr' ? 'Nov' : 'Nov', value: 50 },
-    { name: locale === 'es' ? 'Dic' : locale === 'ru' ? 'Дек' : locale === 'fr' ? 'Déc' : 'Dec', value: 40 }
-  ];
 
   // Get temperature data from content API
   const temperatureData = pageData?.temperature || [];
@@ -449,36 +377,8 @@ const FlightTemplate = memo(function FlightTemplate({
         name: item.name || item.month || item.label || `Month ${index + 1}`,
         value: Number(item.value || item.temp || item.temperature || 0)
       }))
-    : [
-        { name: 'Jan', value: 35 },
-        { name: 'Feb', value: 38 },
-        { name: 'Mar', value: 47 },
-        { name: 'Apr', value: 58 },
-        { name: 'May', value: 68 },
-        { name: 'Jun', value: 77 },
-        { name: 'Jul', value: 82 },
-        { name: 'Aug', value: 80 },
-        { name: 'Sep', value: 73 },
-        { name: 'Oct', value: 61 },
-        { name: 'Nov', value: 50 },
-        { name: 'Dec', value: 40 }
-      ];
+    : [];
 
-  // Fallback rainfall data
-  const fallbackRainfallData = [
-    { name: locale === 'es' ? 'Ene' : locale === 'ru' ? 'Янв' : locale === 'fr' ? 'Jan' : 'Jan', value: 2.8 },
-    { name: locale === 'es' ? 'Feb' : locale === 'ru' ? 'Фев' : locale === 'fr' ? 'Fév' : 'Feb', value: 2.6 },
-    { name: locale === 'es' ? 'Mar' : locale === 'ru' ? 'Мар' : locale === 'fr' ? 'Mar' : 'Mar', value: 3.4 },
-    { name: locale === 'es' ? 'Abr' : locale === 'ru' ? 'Апр' : locale === 'fr' ? 'Avr' : 'Apr', value: 3.1 },
-    { name: locale === 'es' ? 'May' : locale === 'ru' ? 'Май' : locale === 'fr' ? 'Mai' : 'May', value: 3.8 },
-    { name: locale === 'es' ? 'Jun' : locale === 'ru' ? 'Июн' : locale === 'fr' ? 'Jun' : 'Jun', value: 3.4 },
-    { name: locale === 'es' ? 'Jul' : locale === 'ru' ? 'Июл' : locale === 'fr' ? 'Jul' : 'Jul', value: 3.7 },
-    { name: locale === 'es' ? 'Ago' : locale === 'ru' ? 'Авг' : locale === 'fr' ? 'Aoû' : 'Aug', value: 3.9 },
-    { name: locale === 'es' ? 'Sep' : locale === 'ru' ? 'Сен' : locale === 'fr' ? 'Sep' : 'Sep', value: 3.6 },
-    { name: locale === 'es' ? 'Oct' : locale === 'ru' ? 'Окт' : locale === 'fr' ? 'Oct' : 'Oct', value: 3.2 },
-    { name: locale === 'es' ? 'Nov' : locale === 'ru' ? 'Ноя' : locale === 'fr' ? 'Nov' : 'Nov', value: 2.9 },
-    { name: locale === 'es' ? 'Dic' : locale === 'ru' ? 'Дек' : locale === 'fr' ? 'Déc' : 'Dec', value: 2.7 }
-  ];
 
   // Transform rainfall data from content API
   const rainfallDataTransformed = Array.isArray(rainfallData) && rainfallData.length > 0 
@@ -486,20 +386,7 @@ const FlightTemplate = memo(function FlightTemplate({
         name: item.name || item.month || item.label || `Month ${index + 1}`,
         value: Number(item.value || item.rainfall || item.precipitation || 0)
       }))
-    : [
-        { name: 'Jan', value: 2.8 },
-        { name: 'Feb', value: 2.6 },
-        { name: 'Mar', value: 3.4 },
-        { name: 'Apr', value: 3.1 },
-        { name: 'May', value: 3.8 },
-        { name: 'Jun', value: 3.4 },
-        { name: 'Jul', value: 3.7 },
-        { name: 'Aug', value: 3.9 },
-        { name: 'Sep', value: 3.6 },
-        { name: 'Oct', value: 3.2 },
-        { name: 'Nov', value: 2.9 },
-        { name: 'Dec', value: 2.7 }
-  ];
+    : [];
 
   return (
     <Box sx={{ width: '100%', maxWidth: '100%' }}>
@@ -822,102 +709,114 @@ const FlightTemplate = memo(function FlightTemplate({
         )}
 
         {/* Price Trends & Analysis */}
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 4,
-              color: '#1a1a1a'
-            }}
-          >
-            {content.priceTrendsTitle}
-          </Typography>
-          
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <ClientPriceGraph
-                title={pageData?.cheapest_day ? 
-                  (locale === 'es' ? `Precio más barato el ${pageData.cheapest_day}` :
-                   locale === 'ru' ? `Самая дешевая цена в ${pageData.cheapest_day}` :
-                   locale === 'fr' ? `Prix le moins cher le ${pageData.cheapest_day}` :
-                   `Cheapest price on ${pageData.cheapest_day}`) : 
-                  content.weeklyTitle}
-                description={replaceIataWithCityName(pageData?.weekly_fares_graph?.paragraph || pageData?.weekly || content.weeklyDescription)}
-                data={weeklyPriceData}
-                yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
-                            locale === 'ru' ? 'Цена (USD)' :
-                            locale === 'fr' ? 'Prix (USD)' : 'Price (USD)'}
-                showPrices={true}
-                height={300}
-              />
+        {(weeklyPriceData.length > 0 || monthlyPriceData.length > 0) && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {content.priceTrendsTitle}
+            </Typography>
+            
+            <Grid container spacing={3}>
+              {weeklyPriceData.length > 0 && (
+                <Grid item xs={12} md={6}>
+                  <ClientPriceGraph
+                    title={pageData?.cheapest_day ? 
+                      (locale === 'es' ? `Precio más barato el ${pageData.cheapest_day}` :
+                       locale === 'ru' ? `Самая дешевая цена в ${pageData.cheapest_day}` :
+                       locale === 'fr' ? `Prix le moins cher le ${pageData.cheapest_day}` :
+                       `Cheapest price on ${pageData.cheapest_day}`) : 
+                      content.weeklyTitle}
+                    description={replaceIataWithCityName(pageData?.weekly_fares_graph?.paragraph || pageData?.weekly || content.weeklyDescription)}
+                    data={weeklyPriceData}
+                    yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
+                                locale === 'ru' ? 'Цена (USD)' :
+                                locale === 'fr' ? 'Prix (USD)' : 'Price (USD)'}
+                    showPrices={true}
+                    height={300}
+                  />
+                </Grid>
+              )}
+              {monthlyPriceData.length > 0 && (
+                <Grid item xs={12} md={6}>
+                  <ClientPriceGraph
+                    title={pageData?.cheapest_month ? 
+                      (locale === 'es' ? `Precio más barato en ${pageData.cheapest_month}` :
+                       locale === 'ru' ? `Самая дешевая цена в ${pageData.cheapest_month}` :
+                       locale === 'fr' ? `Prix le moins cher en ${pageData.cheapest_month}` :
+                       `Cheapest price in ${pageData.cheapest_month}`) : 
+                      content.monthlyTitle}
+                    description={replaceIataWithCityName(pageData?.monthly_fares_graph?.paragraph || pageData?.monthly || content.monthlyDescription)}
+                    data={monthlyPriceData}
+                    yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
+                                locale === 'ru' ? 'Цена (USD)' :
+                                locale === 'fr' ? 'Prix (USD)' : 'Price (USD)'}
+                    showPrices={true}
+                    height={300}
+                  />
+                </Grid>
+              )}
             </Grid>
-            <Grid item xs={12} md={6}>
-              <ClientPriceGraph
-                title={pageData?.cheapest_month ? 
-                  (locale === 'es' ? `Precio más barato en ${pageData.cheapest_month}` :
-                   locale === 'ru' ? `Самая дешевая цена в ${pageData.cheapest_month}` :
-                   locale === 'fr' ? `Prix le moins cher en ${pageData.cheapest_month}` :
-                   `Cheapest price in ${pageData.cheapest_month}`) : 
-                  content.monthlyTitle}
-                description={replaceIataWithCityName(pageData?.monthly_fares_graph?.paragraph || pageData?.monthly || content.monthlyDescription)}
-                data={monthlyPriceData}
-                yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
-                            locale === 'ru' ? 'Цена (USD)' :
-                            locale === 'fr' ? 'Prix (USD)' : 'Price (USD)'}
-                showPrices={true}
-                height={300}
-              />
-            </Grid>
-          </Grid>
-        </Box>
+          </Box>
+        )}
 
         {/* Weather & Climate */}
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 4,
-              color: '#1a1a1a'
-            }}
-          >
-            {content.weatherTitle}
-          </Typography>
-          
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <ClientPriceGraph
-                  title={locale === 'es' ? 'Temperatura' : 
-                         locale === 'ru' ? 'Температура' :
-                         locale === 'fr' ? 'Température' : 'Temperature'}
-                  description={replaceIataWithCityName(pageData?.temperature_description || cityData?.weather?.temperature_description || content.weatherDescription)}
-                data={weatherData}
-                yAxisLabel={locale === 'es' ? 'Temperatura (°F)' : 
-                            locale === 'ru' ? 'Температура (°F)' :
-                            locale === 'fr' ? 'Température (°F)' : 'Temperature (°F)'}
-                showPrices={false}
-                height={300}
-              />
+        {(weatherData.length > 0 || rainfallDataTransformed.length > 0) && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {content.weatherTitle}
+            </Typography>
+            
+            <Grid container spacing={3}>
+              {weatherData.length > 0 && (
+                <Grid item xs={12} md={6}>
+                  <ClientPriceGraph
+                      title={locale === 'es' ? 'Temperatura' : 
+                             locale === 'ru' ? 'Температура' :
+                             locale === 'fr' ? 'Température' : 'Temperature'}
+                      description={replaceIataWithCityName(pageData?.temperature_description || cityData?.weather?.temperature_description || content.weatherDescription)}
+                    data={weatherData}
+                    yAxisLabel={locale === 'es' ? 'Temperatura (°F)' : 
+                                locale === 'ru' ? 'Температура (°F)' :
+                                locale === 'fr' ? 'Température (°F)' : 'Temperature (°F)'}
+                    showPrices={false}
+                    height={300}
+                  />
+                </Grid>
+              )}
+              {rainfallDataTransformed.length > 0 && (
+                <Grid item xs={12} md={6}>
+                  <ClientPriceGraph
+                    title={locale === 'es' ? 'Precipitación' : 
+                           locale === 'ru' ? 'Осадки' :
+                           locale === 'fr' ? 'Précipitations' : 'Rainfall'}
+                    description={replaceIataWithCityName(pageData?.rainfall_description || cityData?.weather?.rainfall_description || content.rainfallDescription)}
+                    data={rainfallDataTransformed}
+                    yAxisLabel={locale === 'es' ? 'Precipitación (pulgadas)' : 
+                                locale === 'ru' ? 'Осадки (дюймы)' :
+                                locale === 'fr' ? 'Précipitations (pouces)' : 'Rainfall (inches)'}
+                    showPrices={false}
+                    height={300}
+                  />
+                </Grid>
+              )}
             </Grid>
-            <Grid item xs={12} md={6}>
-              <ClientPriceGraph
-                title={locale === 'es' ? 'Precipitación' : 
-                       locale === 'ru' ? 'Осадки' :
-                       locale === 'fr' ? 'Précipitations' : 'Rainfall'}
-                description={replaceIataWithCityName(pageData?.rainfall_description || cityData?.weather?.rainfall_description || content.rainfallDescription)}
-                data={rainfallDataTransformed}
-                yAxisLabel={locale === 'es' ? 'Precipitación (pulgadas)' : 
-                            locale === 'ru' ? 'Осадки (дюймы)' :
-                            locale === 'fr' ? 'Précipitations (pouces)' : 'Rainfall (inches)'}
-                showPrices={false}
-                height={300}
-              />
-            </Grid>
-          </Grid>
-        </Box>
+          </Box>
+        )}
 
         {/* Popular Destinations */}
         {pageData?.destinations && (
@@ -1306,6 +1205,178 @@ const FlightTemplate = memo(function FlightTemplate({
           </Box>
         )}
       </Container>
+
+      {/* JSON-LD Schemas */}
+      {(() => {
+        const currentYear = new Date().getFullYear();
+        const pageUrl = `${process.env.NEXT_PUBLIC_DOMAIN || 'https://airlinesmap.com'}/${locale === 'en' ? '' : locale + '/'}flights/${params.slug}`;
+        
+        // Prepare FAQ data for schema
+        const faqData = pageData?.faqs || [];
+        const validFaqs = faqData.filter((faq: any) => {
+          const question = renderContent(faq.q || faq.question);
+          const answer = renderContent(faq.a || faq.answer);
+          
+          // Skip if question or answer is empty or contains HTML structure markers
+          if (!question || !answer || 
+              question.trim() === '' || answer.trim() === '' ||
+              question.includes('DOCTYPE') || answer.includes('DOCTYPE') ||
+              question.includes('```html') || answer.includes('```html') ||
+              question.includes('<!DOCTYPE') || answer.includes('<!DOCTYPE') ||
+              question.includes('<html') || answer.includes('<html') ||
+              question.includes('<head') || answer.includes('<head') ||
+              question.includes('<body') || answer.includes('<body') ||
+              question.includes('<title') || answer.includes('<title') ||
+              question.includes('<meta') || answer.includes('<meta') ||
+              question.includes('</head') || answer.includes('</head') ||
+              question.includes('</body') || answer.includes('</body') ||
+              question.includes('</html') || answer.includes('</html') ||
+              question.includes('<h1>') || answer.includes('<h1>') ||
+              question.includes('<h2>') || answer.includes('<h2>') ||
+              question.includes('<h3>') || answer.includes('<h3>') ||
+              question.includes('<h4>') || answer.includes('<h4>') ||
+              question.includes('<h5>') || answer.includes('<h5>') ||
+              question.includes('<h6>') || answer.includes('<h6>')) {
+            return false;
+          }
+          return true;
+        });
+
+        // Fallback FAQs if no valid ones from API
+        const faqsToShow = validFaqs.length > 0 ? validFaqs : [
+          {
+            q: `What airlines fly from ${departureCityName} Airport?`,
+            a: `Several airlines operate flights from ${departureCityName} Airport, including major international carriers and regional airlines. You can find flights to various destinations across different continents.`
+          },
+          {
+            q: `How early should I arrive at ${departureCityName} Airport?`,
+            a: `We recommend arriving at least 2-3 hours before your international flight and 1-2 hours before domestic flights to allow time for check-in, security screening, and boarding.`
+          },
+          {
+            q: `What facilities are available at ${departureCityName} Airport?`,
+            a: `${departureCityName} Airport offers various amenities including duty-free shopping, restaurants, lounges, free Wi-Fi, and car rental services to make your travel experience comfortable.`
+          },
+          {
+            q: `Can I find direct flights from ${departureCityName}?`,
+            a: `Yes, ${departureCityName} Airport offers direct flights to many destinations. Check our flight search tool to find direct routes to your preferred destination.`
+          },
+          {
+            q: `What is the best time to book flights from ${departureCityName}?`,
+            a: `Generally, booking flights 2-3 months in advance can help you find better deals. Mid-week flights (Tuesday-Thursday) often offer lower prices compared to weekend travel.`
+          }
+        ];
+
+        // Generate dataset schemas for graphs
+        const datasetSchemas = generateDatasetSchema({
+          locale,
+          airlineName: 'Various Airlines',
+          departureCity: departureCityName || 'Unknown',
+          arrivalCity: arrivalCityName || 'Various Destinations',
+          pageUrl,
+          monthlyPriceData: monthlyPriceData || [],
+          monthlyWeatherData: [], // Weather data not available in flight pages
+          monthlyRainfallData: [], // Rainfall data not available in flight pages
+          weeklyPriceData: weeklyPriceData || []
+        });
+
+        return (
+          <>
+            {/* FAQ Schema */}
+            {faqsToShow && faqsToShow.length > 0 && (
+              <SchemaOrg data={{
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": faqsToShow.map((faq: any) => {
+                  const question = renderContent(faq.q || faq.question);
+                  const answer = renderContent(faq.a || faq.answer);
+                  
+                  // Remove HTML tags and clean up the text
+                  const cleanQuestion = question.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+                  const cleanAnswer = answer.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+                  
+                  return {
+                    "@type": "Question",
+                    "name": cleanQuestion,
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": cleanAnswer
+                    }
+                  };
+                })
+              }} />
+            )}
+
+            {/* Flight Schema for Route Pairs */}
+            {arrivalIata && flightData && (
+              <SchemaOrg data={{
+                "@context": "https://schema.org",
+                "@type": "Flight",
+                "flightNumber": "Various",
+                "airline": {
+                  "@type": "Airline",
+                  "name": "Multiple Airlines",
+                  "iataCode": "Various"
+                },
+                "departureAirport": {
+                  "@type": "Airport",
+                  "name": `${departureCityName} Airport`,
+                  "iataCode": departureIata,
+                  "address": {
+                    "@type": "PostalAddress",
+                    "addressLocality": departureCityName,
+                    "addressCountry": "Various"
+                  }
+                },
+                "arrivalAirport": {
+                  "@type": "Airport",
+                  "name": `${arrivalCityName} Airport`,
+                  "iataCode": arrivalIata,
+                  "address": {
+                    "@type": "PostalAddress",
+                    "addressLocality": arrivalCityName,
+                    "addressCountry": "Various"
+                  }
+                },
+                "offers": {
+                  "@type": "Offer",
+                  "price": flightData?.average_fare ? `$${flightData.average_fare}` : "Varies",
+                  "priceCurrency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
+                  "availability": "https://schema.org/InStock"
+                }
+              }} />
+            )}
+
+            {/* Product Schema for Flight Deals */}
+            <SchemaOrg data={{
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "name": `Flight deals from ${departureCityName} to ${arrivalCityName || 'various destinations'}`,
+              "description": `Find the best flight deals and prices from ${departureCityName} to ${arrivalCityName || 'various destinations'}. Compare prices across multiple airlines and book your next trip.`,
+              "brand": {
+                "@type": "Brand",
+                "name": "AirlinesMap"
+              },
+              "offers": {
+                "@type": "AggregateOffer",
+                "priceCurrency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
+                "lowPrice": flightData?.cheapest_price ? `$${flightData.cheapest_price}` : "Varies",
+                "highPrice": flightData?.most_expensive_price ? `$${flightData.most_expensive_price}` : "Varies",
+                "offerCount": flightData?.total_flights || "Multiple",
+                "availability": "https://schema.org/InStock"
+              },
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": process.env.NEXT_PUBLIC_DEFAULT_RATING || "4.5",
+                "reviewCount": process.env.NEXT_PUBLIC_DEFAULT_REVIEW_COUNT || "1000"
+              }
+            }} />
+
+            {/* Dataset Schemas for Graphs */}
+            <SchemaOrg data={datasetSchemas.monthly} />
+            <SchemaOrg data={datasetSchemas.weekly} />
+          </>
+        );
+      })()}
     </Box>
   );
 });
