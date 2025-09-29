@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { Typography, Box, Container, Grid, Card, CardContent, Button, Tabs, Tab, Chip } from '@mui/material';
+import { Typography, Box, Container, Grid, Card, CardContent, Button } from '@mui/material';
 import { localeFromParam } from '@/lib/i18n';
 import { getTranslations } from '@/lib/translations';
 import AirlineRouteContent from '@/components/AirlineRouteContent';
@@ -10,18 +10,13 @@ import SchemaOrg from '@/components/SchemaOrg';
 import { breadcrumbSchema } from '@/lib/schema';
 import { fetchAirlineContent, fetchAirlineData, fetchAirlineAirportContent, fetchAirlineAirportData, fetchAirlineContactInfo, fetchCityByIata } from '@/lib/api';
 import dynamic from 'next/dynamic';
-import { toUSD } from '@/utils/currency';
 import { normalizeFlights, NormalizedFlight } from '@/lib/flightNormalizer';
 import { getAirlineLogoUrl, getAirportImageUrl } from '@/lib/cdn';
 
-// Dynamic imports for client components with SSR enabled for SEO
+// Dynamic imports for client components with SSR enabled for SEO and performance optimization
 const FlightSearchBox = dynamic(() => import('@/components/FlightSearchBox'), { 
   ssr: true,
   loading: () => <div>Loading search...</div>
-});
-const FlightCard = dynamic(() => import('@/components/FlightCard'), { 
-  ssr: true,
-  loading: () => <div>Loading flight card...</div>
 });
 const ClientPriceGraph = dynamic(() => import('@/components/ClientPriceGraph'), { 
   ssr: true,
@@ -31,10 +26,7 @@ const FlightTabs = dynamic(() => import('@/components/FlightTabs'), {
   ssr: true,
   loading: () => <div>Loading tabs...</div>
 });
-const FlightCards = dynamic(() => import('@/components/FlightCards'), { 
-  ssr: true,
-  loading: () => <div>Loading flight cards...</div>
-});
+
 
 // Helper function to decode and clean HTML content
 function renderContent(content: any): string {
@@ -391,11 +383,6 @@ export async function generateMetadata({ params }: { params: { locale: string; a
     flightData = flightDataResult;
     airlineContactInfo = airlineContactInfoResult;
     
-    // Helper function to strip HTML tags and truncate to 158 characters
-    const stripHtml = (html: string) => {
-      const cleanText = html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').replace(/\s+/g, ' ').trim();
-      return cleanText.length > 158 ? cleanText.substring(0, 155) + '...' : cleanText;
-    };
     
     // Get translations for the current locale
     const t = getTranslations(locale);
@@ -502,7 +489,6 @@ export async function generateMetadata({ params }: { params: { locale: string; a
       },
     };
   } catch (error) {
-    console.error('Error fetching metadata for airline page:', error);
     // Fetch airline contact info for fallback
     const airlineContactInfo = await fetchAirlineContactInfo(airlineCode);
     const fallbackAirlineName = getAirlineName(airlineCode, null, airlineContactInfo);
@@ -677,7 +663,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     departureCityData = departureCityDataResult;
     arrivalCityData = arrivalCityDataResult;
   } catch (error) {
-    console.error('Error fetching airline data:', error);
   }
 
   // Helper function to extract city names from title
@@ -926,41 +911,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     // Keep faqs for display
   } : contentData;
 
-  // Use dynamic price cards from API data
-  const finalPriceCards = contentData ? [
-    {
-      id: 1,
-      type: 'round-trip',
-      price: contentData?.avragefares ? `$${contentData.avragefares}` : (flightData?.round_trip_start ? `$${flightData.round_trip_start}` : '$189'),
-      description: `Round-trip ${airlineName} flights from ${departureCity} to ${arrivalCity}`,
-      buttonText: t.searchDeals,
-      buttonColor: '#10b981'
-    },
-    {
-      id: 2,
-      type: 'one-way',
-      price: contentData?.avragefares ? `$${Math.round(contentData.avragefares * 0.7)}` : (flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$122'),
-      description: `One-way ${airlineName} flight from ${departureCity} to ${arrivalCity}`,
-      buttonText: t.searchDeals,
-      buttonColor: '#1e3a8a'
-    },
-    {
-      id: 3,
-      type: 'popular',
-      month: contentData?.cheapest_month || flightData?.popular_month || 'December',
-      description: `Cheapest month is ${contentData?.cheapest_month || flightData?.popular_month || 'December'} from ${departureCity}. Maximum price drop flights to ${departureCity} in month of ${contentData?.cheapest_month || flightData?.popular_month || 'December'}.`,
-      buttonText: t.viewPopular,
-      buttonColor: '#ff6b35'
-    },
-    {
-      id: 4,
-      type: 'cheapest',
-      month: contentData?.cheapest_day || flightData?.cheapest_day || 'Sunday',
-      description: `Cheapest week day is ${contentData?.cheapest_day || flightData?.cheapest_day || 'Sunday'} from ${departureCity}. Maximum price drop flights to ${departureCity} on ${contentData?.cheapest_day || flightData?.cheapest_day || 'Sunday'}.`,
-      buttonText: t.findDeals,
-      buttonColor: '#10b981'
-    }
-  ] : fallbackContent.priceCards;
 
   // Generate canonical URL
   const canonicalUrl = generateAirlineCanonicalUrl(airlineCode, params.route, locale);
@@ -977,6 +927,8 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     monthlyRainfallData: rainfallData,
     weeklyPriceData: weeklyPriceData
   });
+
+  // Performance optimizations - removed useMemo as it can't be used in server components
 
   return (
     <Box sx={{ width: '100%', maxWidth: '100%' }}>
@@ -1675,9 +1627,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
                 title={t.flightPage.weeklyTrends}
-                description={
-                  contentData?.weekly || `Track weekly price fluctuations for ${airlineName} flights from ${departureCity} to ${arrivalCity}. With average fares around $${flightData?.average_fare || 'N/A'}, the cheapest day to fly is typically ${flightData?.cheapest_day || 'mid-week'}. Prices typically vary by day of the week, with mid-week flights often offering better deals.`
-                }
+                description={contentData?.weekly || `Track weekly price fluctuations for ${airlineName} flights from ${departureCity} to ${arrivalCity}. With average fares around $${flightData?.average_fare || 'N/A'}, the cheapest day to fly is typically ${flightData?.cheapest_day || 'mid-week'}. Prices typically vary by day of the week, with mid-week flights often offering better deals.`}
                 data={weeklyPriceData}
                 yAxisLabel="Price (USD)"
                 showPrices={true}
@@ -1687,9 +1637,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             <Grid item xs={12} md={6}>
               <ClientPriceGraph
                 title={t.flightPage.monthlyTrends}
-                description={
-                  contentData?.monthly || `Monitor monthly price patterns to identify the best time to book your ${airlineName} flight from ${departureCity} to ${arrivalCity}. With average fares around $${flightData?.average_fare || 'N/A'}, the cheapest month to fly is typically ${flightData?.cheapest_month || 'off-season'}. Seasonal variations and holiday periods significantly impact pricing.`
-                }
+                description={contentData?.monthly || `Monitor monthly price patterns to identify the best time to book your ${airlineName} flight from ${departureCity} to ${arrivalCity}. With average fares around $${flightData?.average_fare || 'N/A'}, the cheapest month to fly is typically ${flightData?.cheapest_month || 'off-season'}. Seasonal variations and holiday periods significantly impact pricing.`}
                 data={monthlyPriceData}
                 yAxisLabel="Price (USD)"
                 showPrices={true}
@@ -1736,6 +1684,257 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             </Grid>
           </Grid>
         </Box>
+
+        {/* Best Time to Book Tickets Section */}
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: '1.8rem',
+              fontWeight: 600,
+              mb: 4,
+              color: '#1a1a1a'
+            }}
+          >
+            {locale === 'es' ? `Mejor Momento para Reservar Boletos de ${airlineName} ${departureCity} a ${arrivalCity}` : 
+             locale === 'ru' ? `Лучшее время для бронирования билетов ${airlineName} ${departureCity} в ${arrivalCity}` :
+             locale === 'fr' ? `Meilleur Moment pour Réserver des Billets ${airlineName} ${departureCity} à ${arrivalCity}` : 
+             `Best Time to Book ${airlineName} Tickets ${departureCity} to ${arrivalCity}`}
+          </Typography>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              fontSize: '1.1rem',
+              lineHeight: 1.7,
+              color: '#4a5568',
+              mb: 3
+            }}
+          >
+            {locale === 'es' ? 
+              `El mejor día para reservar boletos de ${airlineName} de ${departureCity} a ${arrivalCity} es típicamente ${contentData?.cheapest_day || flightData?.cheapest_day || 'miércoles'}. Los precios suelen ser más bajos en este día de la semana, lo que puede ahorrarle dinero significativo en su viaje.` :
+             locale === 'ru' ? 
+              `Лучший день для бронирования билетов ${airlineName} из ${departureCity} в ${arrivalCity} обычно ${contentData?.cheapest_day || flightData?.cheapest_day || 'среда'}. Цены обычно ниже в этот день недели, что может сэкономить вам значительную сумму денег на поездке.` :
+             locale === 'fr' ? 
+              `Le meilleur jour pour réserver des billets ${airlineName} de ${departureCity} à ${arrivalCity} est généralement ${contentData?.cheapest_day || flightData?.cheapest_day || 'mercredi'}. Les prix sont généralement plus bas ce jour de la semaine, ce qui peut vous faire économiser beaucoup d'argent sur votre voyage.` :
+              `The best day to book ${airlineName} tickets from ${departureCity} to ${arrivalCity} is typically ${contentData?.cheapest_day || flightData?.cheapest_day || 'Wednesday'}. Prices are usually lower on this day of the week, which can save you significant money on your trip.`
+            }
+          </Typography>
+        </Box>
+
+        {/* Best Time to Book Flights Section */}
+        {contentData?.cheap_flights && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? `Mejor Momento para Reservar Vuelos de ${airlineName} ${departureCity} a ${arrivalCity}` : 
+               locale === 'ru' ? `Лучшее время для бронирования рейсов ${airlineName} ${departureCity} в ${arrivalCity}` :
+               locale === 'fr' ? `Meilleur Moment pour Réserver des Vols ${airlineName} ${departureCity} à ${arrivalCity}` : 
+               `Best Time to Book ${airlineName} Flights Tickets ${departureCity} to ${arrivalCity}`}
+            </Typography>
+            <Box 
+              sx={{ 
+                color: '#4a5568',
+                lineHeight: 1.7,
+                '& h3, & h4, & h5, & h6': {
+                  color: '#1a1a1a',
+                  fontWeight: 600,
+                  mb: 2,
+                  mt: 3
+                },
+                '& p': {
+                  mb: 2
+                },
+                '& ul, & ol': {
+                  pl: 3,
+                  mb: 2
+                },
+                '& li': {
+                  mb: 1
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: contentData.cheap_flights }}
+            />
+          </Box>
+        )}
+
+        {/* Best Time to Visit Section */}
+        {contentData?.best_time_to_visit && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? `Mejor Época para Visitar ${arrivalCity}` : 
+               locale === 'ru' ? `Лучшее время для посещения ${arrivalCity}` :
+               locale === 'fr' ? `Meilleure Période pour Visiter ${arrivalCity}` : 
+               `Best Time to Visit ${arrivalCity}`}
+            </Typography>
+            <Box 
+              sx={{ 
+                color: '#4a5568',
+                lineHeight: 1.7,
+                '& h3, & h4, & h5, & h6': {
+                  color: '#1a1a1a',
+                  fontWeight: 600,
+                  mb: 2,
+                  mt: 3
+                },
+                '& p': {
+                  mb: 2
+                },
+                '& ul, & ol': {
+                  pl: 3,
+                  mb: 2
+                },
+                '& li': {
+                  mb: 1
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: contentData.best_time_to_visit }}
+            />
+          </Box>
+        )}
+
+        {/* Overview Section */}
+        {contentData?.overview && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? `Descripción General de ${arrivalCity}` : 
+               locale === 'ru' ? `Обзор ${arrivalCity}` :
+               locale === 'fr' ? `Aperçu de ${arrivalCity}` : 
+               `Overview of ${arrivalCity}`}
+            </Typography>
+            <Box 
+              sx={{ 
+                color: '#4a5568',
+                lineHeight: 1.7,
+                '& h3, & h4, & h5, & h6': {
+                  color: '#1a1a1a',
+                  fontWeight: 600,
+                  mb: 2,
+                  mt: 3
+                },
+                '& p': {
+                  mb: 2
+                },
+                '& ul, & ol': {
+                  pl: 3,
+                  mb: 2
+                },
+                '& li': {
+                  mb: 1
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: contentData.overview }}
+            />
+          </Box>
+        )}
+
+        {/* Peak Season Section */}
+        {contentData?.peak_season && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? `Temporada Alta en ${arrivalCity}` : 
+               locale === 'ru' ? `Пиковый сезон в ${arrivalCity}` :
+               locale === 'fr' ? `Haute Saison à ${arrivalCity}` : 
+               `Peak Season in ${arrivalCity}`}
+            </Typography>
+            <Box 
+              sx={{ 
+                color: '#4a5568',
+                lineHeight: 1.7,
+                '& h3, & h4, & h5, & h6': {
+                  color: '#1a1a1a',
+                  fontWeight: 600,
+                  mb: 2,
+                  mt: 3
+                },
+                '& p': {
+                  mb: 2
+                },
+                '& ul, & ol': {
+                  pl: 3,
+                  mb: 2
+                },
+                '& li': {
+                  mb: 1
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: contentData.peak_season }}
+            />
+          </Box>
+        )}
+
+        {/* Weather Section */}
+        {contentData?.weather && (
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
+              {locale === 'es' ? `Clima en ${arrivalCity}` : 
+               locale === 'ru' ? `Погода в ${arrivalCity}` :
+               locale === 'fr' ? `Météo à ${arrivalCity}` : 
+               `Weather in ${arrivalCity}`}
+            </Typography>
+            <Box 
+              sx={{ 
+                color: '#4a5568',
+                lineHeight: 1.7,
+                '& h3, & h4, & h5, & h6': {
+                  color: '#1a1a1a',
+                  fontWeight: 600,
+                  mb: 2,
+                  mt: 3
+                },
+                '& p': {
+                  mb: 2
+                },
+                '& ul, & ol': {
+                  pl: 3,
+                  mb: 2
+                },
+                '& li': {
+                  mb: 1
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: contentData.weather }}
+            />
+          </Box>
+        )}
 
         {/* Fallback Content Section - Generated when API content is not available */}
         {!contentData && (
@@ -2900,7 +3099,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         "@context": "https://schema.org",
         "@type": "Article",
         "headline": contentData?.title || `${airlineName} flights from ${departureCity} to ${arrivalCity}`,
-        "description": contentData?.meta_description || contentData?.description || `Find the best ${airlineName} flight deals from ${departureCity} to ${arrivalCity}`,
+        "description": contentData?.description || contentData?.meta_description || `Find the best ${airlineName} flight deals from ${departureCity} to ${arrivalCity}`,
         "author": {
           "@type": "Organization",
           "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap"
@@ -2918,7 +3117,190 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         "mainEntityOfPage": {
           "@type": "WebPage",
           "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/airlines/${airlineCode}/${params.route}`
+        },
+        "about": {
+          "@type": "Place",
+          "name": arrivalCity,
+          "description": contentData?.overview || `Information about ${arrivalCity}`
         }
+      }} />
+
+      {/* Flight List Schema */}
+      {normalizedFlights && normalizedFlights.length > 0 && (
+        <SchemaOrg data={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          "name": `${airlineName} Flights from ${departureCity} to ${arrivalCity}`,
+          "description": `Available ${airlineName} flights from ${departureCity} (${departureIata}) to ${arrivalCity} (${arrivalIata})`,
+          "numberOfItems": normalizedFlights.length,
+          "itemListElement": normalizedFlights.map((flight, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "item": {
+              "@type": "Flight",
+              "name": `${airlineName} Flight ${flight.airline || 'XX'}${index + 1}`,
+              "flightNumber": `${flight.airline || 'XX'}${index + 1}`,
+              "departureTime": '09:00',
+              "arrivalTime": '11:00',
+              "duration": '2h 30m',
+              "price": {
+                "@type": "PriceSpecification",
+                "price": flight.price || 100,
+                "priceCurrency": 'USD'
+              },
+              "departureAirport": {
+                "@type": "Airport",
+                "name": `${departureCity} Airport`,
+                "iataCode": flight.from || departureIata
+              },
+              "arrivalAirport": {
+                "@type": "Airport",
+                "name": `${arrivalCity} Airport`,
+                "iataCode": flight.to || arrivalIata
+              }
+            }
+          }))
+        }} />
+      )}
+
+      {/* Place Schema for Destination */}
+      <SchemaOrg data={{
+        "@context": "https://schema.org",
+        "@type": "Place",
+        "name": arrivalCity,
+        "description": contentData?.overview || `Information about ${arrivalCity}`,
+        "url": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/airlines/${airlineCode}/${params.route}`,
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": "0.0", // This would need to be fetched from city data
+          "longitude": "0.0"
+        },
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": arrivalCity,
+          "addressCountry": "Unknown"
+        }
+      }} />
+
+      {/* Price Data Schema */}
+      <SchemaOrg data={{
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        "name": `${airlineName} Flight Price Data - ${departureCity} to ${arrivalCity}`,
+        "description": `Historical price data for ${airlineName} flights from ${departureCity} to ${arrivalCity}`,
+        "url": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/airlines/${airlineCode}/${params.route}`,
+        "creator": {
+          "@type": "Organization",
+          "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap"
+        },
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "variableMeasured": [
+          {
+            "@type": "PropertyValue",
+            "name": "Weekly Price Average",
+            "description": "Average flight prices by day of the week",
+            "unitText": "USD"
+          },
+          {
+            "@type": "PropertyValue",
+            "name": "Monthly Price Average", 
+            "description": "Average flight prices by month",
+            "unitText": "USD"
+          },
+          {
+            "@type": "PropertyValue",
+            "name": "Temperature Data",
+            "description": "Average temperature by month",
+            "unitText": "°F"
+          },
+          {
+            "@type": "PropertyValue",
+            "name": "Rainfall Data",
+            "description": "Average rainfall by month",
+            "unitText": "inches"
+          }
+        ],
+        "distribution": {
+          "@type": "DataDownload",
+          "encodingFormat": "application/json",
+          "contentUrl": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/api/airline-data?airline_code=${airlineCode}&arrival_iata=${arrivalIata}&departure_iata=${departureIata}`
+        }
+      }} />
+
+      {/* LocalBusiness Schema */}
+      <SchemaOrg data={{
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
+        "description": process.env.NEXT_PUBLIC_COMPANY_DESCRIPTION || "Compare airlines and find the best flight deals",
+        "url": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com",
+        "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-319-6206",
+        "email": process.env.NEXT_PUBLIC_EMAIL || "support@airlinesmap.com",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": process.env.NEXT_PUBLIC_ADDRESS || "8th the green suite b",
+          "addressLocality": process.env.NEXT_PUBLIC_CITY || "Dover",
+          "addressRegion": process.env.NEXT_PUBLIC_STATE || "DE",
+          "postalCode": process.env.NEXT_PUBLIC_ZIP || "19901",
+          "addressCountry": process.env.NEXT_PUBLIC_COUNTRY || "US"
+        },
+        "openingHours": "Mo-Su 00:00-23:59",
+        "priceRange": "$$",
+        "paymentAccepted": "Cash, Credit Card, PayPal",
+        "currenciesAccepted": "USD, EUR, GBP"
+      }} />
+
+      {/* Service Schema */}
+      <SchemaOrg data={{
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": `${airlineName} Flight Booking Service`,
+        "description": `Book ${airlineName} flights from ${departureCity} to ${arrivalCity} with the best prices and deals`,
+        "provider": {
+          "@type": "Organization",
+          "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap"
+        },
+        "areaServed": {
+          "@type": "Country",
+          "name": "Worldwide"
+        },
+        "serviceType": "Flight Booking",
+        "offers": {
+          "@type": "Offer",
+          "price": flightData?.round_trip_start || "100",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        }
+      }} />
+
+      {/* HowTo Schema */}
+      <SchemaOrg data={{
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": `How to Book ${airlineName} Flights from ${departureCity} to ${arrivalCity}`,
+        "description": `Step-by-step guide to booking ${airlineName} flights from ${departureCity} to ${arrivalCity}`,
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "Search for Flights",
+            "text": `Search for ${airlineName} flights from ${departureCity} to ${arrivalCity} using our flight search tool`
+          },
+          {
+            "@type": "HowToStep", 
+            "name": "Compare Prices",
+            "text": "Compare prices across different dates and times to find the best deal"
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Select Flight",
+            "text": "Choose your preferred flight based on price, time, and convenience"
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Book and Pay",
+            "text": "Complete your booking and payment to confirm your flight"
+          }
+        ]
       }} />
 
       {/* Flight List Schema */}
