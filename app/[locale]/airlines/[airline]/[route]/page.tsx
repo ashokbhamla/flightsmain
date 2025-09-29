@@ -359,7 +359,7 @@ export async function generateMetadata({ params }: { params: { locale: string; a
   const getLangId = (locale: string): 1 | 2 | 3 | 4 => {
     switch (locale) {
       case 'en':
-        return 1;
+    return 1;
       case 'es':
         return 2;
       case 'ru':
@@ -371,8 +371,8 @@ export async function generateMetadata({ params }: { params: { locale: string; a
     }
   };
 
-  let contentData = null;
-  let flightData = null;
+    let contentData = null;
+    let flightData = null;
   let airlineContactInfo = null;
 
   try {
@@ -626,12 +626,14 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   let contentData = null;
   let flightData = null;
   let airlineContactInfo = null;
+  let departureCityData = null;
+  let arrivalCityData = null;
   
   // Map locale to language ID for API calls
   const getLangId = (locale: string): 1 | 2 | 3 | 4 => {
     switch (locale) {
       case 'en':
-        return 1;
+    return 1;
       case 'es':
         return 2;
       case 'ru':
@@ -655,7 +657,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
 
   try {
     // Fetch all data in parallel for better performance
-    const [contentDataResult, flightDataResult, airlineContactInfoResult, departureCityData, arrivalCityData] = await Promise.all([
+    const [contentDataResult, flightDataResult, airlineContactInfoResult, departureCityDataResult, arrivalCityDataResult] = await Promise.all([
       arrivalIata 
         ? fetchAirlineContent(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
         : fetchAirlineAirportContent(airlineCode, departureIata, getLangId(locale), 1),
@@ -672,6 +674,8 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     contentData = contentDataResult;
     flightData = flightDataResult;
     airlineContactInfo = airlineContactInfoResult;
+    departureCityData = departureCityDataResult;
+    arrivalCityData = arrivalCityDataResult;
   } catch (error) {
     console.error('Error fetching airline data:', error);
   }
@@ -687,6 +691,12 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
       };
     }
     return null;
+  };
+
+  // Make city data available for schemas
+  const cityData = {
+    departure: departureCityData,
+    arrival: arrivalCityData
   };
 
   // Use city names from API data (content API first, then flight data, then city API, then fallback)
@@ -727,12 +737,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     departureCity = getCityName(departureIata, departureCityData);
     arrivalCity = arrivalIata ? getCityName(arrivalIata, arrivalCityData) : 'Various Destinations';
   }
-  
-  // Make city data available for schemas
-  const cityData = {
-    departure: departureCityData,
-    arrival: arrivalCityData
-  };
   
   const airlineName = getAirlineName(airlineCode, contentData, airlineContactInfo);
   
@@ -2551,12 +2555,12 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           const cleanAnswer = answer.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
           
           return {
-            "@type": "Question",
+          "@type": "Question",
             "name": cleanQuestion,
-            "acceptedAnswer": {
-              "@type": "Answer",
+          "acceptedAnswer": {
+            "@type": "Answer",
               "text": cleanAnswer
-            }
+          }
           };
         }) || [
           {
