@@ -1472,8 +1472,8 @@ const FlightTemplate = memo(function FlightTemplate({
               "offers": transformedFlights && transformedFlights.length > 0 ? {
                 "@type": "AggregateOffer",
                 "priceCurrency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
-                "lowPrice": Math.min(...transformedFlights.map(f => parseFloat(f.price?.replace('$', '') || '0'))).toString(),
-                "highPrice": Math.max(...transformedFlights.map(f => parseFloat(f.price?.replace('$', '') || '0'))).toString(),
+                "lowPrice": Math.min(...transformedFlights.map(f => typeof f.price === 'string' ? parseFloat(f.price.replace('$', '') || '0') : f.price || 0)).toString(),
+                "highPrice": Math.max(...transformedFlights.map(f => typeof f.price === 'string' ? parseFloat(f.price.replace('$', '') || '0') : f.price || 0)).toString(),
                 "offerCount": transformedFlights.length.toString(),
                 "availability": "https://schema.org/InStock",
                 "validFrom": new Date().toISOString().split('T')[0],
