@@ -977,34 +977,6 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           locale={locale}
           />
 
-        {/* Main Page Heading and Description */}
-        <Box sx={{ mb: 6, textAlign: 'center' }}>
-          <Typography 
-            variant="h1" 
-            sx={{ 
-              fontSize: '2.5rem',
-              fontWeight: 700,
-              mb: 3,
-              color: '#1a1a1a',
-              lineHeight: 1.2
-            }}
-          >
-            {contentData?.title || `${airlineName} flights from ${departureCity} to ${arrivalCity}`}
-          </Typography>
-          
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              fontSize: '1.2rem',
-              color: '#666',
-              maxWidth: '800px',
-              mx: 'auto',
-              lineHeight: 1.6
-            }}
-          >
-            {contentData?.description || `Find the best ${airlineName} flight deals from ${departureCity} (${departureIata}) to ${arrivalCity} (${arrivalIata}). Compare prices, book your tickets, and enjoy a comfortable journey.`}
-          </Typography>
-        </Box>
 
         {/* Cheap Flight Deals */}
         <Box sx={{ mb: 6 }}>
@@ -1686,25 +1658,25 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         </Box>
 
         {/* Best Time to Book Tickets Section */}
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontSize: '1.8rem',
-              fontWeight: 600,
-              mb: 4,
-              color: '#1a1a1a'
-            }}
-          >
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontSize: '1.8rem',
+                fontWeight: 600,
+                mb: 4,
+                color: '#1a1a1a'
+              }}
+            >
             {locale === 'es' ? `Mejor Momento para Reservar Boletos de ${airlineName} ${departureCity} a ${arrivalCity}` : 
              locale === 'ru' ? `Лучшее время для бронирования билетов ${airlineName} ${departureCity} в ${arrivalCity}` :
              locale === 'fr' ? `Meilleur Moment pour Réserver des Billets ${airlineName} ${departureCity} à ${arrivalCity}` : 
              `Best Time to Book ${airlineName} Tickets ${departureCity} to ${arrivalCity}`}
-          </Typography>
+            </Typography>
           <Typography 
             variant="body1" 
             sx={{ 
-              fontSize: '1.1rem',
+                fontSize: '1.1rem',
               lineHeight: 1.7,
               color: '#4a5568',
               mb: 3
@@ -3308,6 +3280,264 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           "contentUrl": `${process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"}/api/airlines/${airlineCode}/${params.route}/prices`
         }
       }} />
+
+      {/* Places to Visit Section */}
+      {contentData?.places && (
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: '1.8rem',
+              fontWeight: 600,
+              mb: 4,
+              color: '#1a1a1a'
+            }}
+          >
+            {locale === 'es' ? `Lugares para Visitar en ${arrivalCity}` : 
+             locale === 'ru' ? `Места для посещения в ${arrivalCity}` :
+             locale === 'fr' ? `Lieux à Visiter à ${arrivalCity}` : 
+             `Places to Visit in ${arrivalCity}`}
+          </Typography>
+          <Box 
+            sx={{ 
+              color: '#4a5568',
+              lineHeight: 1.7,
+              '& h3, & h4, & h5, & h6': {
+                color: '#1a1a1a',
+                fontWeight: 600,
+                mb: 2,
+                mt: 3
+              },
+              '& p': {
+                mb: 2
+              },
+              '& ul, & ol': {
+                pl: 3,
+                mb: 2
+              },
+              '& li': {
+                mb: 1
+              }
+            }}
+            dangerouslySetInnerHTML={{ __html: contentData.places }}
+          />
+        </Box>
+      )}
+
+      {/* Direct Flights Section */}
+      {contentData?.direct_flights && (
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: '1.8rem',
+              fontWeight: 600,
+              mb: 4,
+              color: '#1a1a1a'
+            }}
+          >
+            {locale === 'es' ? `Vuelos Directos de ${airlineName} ${departureCity} a ${arrivalCity}` : 
+             locale === 'ru' ? `Прямые рейсы ${airlineName} ${departureCity} в ${arrivalCity}` :
+             locale === 'fr' ? `Vols Directs ${airlineName} ${departureCity} à ${arrivalCity}` : 
+             `${airlineName} Direct Flights ${departureCity} to ${arrivalCity}`}
+          </Typography>
+          <Box 
+            sx={{ 
+              color: '#4a5568',
+              lineHeight: 1.7,
+              '& h3, & h4, & h5, & h6': {
+                color: '#1a1a1a',
+                fontWeight: 600,
+                mb: 2,
+                mt: 3
+              },
+              '& p': {
+                mb: 2
+              },
+              '& ul, & ol': {
+                pl: 3,
+                mb: 2
+              },
+              '& li': {
+                mb: 1
+              }
+            }}
+            dangerouslySetInnerHTML={{ __html: contentData.direct_flights }}
+          />
+        </Box>
+      )}
+
+      {/* City Overview Section */}
+      {arrivalCityData?.overview && (
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: '1.8rem',
+              fontWeight: 600,
+              mb: 4,
+              color: '#1a1a1a'
+            }}
+          >
+            {locale === 'es' ? `Descripción General de ${arrivalCity}` : 
+             locale === 'ru' ? `Обзор ${arrivalCity}` :
+             locale === 'fr' ? `Aperçu de ${arrivalCity}` : 
+             `Overview of ${arrivalCity}`}
+          </Typography>
+          <Box 
+            sx={{ 
+              color: '#4a5568',
+              lineHeight: 1.7,
+              '& h3, & h4, & h5, & h6': {
+                color: '#1a1a1a',
+                fontWeight: 600,
+                mb: 2,
+                mt: 3
+              },
+              '& p': {
+                mb: 2
+              },
+              '& ul, & ol': {
+                pl: 3,
+                mb: 2
+              },
+              '& li': {
+                mb: 1
+              }
+            }}
+            dangerouslySetInnerHTML={{ __html: arrivalCityData.overview }}
+          />
+        </Box>
+      )}
+
+      {/* Best Time to Visit Section */}
+      {arrivalCityData?.best_time_to_visit && (
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: '1.8rem',
+              fontWeight: 600,
+              mb: 4,
+              color: '#1a1a1a'
+            }}
+          >
+            {locale === 'es' ? `Mejor Época para Visitar ${arrivalCity}` : 
+             locale === 'ru' ? `Лучшее время для посещения ${arrivalCity}` :
+             locale === 'fr' ? `Meilleure Période pour Visiter ${arrivalCity}` : 
+             `Best Time to Visit ${arrivalCity}`}
+          </Typography>
+          <Box 
+            sx={{ 
+              color: '#4a5568',
+              lineHeight: 1.7,
+              '& h3, & h4, & h5, & h6': {
+                color: '#1a1a1a',
+                fontWeight: 600,
+                mb: 2,
+                mt: 3
+              },
+              '& p': {
+                mb: 2
+              },
+              '& ul, & ol': {
+                pl: 3,
+                mb: 2
+              },
+              '& li': {
+                mb: 1
+              }
+            }}
+            dangerouslySetInnerHTML={{ __html: arrivalCityData.best_time_to_visit }}
+          />
+        </Box>
+      )}
+
+      {/* Peak Season Section */}
+      {arrivalCityData?.peak_season && (
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: '1.8rem',
+              fontWeight: 600,
+              mb: 4,
+              color: '#1a1a1a'
+            }}
+          >
+            {locale === 'es' ? `Temporada Alta en ${arrivalCity}` : 
+             locale === 'ru' ? `Пиковый сезон в ${arrivalCity}` :
+             locale === 'fr' ? `Haute Saison à ${arrivalCity}` : 
+             `Peak Season in ${arrivalCity}`}
+          </Typography>
+          <Box 
+            sx={{ 
+              color: '#4a5568',
+              lineHeight: 1.7,
+              '& h3, & h4, & h5, & h6': {
+                color: '#1a1a1a',
+                fontWeight: 600,
+                mb: 2,
+                mt: 3
+              },
+              '& p': {
+                mb: 2
+              },
+              '& ul, & ol': {
+                pl: 3,
+                mb: 2
+              },
+              '& li': {
+                mb: 1
+              }
+            }}
+            dangerouslySetInnerHTML={{ __html: arrivalCityData.peak_season }}
+          />
+        </Box>
+      )}
+
+      {/* Weather Section */}
+      {arrivalCityData?.weather && (
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: '1.8rem',
+              fontWeight: 600,
+              mb: 4,
+              color: '#1a1a1a'
+            }}
+          >
+            {locale === 'es' ? `Clima en ${arrivalCity}` : 
+             locale === 'ru' ? `Погода в ${arrivalCity}` :
+             locale === 'fr' ? `Météo à ${arrivalCity}` : 
+             `Weather in ${arrivalCity}`}
+          </Typography>
+          <Box 
+            sx={{ 
+              color: '#4a5568',
+              lineHeight: 1.7,
+              '& h3, & h4, & h5, & h6': {
+                color: '#1a1a1a',
+                fontWeight: 600,
+                mb: 2,
+                mt: 3
+              },
+              '& p': {
+                mb: 2
+              },
+              '& ul, & ol': {
+                pl: 3,
+                mb: 2
+              },
+              '& li': {
+                mb: 1
+              }
+            }}
+            dangerouslySetInnerHTML={{ __html: arrivalCityData.weather }}
+          />
+        </Box>
+      )}
 
     </Box>
   );
