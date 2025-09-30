@@ -6,6 +6,7 @@ import { generateFlightCanonicalUrl, generateAlternateUrls } from '@/lib/canonic
 import SchemaOrg from '@/components/SchemaOrg';
 import { breadcrumbSchema } from '@/lib/schema';
 import { fetchFlightContent, fetchFlightData, fetchDestinationFlightContent, fetchDestinationFlightData } from '@/lib/api';
+import { getCachedFlightContent, getCachedFlightData } from '@/lib/cached-api';
 import { normalizeFlights } from '@/lib/flightUtils';
 import DynamicTemplateSelector from '@/app/[locale]/templates/DynamicTemplateSelector';
 import FlightTemplate from '@/app/[locale]/templates/FlightTemplate';
@@ -169,7 +170,7 @@ export async function generateMetadata({ params }: { params: { locale: string; s
   const alternateUrls = generateAlternateUrls(`/flights/${params.slug}`);
   
   try {
-    const contentData = await fetchFlightContent(arrivalIata, departureIata, getLanguageId(locale));
+    const contentData = await getCachedFlightContent(arrivalIata, departureIata, getLanguageId(locale), 1);
     
     return {
       title: contentData?.title || `${t?.flightPage?.flights || 'Flights'} ${t?.flightPage?.from || 'from'} ${getCityName(departureIata)} (${departureIata}) ${t?.flightPage?.to || 'to'} ${getCityName(arrivalIata)} (${arrivalIata})`,
@@ -285,8 +286,8 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
   
   try {
     [contentData, flightData] = await Promise.all([
-      fetchFlightContent(arrivalIata, departureIata, getLanguageId(locale)),
-      fetchFlightData(arrivalIata, departureIata)
+      getCachedFlightContent(arrivalIata, departureIata, getLanguageId(locale), 1),
+      getCachedFlightData(arrivalIata, departureIata, getLanguageId(locale), 1)
     ]);
     // Pass the full flight data array for route pair pages
     actualFlightData = flightData;

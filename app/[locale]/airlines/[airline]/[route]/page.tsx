@@ -9,6 +9,14 @@ import { generateAirlineCanonicalUrl, generateAlternateUrls } from '@/lib/canoni
 import SchemaOrg from '@/components/SchemaOrg';
 import { breadcrumbSchema } from '@/lib/schema';
 import { fetchAirlineContent, fetchAirlineData, fetchAirlineAirportContent, fetchAirlineAirportData, fetchAirlineContactInfo, fetchCityByIata } from '@/lib/api';
+import { 
+  getCachedAirlineContent, 
+  getCachedAirlineAirportContent, 
+  getCachedAirlineData, 
+  getCachedAirlineAirportData, 
+  getCachedAirlineContactInfo, 
+  getCachedCityData 
+} from '@/lib/cached-api';
 import dynamic from 'next/dynamic';
 import { normalizeFlights, NormalizedFlight } from '@/lib/flightNormalizer';
 import { getAirlineLogoUrl, getAirportImageUrl } from '@/lib/cdn';
@@ -642,19 +650,19 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   };
 
   try {
-    // Fetch all data in parallel for better performance
+    // Fetch all data in parallel for better performance with Redis caching
     const [contentDataResult, flightDataResult, airlineContactInfoResult, departureCityDataResult, arrivalCityDataResult] = await Promise.all([
       arrivalIata 
-        ? fetchAirlineContent(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
-        : fetchAirlineAirportContent(airlineCode, departureIata, getLangId(locale), 1),
+        ? getCachedAirlineContent(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
+        : getCachedAirlineAirportContent(airlineCode, departureIata, getLangId(locale), 1),
       arrivalIata 
-        ? fetchAirlineData(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
-        : fetchAirlineAirportData(airlineCode, departureIata, 1),
-      fetchAirlineContactInfo(airlineCode),
-      // Fetch city data for departure airport
-      fetchCityByIata(departureIata, getLangId(locale), 1).catch(() => null),
-      // Fetch city data for arrival airport (only if it exists)
-      arrivalIata ? fetchCityByIata(arrivalIata, getLangId(locale), 1).catch(() => null) : null
+        ? getCachedAirlineData(airlineCode, arrivalIata, departureIata, getLangId(locale), 1)
+        : getCachedAirlineAirportData(airlineCode, departureIata, 1),
+      getCachedAirlineContactInfo(airlineCode),
+      // Fetch city data for departure airport with caching
+      getCachedCityData(departureIata, getLangId(locale), 1).catch(() => null),
+      // Fetch city data for arrival airport (only if it exists) with caching
+      arrivalIata ? getCachedCityData(arrivalIata, getLangId(locale), 1).catch(() => null) : null
     ]);
     
     contentData = contentDataResult;
