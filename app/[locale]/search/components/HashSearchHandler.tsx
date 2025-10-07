@@ -88,7 +88,7 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
             
             buttons.forEach((button) => {
               // Remove existing listeners to avoid duplicates
-              const newButton = button.cloneNode(true);
+              const newButton = button.cloneNode(true) as HTMLElement;
               button.parentNode?.replaceChild(newButton, button);
               
               // Add click listener
