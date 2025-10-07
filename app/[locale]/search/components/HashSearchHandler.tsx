@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import TriposiaSearchWidget from './TriposiaSearchWidget';
 import FlightPopup from '@/components/FlightPopup';
 import BookingPopup from '@/components/BookingPopup';
+import BookNowOverlay from './BookNowOverlay';
 import { useTranslations } from '@/lib/translations';
 
 interface HashSearchHandlerProps {
@@ -371,6 +372,48 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
     }
   }, [iframePrice, popupData]);
 
+  // Handle manual Book Now button click
+  const handleBookNowClick = () => {
+    // Extract flight data from current URL
+    const hash = window.location.hash;
+    const match = hash.match(/#\/flights\/(.+)/);
+    
+    if (match && match[1]) {
+      const code = match[1];
+      const airportCodes = code.match(/[A-Z]{3}/g);
+      
+      if (airportCodes && airportCodes.length >= 2) {
+        const from = airportCodes[0];
+        const to = airportCodes[1];
+        
+        // Map airport codes to city names
+        const cityMap: { [key: string]: string } = {
+          'DEL': 'Delhi', 'BOM': 'Mumbai', 'BLR': 'Bangalore', 'HYD': 'Hyderabad',
+          'CCU': 'Kolkata', 'MAA': 'Chennai', 'LAS': 'Las Vegas', 'AUS': 'Austin',
+          'JFK': 'New York', 'LAX': 'Los Angeles', 'LHR': 'London', 'CDG': 'Paris',
+          'FRA': 'Frankfurt', 'DXB': 'Dubai', 'SIN': 'Singapore', 'NRT': 'Tokyo',
+          'ICN': 'Seoul', 'SYD': 'Sydney', 'MEL': 'Melbourne', 'YYZ': 'Toronto',
+          'YVR': 'Vancouver', 'SFO': 'San Francisco', 'ORD': 'Chicago', 'MIA': 'Miami',
+          'ATL': 'Atlanta', 'DEN': 'Denver', 'SEA': 'Seattle', 'BOS': 'Boston',
+        };
+        
+        const flightInfo = {
+          from,
+          to,
+          fromCity: cityMap[from] || from,
+          toCity: cityMap[to] || to,
+          price: iframePrice || '',
+          travelers: 1,
+          class: 'Economy',
+          tripType: 'Round-Trip',
+        };
+        
+        setBookingData(flightInfo);
+        setShowBookingPopup(true);
+      }
+    }
+  };
+
   // Show loading state while determining search code
   if (!isClient) {
     return (
@@ -396,6 +439,7 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
         onClose={() => setShowBookingPopup(false)}
         flightData={bookingData}
       />
+      {searchCode && <BookNowOverlay onBookNow={handleBookNowClick} />}
     </>
   );
 }

@@ -199,7 +199,7 @@ export default function TriposiaSearchWidget({ searchCode, locale = 'en' }: Trip
         )}
 
         {!isLoading && !error && (
-          <div className="w-full">
+          <div className="w-full relative">
             <iframe
               ref={iframeRef}
               src={`https://search.triposia.com/flights/${currentSearchCode || ''}`}
