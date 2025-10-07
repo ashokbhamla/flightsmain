@@ -6,9 +6,10 @@ import { useTranslations } from '@/lib/translations';
 interface TriposiaSearchWidgetProps {
   searchCode?: string;
   locale?: string;
+  overlayEnabled?: boolean;
 }
 
-export default function TriposiaSearchWidget({ searchCode, locale = 'en' }: TriposiaSearchWidgetProps) {
+export default function TriposiaSearchWidget({ searchCode, locale = 'en', overlayEnabled = true }: TriposiaSearchWidgetProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentSearchCode, setCurrentSearchCode] = useState<string | undefined>(searchCode);
@@ -337,29 +338,31 @@ export default function TriposiaSearchWidget({ searchCode, locale = 'en' }: Trip
             />
             
             {/* Transparent clickable overlay that sends message to parent */}
-            <div
-              onClick={() => {
-                // Send message to parent to open booking popup
-                window.parent.postMessage({
-                  type: 'bookingButtonClick',
-                  action: 'openBooking',
-                  timestamp: new Date().toISOString()
-                }, '*');
-              }}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'transparent',
-                cursor: 'pointer',
-                zIndex: 10,
-                overflow: 'auto', // Allow scrolling
-                pointerEvents: 'auto', // Allow scroll events
-              }}
-              title="Click anywhere to book this flight"
-            />
+            {overlayEnabled && (
+              <div
+                onClick={() => {
+                  // Send message to parent to open booking popup
+                  window.parent.postMessage({
+                    type: 'bookingButtonClick',
+                    action: 'openBooking',
+                    timestamp: new Date().toISOString()
+                  }, '*');
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'transparent',
+                  cursor: 'pointer',
+                  zIndex: 10,
+                  overflow: 'auto', // Allow scrolling
+                  pointerEvents: 'auto', // Allow scroll events
+                }}
+                title="Click anywhere to book this flight"
+              />
+            )}
           </div>
         )}
       </div>

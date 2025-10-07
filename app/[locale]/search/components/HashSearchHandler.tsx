@@ -19,7 +19,29 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
   const [popupData, setPopupData] = useState<any>(null);
   const [bookingData, setBookingData] = useState<any>(null);
   const [iframePrice, setIframePrice] = useState<string | null>(null);
+  const [settings, setSettings] = useState({
+    flightPopupEnabled: true,
+    bookingPopupEnabled: true,
+    overlayEnabled: true,
+    phoneNumber: '+1 (855) 921-4888',
+  });
   const translations = useTranslations(locale as any);
+
+  // Fetch admin settings
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/admin/settings?public=true');
+        if (response.ok) {
+          const data = await response.json();
+          setSettings(data);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     // Set client-side flag
@@ -73,7 +95,9 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
               };
               
               setBookingData(flightInfo);
-              setShowBookingPopup(true);
+              if (settings.bookingPopupEnabled) {
+                setShowBookingPopup(true);
+              }
             }
           }
           return;
@@ -354,10 +378,12 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
 
           setPopupData(flightData);
           
-          // Show popup after 2 seconds
-          setTimeout(() => {
-            setShowPopup(true);
-          }, 2000);
+          // Show popup after 2 seconds if enabled
+          if (settings.flightPopupEnabled) {
+            setTimeout(() => {
+              setShowPopup(true);
+            }, 2000);
+          }
         }
       } catch (error) {
         console.error('Error parsing search code:', error);
@@ -411,17 +437,26 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
 
   return (
     <>
-      <TriposiaSearchWidget searchCode={searchCode} locale={locale} />
-      <FlightPopup
-        open={showPopup}
-        onClose={() => setShowPopup(false)}
-        flightData={popupData}
+      <TriposiaSearchWidget 
+        searchCode={searchCode} 
+        locale={locale}
+        overlayEnabled={settings.overlayEnabled}
       />
-      <BookingPopup
-        open={showBookingPopup}
-        onClose={() => setShowBookingPopup(false)}
-        flightData={bookingData}
-      />
+      {settings.flightPopupEnabled && (
+        <FlightPopup
+          open={showPopup}
+          onClose={() => setShowPopup(false)}
+          flightData={popupData}
+        />
+      )}
+      {settings.bookingPopupEnabled && (
+        <BookingPopup
+          open={showBookingPopup}
+          onClose={() => setShowBookingPopup(false)}
+          flightData={bookingData}
+          phoneNumber={settings.phoneNumber}
+        />
+      )}
     </>
   );
 }
