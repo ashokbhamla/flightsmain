@@ -199,15 +199,15 @@ export default function TriposiaSearchWidget({ searchCode, locale = 'en' }: Trip
         )}
 
         {!isLoading && !error && (
-          <div className="w-full relative" style={{ minHeight: '600px' }}>
+          <div className="w-full relative" style={{ minHeight: '800px', maxHeight: '1200px' }}>
             {/* Iframe for display only */}
             <iframe
               ref={iframeRef}
               src={`https://search.triposia.com/flights/${currentSearchCode || ''}`}
               width="100%"
-              height="600"
+              height="1200"
               frameBorder="0"
-              scrolling="no"
+              scrolling="yes"
               allowFullScreen
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               loading="lazy"
@@ -215,7 +215,8 @@ export default function TriposiaSearchWidget({ searchCode, locale = 'en' }: Trip
               style={{ 
                 border: 'none', 
                 outline: 'none',
-                minHeight: '600px',
+                minHeight: '800px',
+                height: '1200px',
                 width: '100%',
                 pointerEvents: 'none', // Disable all interactions with iframe
               }}
@@ -354,6 +355,8 @@ export default function TriposiaSearchWidget({ searchCode, locale = 'en' }: Trip
                 backgroundColor: 'transparent',
                 cursor: 'pointer',
                 zIndex: 10,
+                overflow: 'auto', // Allow scrolling
+                pointerEvents: 'auto', // Allow scroll events
               }}
               title="Click anywhere to book this flight"
             />
