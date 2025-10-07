@@ -323,4 +323,3 @@ export default function AdminPage() {
     </Container>
   );
 }
-
