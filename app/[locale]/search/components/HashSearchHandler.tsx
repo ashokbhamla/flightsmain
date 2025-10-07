@@ -25,31 +25,57 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
     // Set client-side flag
     setIsClient(true);
     
-    // Listen for messages from iframe
+    // Listen for messages from iframe and overlay
     const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== 'https://search.triposia.com') return;
+      // Accept messages from our own origin or Triposia
+      const isValidOrigin = event.origin === window.location.origin || 
+                           event.origin === 'https://search.triposia.com';
+      
+      if (!isValidOrigin) return;
       
       if (event.data && typeof event.data === 'object') {
         // Handle booking button click
         if (event.data.type === 'bookingButtonClick' || event.data.action === 'openBooking') {
           console.log('Booking button clicked, opening booking popup');
           
-          // Extract flight data from the message
-          const flightInfo = {
-            from: event.data.from || event.data.departureCode || '',
-            to: event.data.to || event.data.arrivalCode || '',
-            fromCity: event.data.fromCity || event.data.departureCity || '',
-            toCity: event.data.toCity || event.data.arrivalCity || '',
-            departureDate: event.data.departureDate || '',
-            returnDate: event.data.returnDate || '',
-            price: event.data.price || iframePrice || '',
-            travelers: event.data.travelers || event.data.passengers || 1,
-            class: event.data.class || 'Economy',
-            tripType: event.data.tripType || 'Round-Trip',
-          };
+          // Extract flight data from URL hash
+          const hash = window.location.hash;
+          const match = hash.match(/#\/flights\/(.+)/);
           
-          setBookingData(flightInfo);
-          setShowBookingPopup(true);
+          if (match && match[1]) {
+            const code = match[1];
+            const airportCodes = code.match(/[A-Z]{3}/g);
+            
+            if (airportCodes && airportCodes.length >= 2) {
+              const from = airportCodes[0];
+              const to = airportCodes[1];
+              
+              // Map airport codes to city names
+              const cityMap: { [key: string]: string } = {
+                'DEL': 'Delhi', 'BOM': 'Mumbai', 'BLR': 'Bangalore', 'HYD': 'Hyderabad',
+                'CCU': 'Kolkata', 'MAA': 'Chennai', 'LAS': 'Las Vegas', 'AUS': 'Austin',
+                'JFK': 'New York', 'LAX': 'Los Angeles', 'LHR': 'London', 'CDG': 'Paris',
+                'FRA': 'Frankfurt', 'DXB': 'Dubai', 'SIN': 'Singapore', 'NRT': 'Tokyo',
+                'ICN': 'Seoul', 'SYD': 'Sydney', 'MEL': 'Melbourne', 'YYZ': 'Toronto',
+                'YVR': 'Vancouver', 'SFO': 'San Francisco', 'ORD': 'Chicago', 'MIA': 'Miami',
+                'ATL': 'Atlanta', 'DEN': 'Denver', 'SEA': 'Seattle', 'BOS': 'Boston',
+              };
+              
+              const flightInfo = {
+                from,
+                to,
+                fromCity: cityMap[from] || from,
+                toCity: cityMap[to] || to,
+                price: event.data.price || iframePrice || '',
+                travelers: event.data.travelers || 1,
+                class: event.data.class || 'Economy',
+                tripType: event.data.tripType || 'Round-Trip',
+              };
+              
+              setBookingData(flightInfo);
+              setShowBookingPopup(true);
+            }
+          }
           return;
         }
         
