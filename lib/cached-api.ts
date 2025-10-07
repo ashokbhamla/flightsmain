@@ -1,13 +1,6 @@
 import { RedisCache, CacheKeys, CacheTTL } from './redis';
 import { 
-  fetchAirlineContent, 
-  fetchAirlineAirportContent, 
-  fetchAirlineData, 
-  fetchAirlineAirportData, 
   fetchAirlineContactInfo,
-  fetchCityByIata,
-  fetchFlightContent,
-  fetchFlightData,
   fetchLayout
 } from './api';
 
@@ -26,12 +19,17 @@ export async function getCachedAirlineContent(
   let data = await RedisCache.get(cacheKey);
   
   if (!data) {
-    // If not in cache, fetch from API
-    data = await fetchAirlineContent(airlineCode, arrivalIata, departureIata, langId as 1 | 2 | 3 | 4, domainId as 1 | 2);
+    // Call internal API endpoint instead of external API
+    const apiUrl = `/api/airline-content?airline_code=${airlineCode}&arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
+    const response = await fetch(apiUrl);
     
-    // Cache the result for 1 hour
-    if (data) {
-      await RedisCache.set(cacheKey, data, CacheTTL.LONG);
+    if (response.ok) {
+      data = await response.json();
+      
+      // Cache the result for 1 hour
+      if (data) {
+        await RedisCache.set(cacheKey, data, CacheTTL.LONG);
+      }
     }
   }
   
@@ -49,10 +47,16 @@ export async function getCachedAirlineAirportContent(
   let data = await RedisCache.get(cacheKey);
   
   if (!data) {
-    data = await fetchAirlineAirportContent(airlineCode, departureIata, langId as 1 | 2 | 3 | 4, domainId as 1 | 2);
+    // Call internal API endpoint instead of external API
+    const apiUrl = `/api/airline-airport-content?airline_code=${airlineCode}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
+    const response = await fetch(apiUrl);
     
-    if (data) {
-      await RedisCache.set(cacheKey, data, CacheTTL.LONG);
+    if (response.ok) {
+      data = await response.json();
+      
+      if (data) {
+        await RedisCache.set(cacheKey, data, CacheTTL.LONG);
+      }
     }
   }
   
@@ -71,10 +75,16 @@ export async function getCachedAirlineData(
   let data = await RedisCache.get(cacheKey);
   
   if (!data) {
-    data = await fetchAirlineData(airlineCode, arrivalIata, departureIata, langId as 1 | 2 | 3 | 4, domainId as 1 | 2);
+    // Call internal API endpoint instead of external API
+    const apiUrl = `/api/airline-data?airline_code=${airlineCode}&arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
+    const response = await fetch(apiUrl);
     
-    if (data) {
-      await RedisCache.set(cacheKey, data, CacheTTL.MEDIUM);
+    if (response.ok) {
+      data = await response.json();
+      
+      if (data) {
+        await RedisCache.set(cacheKey, data, CacheTTL.MEDIUM);
+      }
     }
   }
   
@@ -91,10 +101,16 @@ export async function getCachedAirlineAirportData(
   let data = await RedisCache.get(cacheKey);
   
   if (!data) {
-    data = await fetchAirlineAirportData(airlineCode, departureIata, domainId as 1 | 2);
+    // Call internal API endpoint instead of external API
+    const apiUrl = `/api/airline-airport-data?airline_code=${airlineCode}&departure_iata=${departureIata}&domain_id=${domainId}`;
+    const response = await fetch(apiUrl);
     
-    if (data) {
-      await RedisCache.set(cacheKey, data, CacheTTL.MEDIUM);
+    if (response.ok) {
+      data = await response.json();
+      
+      if (data) {
+        await RedisCache.set(cacheKey, data, CacheTTL.MEDIUM);
+      }
     }
   }
   
@@ -128,11 +144,17 @@ export async function getCachedCityData(
   let data = await RedisCache.get(cacheKey);
   
   if (!data) {
-    data = await fetchCityByIata(cityIata, langId as 1 | 2 | 3 | 4, domainId as 1 | 2);
+    // Call internal API endpoint instead of external API
+    const apiUrl = `/api/city-by-iata?city_iata=${cityIata}&lang_id=${langId}&domain_id=${domainId}`;
+    const response = await fetch(apiUrl);
     
-    if (data) {
-      // City data is relatively static, cache for 2 hours
-      await RedisCache.set(cacheKey, data, CacheTTL.VERY_LONG);
+    if (response.ok) {
+      data = await response.json();
+      
+      if (data) {
+        // City data is relatively static, cache for 2 hours
+        await RedisCache.set(cacheKey, data, CacheTTL.VERY_LONG);
+      }
     }
   }
   
@@ -150,10 +172,16 @@ export async function getCachedFlightContent(
   let data = await RedisCache.get(cacheKey);
   
   if (!data) {
-    data = await fetchFlightContent(arrivalIata, departureIata, langId as 1 | 2 | 3 | 4, domainId as 1 | 2);
+    // Call internal API endpoint instead of external API
+    const apiUrl = `/api/flight-content?arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
+    const response = await fetch(apiUrl);
     
-    if (data) {
-      await RedisCache.set(cacheKey, data, CacheTTL.LONG);
+    if (response.ok) {
+      data = await response.json();
+      
+      if (data) {
+        await RedisCache.set(cacheKey, data, CacheTTL.LONG);
+      }
     }
   }
   
@@ -171,10 +199,16 @@ export async function getCachedFlightData(
   let data = await RedisCache.get(cacheKey);
   
   if (!data) {
-    data = await fetchFlightData(arrivalIata, departureIata, langId as 1 | 2, domainId as 1 | 2);
+    // Call internal API endpoint instead of external API
+    const apiUrl = `/api/flight-data?arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
+    const response = await fetch(apiUrl);
     
-    if (data) {
-      await RedisCache.set(cacheKey, data, CacheTTL.MEDIUM);
+    if (response.ok) {
+      data = await response.json();
+      
+      if (data) {
+        await RedisCache.set(cacheKey, data, CacheTTL.MEDIUM);
+      }
     }
   }
   
@@ -225,7 +259,9 @@ export async function getCachedMultipleCityData(
   if (missingIndices.length > 0) {
     const fetchPromises = missingIndices.map(async (index) => {
       const cityIata = cityIatas[index];
-      const data = await fetchCityByIata(cityIata, langId as 1 | 2 | 3 | 4, domainId as 1 | 2);
+      const apiUrl = `/api/city-by-iata?city_iata=${cityIata}&lang_id=${langId}&domain_id=${domainId}`;
+      const response = await fetch(apiUrl);
+      const data = response.ok ? await response.json() : null;
       
       if (data) {
         const cacheKey = CacheKeys.cityData(cityIata, langId, domainId);

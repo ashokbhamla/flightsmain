@@ -233,11 +233,12 @@ export default function TriposiaSearchWidget({ searchCode, locale = 'en' }: Trip
                     origin: window.location.origin
                   }, 'https://search.triposia.com');
                   
-                  // Also try to inject a script to monitor URL changes
+                  // Also try to inject a script to monitor URL changes and button clicks
                   try {
                     const script = document.createElement('script');
                     script.textContent = `
                       (function() {
+                        // Monitor URL changes
                         let lastUrl = location.href;
                         new MutationObserver(() => {
                           const url = location.href;
@@ -250,13 +251,73 @@ export default function TriposiaSearchWidget({ searchCode, locale = 'en' }: Trip
                           }
                         }).observe(document, { subtree: true, childList: true });
                         
-                        // Also listen for popstate events
+                        // Listen for popstate events
                         window.addEventListener('popstate', function() {
                           window.parent.postMessage({
                             type: 'urlChange',
                             url: location.href
                           }, '*');
                         });
+                        
+                        // Monitor for ticket action button clicks
+                        document.addEventListener('click', function(e) {
+                          const target = e.target;
+                          
+                          // Check if clicked element or its parent is a ticket action button
+                          let button = target;
+                          let depth = 0;
+                          while (button && depth < 5) {
+                            const className = button.className || '';
+                            if (className.includes && (
+                              className.includes('ticket-action-button-deeplink') ||
+                              className.includes('ticket-action-button') ||
+                              className.includes('book-button') ||
+                              className.includes('select-button')
+                            )) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              
+                              // Extract flight data from the page
+                              const hash = location.hash || window.location.hash;
+                              const match = hash.match(/#\\/flights\\/(.+)/);
+                              
+                              if (match && match[1]) {
+                                const code = match[1];
+                                const airportCodes = code.match(/[A-Z]{3}/g);
+                                
+                                if (airportCodes && airportCodes.length >= 2) {
+                                  // Try to find price from nearby elements
+                                  let price = '';
+                                  let priceElement = button.querySelector('[class*="price"]');
+                                  if (!priceElement) {
+                                    priceElement = button.closest('[class*="ticket"]')?.querySelector('[class*="price"]');
+                                  }
+                                  if (priceElement) {
+                                    const priceText = priceElement.textContent || '';
+                                    const priceMatch = priceText.match(/\\$?(\\d+(?:\\.\\d{2})?)/);
+                                    if (priceMatch) {
+                                      price = priceMatch[1];
+                                    }
+                                  }
+                                  
+                                  window.parent.postMessage({
+                                    type: 'bookingButtonClick',
+                                    action: 'openBooking',
+                                    from: airportCodes[0],
+                                    to: airportCodes[1],
+                                    price: price,
+                                    timestamp: new Date().toISOString()
+                                  }, '*');
+                                  
+                                  console.log('Booking button clicked, message sent to parent');
+                                }
+                              }
+                              return false;
+                            }
+                            button = button.parentElement;
+                            depth++;
+                          }
+                        }, true);
                       })();
                     `;
                     

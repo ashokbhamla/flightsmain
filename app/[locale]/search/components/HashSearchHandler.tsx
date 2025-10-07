@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import TriposiaSearchWidget from './TriposiaSearchWidget';
 import FlightPopup from '@/components/FlightPopup';
+import BookingPopup from '@/components/BookingPopup';
 import { useTranslations } from '@/lib/translations';
 
 interface HashSearchHandlerProps {
@@ -14,7 +15,9 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
   const [searchCode, setSearchCode] = useState<string | undefined>(fallbackSearchCode);
   const [isClient, setIsClient] = useState(typeof window !== 'undefined');
   const [showPopup, setShowPopup] = useState(false);
+  const [showBookingPopup, setShowBookingPopup] = useState(false);
   const [popupData, setPopupData] = useState<any>(null);
+  const [bookingData, setBookingData] = useState<any>(null);
   const [iframePrice, setIframePrice] = useState<string | null>(null);
   const translations = useTranslations(locale as any);
 
@@ -22,11 +25,34 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
     // Set client-side flag
     setIsClient(true);
     
-    // Listen for price updates from iframe
+    // Listen for messages from iframe
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== 'https://search.triposia.com') return;
       
       if (event.data && typeof event.data === 'object') {
+        // Handle booking button click
+        if (event.data.type === 'bookingButtonClick' || event.data.action === 'openBooking') {
+          console.log('Booking button clicked, opening booking popup');
+          
+          // Extract flight data from the message
+          const flightInfo = {
+            from: event.data.from || event.data.departureCode || '',
+            to: event.data.to || event.data.arrivalCode || '',
+            fromCity: event.data.fromCity || event.data.departureCity || '',
+            toCity: event.data.toCity || event.data.arrivalCity || '',
+            departureDate: event.data.departureDate || '',
+            returnDate: event.data.returnDate || '',
+            price: event.data.price || iframePrice || '',
+            travelers: event.data.travelers || event.data.passengers || 1,
+            class: event.data.class || 'Economy',
+            tripType: event.data.tripType || 'Round-Trip',
+          };
+          
+          setBookingData(flightInfo);
+          setShowBookingPopup(true);
+          return;
+        }
+        
         // Look for price data in the message
         const priceFields = ['price', 'fare', 'cost', 'amount', 'total', 'cheapest', 'lowest'];
         const prices: number[] = [];
@@ -49,6 +75,89 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
     };
 
     window.addEventListener('message', handleMessage);
+    
+    // Monitor for ticket action button clicks in iframe
+    const monitorIframeButtons = () => {
+      const iframe = document.querySelector('iframe[src*="search.triposia.com"]') as HTMLIFrameElement;
+      if (iframe) {
+        try {
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+          if (iframeDoc) {
+            // Find all ticket action buttons
+            const buttons = iframeDoc.querySelectorAll('[class*="ticket-action-button-deeplink"]');
+            
+            buttons.forEach((button) => {
+              // Remove existing listeners to avoid duplicates
+              const newButton = button.cloneNode(true);
+              button.parentNode?.replaceChild(newButton, button);
+              
+              // Add click listener
+              newButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('Ticket action button clicked');
+                
+                // Extract flight data from URL hash
+                const hash = window.location.hash;
+                const match = hash.match(/#\/flights\/(.+)/);
+                
+                if (match && match[1]) {
+                  const code = match[1];
+                  const airportCodes = code.match(/[A-Z]{3}/g);
+                  
+                  if (airportCodes && airportCodes.length >= 2) {
+                    const from = airportCodes[0];
+                    const to = airportCodes[1];
+                    
+                    // Extract price from the button or nearby elements
+                    let price = iframePrice || '';
+                    const priceElement = newButton.closest('[class*="ticket"]')?.querySelector('[class*="price"]');
+                    if (priceElement) {
+                      const priceText = priceElement.textContent || '';
+                      const priceMatch = priceText.match(/\$?(\d+(?:\.\d{2})?)/);
+                      if (priceMatch) {
+                        price = priceMatch[1];
+                      }
+                    }
+                    
+                    // Map airport codes to city names
+                    const cityMap: { [key: string]: string } = {
+                      'DEL': 'Delhi', 'BOM': 'Mumbai', 'BLR': 'Bangalore', 'HYD': 'Hyderabad',
+                      'CCU': 'Kolkata', 'MAA': 'Chennai', 'LAS': 'Las Vegas', 'AUS': 'Austin',
+                      'JFK': 'New York', 'LAX': 'Los Angeles', 'LHR': 'London', 'CDG': 'Paris',
+                      'FRA': 'Frankfurt', 'DXB': 'Dubai', 'SIN': 'Singapore', 'NRT': 'Tokyo',
+                      'ICN': 'Seoul', 'SYD': 'Sydney', 'MEL': 'Melbourne', 'YYZ': 'Toronto',
+                      'YVR': 'Vancouver', 'SFO': 'San Francisco', 'ORD': 'Chicago', 'MIA': 'Miami',
+                      'ATL': 'Atlanta', 'DEN': 'Denver', 'SEA': 'Seattle', 'BOS': 'Boston',
+                    };
+                    
+                    const flightInfo = {
+                      from,
+                      to,
+                      fromCity: cityMap[from] || from,
+                      toCity: cityMap[to] || to,
+                      price,
+                      travelers: 1,
+                      class: 'Economy',
+                      tripType: 'Round-Trip',
+                    };
+                    
+                    setBookingData(flightInfo);
+                    setShowBookingPopup(true);
+                  }
+                }
+              });
+            });
+          }
+        } catch (e) {
+          // Cross-origin restrictions, ignore
+        }
+      }
+    };
+    
+    // Monitor buttons every 2 seconds
+    const buttonMonitorInterval = setInterval(monitorIframeButtons, 2000);
     
     // Also try to extract price from iframe DOM periodically
     const extractPriceFromIframe = () => {
@@ -245,6 +354,7 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
       clearTimeout(timeoutId);
       clearInterval(priceInterval);
       clearInterval(pagePriceInterval);
+      clearInterval(buttonMonitorInterval);
       window.removeEventListener('hashchange', handleHashChange);
       window.removeEventListener('message', handleMessage);
     };
@@ -280,6 +390,11 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
         open={showPopup}
         onClose={() => setShowPopup(false)}
         flightData={popupData}
+      />
+      <BookingPopup
+        open={showBookingPopup}
+        onClose={() => setShowBookingPopup(false)}
+        flightData={bookingData}
       />
     </>
   );
