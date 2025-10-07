@@ -180,9 +180,9 @@ export default function BookingPopup({ open, onClose, flightData, phoneNumber = 
             <CloseIcon />
           </IconButton>
         </Box>
-        <Typography variant="body2" sx={{ mt: 1, opacity: 0.9 }}>
-          Fill in your details and we'll contact you shortly
-        </Typography>
+            <Typography variant="body2" sx={{ mt: 1, opacity: 0.9 }}>
+              Fill in your details and we&apos;ll contact you shortly
+            </Typography>
       </DialogTitle>
 
       <DialogContent sx={{ pt: 3, pb: 3 }}>
