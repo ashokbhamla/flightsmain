@@ -199,14 +199,15 @@ export default function TriposiaSearchWidget({ searchCode, locale = 'en' }: Trip
         )}
 
         {!isLoading && !error && (
-          <div className="w-full relative">
+          <div className="w-full relative" style={{ minHeight: '600px' }}>
+            {/* Iframe for display only */}
             <iframe
               ref={iframeRef}
               src={`https://search.triposia.com/flights/${currentSearchCode || ''}`}
               width="100%"
               height="600"
               frameBorder="0"
-              scrolling="yes"
+              scrolling="no"
               allowFullScreen
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               loading="lazy"
@@ -215,9 +216,10 @@ export default function TriposiaSearchWidget({ searchCode, locale = 'en' }: Trip
                 border: 'none', 
                 outline: 'none',
                 minHeight: '600px',
-                width: '100%'
+                width: '100%',
+                pointerEvents: 'none', // Disable all interactions with iframe
               }}
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-modals allow-downloads"
+              sandbox="allow-same-origin allow-scripts"
               onLoad={() => {
                 console.log('Triposia iframe loaded successfully');
                 // Clear timeout on successful load
@@ -331,6 +333,29 @@ export default function TriposiaSearchWidget({ searchCode, locale = 'en' }: Trip
                 console.error('Failed to load Triposia iframe:', e);
                 setError('Failed to load search widget. Please try again.');
               }}
+            />
+            
+            {/* Transparent clickable overlay that sends message to parent */}
+            <div
+              onClick={() => {
+                // Send message to parent to open booking popup
+                window.parent.postMessage({
+                  type: 'bookingButtonClick',
+                  action: 'openBooking',
+                  timestamp: new Date().toISOString()
+                }, '*');
+              }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                zIndex: 10,
+              }}
+              title="Click anywhere to book this flight"
             />
           </div>
         )}
