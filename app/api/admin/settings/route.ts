@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // In-memory storage (in production, use a database)
-let settings = {
+const settings = {
   flightPopupEnabled: true,
   bookingPopupEnabled: true,
   overlayEnabled: true,
