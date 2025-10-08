@@ -14,6 +14,15 @@ import { getLanguageId, getTranslations } from '@/lib/translations';
 import FlightSearchBox from '@/components/FlightSearchBox';
 // import FlightListWithFilters from '@/components/FlightListWithFilters';
 
+// Helper function to get domain ID based on current domain
+function getDomainId(): 1 | 2 {
+  const domain = process.env.NEXT_PUBLIC_DOMAIN || 'airlinesmap.com';
+  // domain_id mapping:
+  // 1 = airlinesmap.com
+  // 2 = other domain (if you have multiple domains)
+  return domain.includes('airlinesmap.com') ? 1 : 2;
+}
+
 // Helper function to check if slug is a valid airport code
 // Single codes (like aad, hyd) are airport codes, route pairs (like jfk-agp) are not
 function isAirportCode(slug: string): boolean {
@@ -170,7 +179,7 @@ export async function generateMetadata({ params }: { params: { locale: string; s
   const alternateUrls = generateAlternateUrls(`/flights/${params.slug}`);
   
   try {
-    const contentData = await getCachedFlightContent(arrivalIata, departureIata, getLanguageId(locale), 1);
+    const contentData = await getCachedFlightContent(arrivalIata, departureIata, getLanguageId(locale), getDomainId());
     
     return {
       title: contentData?.title || `${t?.flightPage?.flights || 'Flights'} ${t?.flightPage?.from || 'from'} ${getCityName(departureIata)} (${departureIata}) ${t?.flightPage?.to || 'to'} ${getCityName(arrivalIata)} (${arrivalIata})`,
@@ -286,8 +295,8 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
   
   try {
     [contentData, flightData] = await Promise.all([
-      getCachedFlightContent(arrivalIata, departureIata, getLanguageId(locale), 1),
-      getCachedFlightData(arrivalIata, departureIata, getLanguageId(locale), 1)
+      getCachedFlightContent(arrivalIata, departureIata, getLanguageId(locale), getDomainId()),
+      getCachedFlightData(arrivalIata, departureIata, getLanguageId(locale), getDomainId())
     ]);
     // Pass the full flight data array for route pair pages
     actualFlightData = flightData;
