@@ -46,11 +46,13 @@ export async function sendToCustomCRM(bookingData: BookingData) {
       'Content-Type': 'application/json',
     };
 
-    // Option 1: API Key in header
-    if (crmApiKey) {
-      headers['X-API-Key'] = crmApiKey;
-      // Or if your CRM uses a different header name:
-      // headers['Authorization'] = `ApiKey ${crmApiKey}`;
+    // Option 1: API Key in header (X-API-Key)
+    // Use API key from environment variable for security
+    const apiKey = crmApiKey || process.env.CRM_WEBHOOK_API_KEY;
+    if (apiKey) {
+      headers['X-API-Key'] = apiKey;
+    } else {
+      console.warn('⚠️ No API key configured for CRM webhook');
     }
 
     // Option 2: Bearer Token
@@ -107,6 +109,7 @@ function transformDataForCRM(bookingData: BookingData) {
     tripType: bookingData.flightDetails.tripType?.toLowerCase() === 'one-way' ? 'oneway' : 'roundtrip',
     numberOfPassengers: bookingData.flightDetails.travelers || 1,
     source: 'landing', // Source from airlinesmap search page
+    notes: `Flight: ${bookingData.flightDetails.fromCity || bookingData.flightDetails.from} to ${bookingData.flightDetails.toCity || bookingData.flightDetails.to}${bookingData.flightDetails.price ? `. Estimated Price: $${bookingData.flightDetails.price}` : ''}. Class: ${bookingData.flightDetails.class || 'Economy'}. Submitted from search page.`,
   };
 
   // Example 2: If your CRM uses a different structure
