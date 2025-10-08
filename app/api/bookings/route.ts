@@ -22,11 +22,14 @@ export async function POST(request: NextRequest) {
     console.log('📞 New Booking Request:', JSON.stringify(enrichedData, null, 2));
 
     // Send to Custom CRM (automatically if CUSTOM_CRM_URL is configured)
+    console.log('🔄 Attempting to send to CRM...');
     const crmResult = await sendToCustomCRM(enrichedData);
+    console.log('📊 CRM Result:', JSON.stringify(crmResult, null, 2));
+    
     if (crmResult.success) {
-      console.log('✅ Successfully sent to CRM');
+      console.log('✅ Successfully sent to CRM', crmResult.data);
     } else {
-      console.warn('⚠️ CRM integration not configured or failed');
+      console.error('❌ CRM integration failed:', crmResult.error || crmResult.message);
     }
 
     // Option 1: Send to your CRM API

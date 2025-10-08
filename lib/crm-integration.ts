@@ -69,6 +69,8 @@ export async function sendToCustomCRM(bookingData: BookingData) {
     // }
 
     console.log('📤 Sending to CRM:', crmUrl);
+    console.log('🔑 Using API Key:', apiKey ? 'Yes (configured)' : 'No');
+    console.log('📦 Payload:', JSON.stringify(crmPayload, null, 2));
 
     const response = await fetch(crmUrl, {
       method: 'POST',
@@ -76,14 +78,16 @@ export async function sendToCustomCRM(bookingData: BookingData) {
       body: JSON.stringify(crmPayload),
     });
 
+    console.log('📡 CRM Response Status:', response.status);
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ CRM API Error:', response.status, errorText);
-      throw new Error(`CRM API returned ${response.status}`);
+      throw new Error(`CRM API returned ${response.status}: ${errorText}`);
     }
 
     const result = await response.json();
-    console.log('✅ CRM Response:', result);
+    console.log('✅ CRM Response:', JSON.stringify(result, null, 2));
 
     return { success: true, data: result };
   } catch (error) {
