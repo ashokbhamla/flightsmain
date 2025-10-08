@@ -33,6 +33,8 @@ interface BookingPopupProps {
     returnDate?: string;
     price?: string;
     travelers?: number;
+    adults?: number;
+    children?: number;
     class?: string;
     tripType?: string;
   } | null;
@@ -319,7 +321,10 @@ export default function BookingPopup({ open, onClose, flightData, phoneNumber = 
                       </Box>
                       {flightData.travelers && (
                         <Typography variant="caption" color="text.secondary">
-                          {flightData.travelers} {flightData.travelers === 1 ? 'Traveler' : 'Travelers'} • {flightData.class || 'Economy'}
+                          {flightData.adults && flightData.children ? 
+                            `${flightData.adults} Adult${flightData.adults > 1 ? 's' : ''}, ${flightData.children} Child${flightData.children !== 1 ? 'ren' : ''}` :
+                            `${flightData.travelers} ${flightData.travelers === 1 ? 'Traveler' : 'Travelers'}`
+                          } • {flightData.class || 'Economy'}
                         </Typography>
                       )}
                     </Box>

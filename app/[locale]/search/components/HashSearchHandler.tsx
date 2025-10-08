@@ -67,10 +67,15 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
           if (match && match[1]) {
             const code = match[1];
             
-            // Parse URL: Format examples:
-            // JFK2310LHR241011 (round-trip with return date)
-            // JFK2310LHR (one-way)
-            // JFK231023LHR241011 (with full dates YYMMDD)
+            // Parse URL Format: JFK1611LAX1711b11
+            // JFK = from airport
+            // 1611 = departure date (16th day, 11th month - October)
+            // LAX = to airport
+            // 1711 = return date (17th day, 11th month - October)
+            // b = business class (optional, if missing = economy)
+            // 11 = passengers (1 adult, 1 child)
+            
+            console.log('🔍 Parsing URL code:', code);
             
             const airportCodes = code.match(/[A-Z]{3}/g);
             
@@ -78,56 +83,61 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
               const from = airportCodes[0];
               const to = airportCodes[1];
               
-              // Extract dates from the code
-              // Pattern: AIRPORT + DDMM + AIRPORT + DDMM (optional)
+              // Extract dates and other info
               let departureDate = '';
               let returnDate = '';
               let tripType = 'One-Way';
+              let cabinClass = 'Economy';
+              let adults = 1;
+              let children = 0;
+              let travelers = 1;
               
-              // Try to extract departure date (after first airport code)
-              const departureDateMatch = code.match(new RegExp(`${from}(\\d{4,6})`));
+              // Parse departure date (after first airport: DDMM format)
+              const departureDateMatch = code.match(new RegExp(`${from}(\\d{4})`));
               if (departureDateMatch && departureDateMatch[1]) {
                 const dateStr = departureDateMatch[1];
-                // Parse DDMM or YYMMDD format
-                if (dateStr.length === 4) {
-                  // DDMM format
-                  const day = dateStr.substring(0, 2);
-                  const month = dateStr.substring(2, 4);
-                  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                  departureDate = `${day} ${monthNames[parseInt(month) - 1]}`;
-                } else if (dateStr.length === 6) {
-                  // YYMMDD format
-                  const year = dateStr.substring(0, 2);
-                  const month = dateStr.substring(2, 4);
-                  const day = dateStr.substring(4, 6);
-                  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                  departureDate = `${day} ${monthNames[parseInt(month) - 1]} 20${year}`;
-                }
+                const day = dateStr.substring(0, 2);
+                const month = dateStr.substring(2, 4);
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const year = new Date().getFullYear();
+                departureDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                console.log('📅 Departure:', departureDate);
               }
               
-              // Try to extract return date (after second airport code)
-              const returnDateMatch = code.match(new RegExp(`${to}(\\d{4,6})`));
+              // Parse return date (after second airport: DDMM format)
+              const returnDateMatch = code.match(new RegExp(`${to}(\\d{4})`));
               if (returnDateMatch && returnDateMatch[1]) {
                 const dateStr = returnDateMatch[1];
+                const day = dateStr.substring(0, 2);
+                const month = dateStr.substring(2, 4);
+                const year = new Date().getFullYear();
+                returnDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
                 tripType = 'Round-Trip';
-                
-                if (dateStr.length === 4) {
-                  const day = dateStr.substring(0, 2);
-                  const month = dateStr.substring(2, 4);
-                  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                  returnDate = `${day} ${monthNames[parseInt(month) - 1]}`;
-                } else if (dateStr.length === 6) {
-                  const year = dateStr.substring(0, 2);
-                  const month = dateStr.substring(2, 4);
-                  const day = dateStr.substring(4, 6);
-                  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                  returnDate = `${day} ${monthNames[parseInt(month) - 1]} 20${year}`;
-                }
+                console.log('📅 Return:', returnDate);
               }
               
-              // Extract passenger count if present (usually 1 digit after dates)
-              const passengerMatch = code.match(/(\d)$/);
-              const travelers = passengerMatch ? parseInt(passengerMatch[1]) : 1;
+              // Check for business class indicator (letter 'b' or 'B')
+              if (/[bB]/.test(code)) {
+                cabinClass = 'Business';
+                console.log('💼 Class: Business');
+              }
+              
+              // Extract passenger info (last 2 digits: adults and children)
+              // Example: 11 = 1 adult, 1 child; 21 = 2 adults, 1 child
+              const passengerMatch = code.match(/(\d{2})$/);
+              if (passengerMatch && passengerMatch[1]) {
+                const passengerStr = passengerMatch[1];
+                adults = parseInt(passengerStr[0]) || 1;
+                children = parseInt(passengerStr[1]) || 0;
+                travelers = adults + children;
+                console.log('👥 Passengers:', adults, 'adults,', children, 'children, Total:', travelers);
+              } else {
+                // Fallback: check for single digit at end
+                const singlePassengerMatch = code.match(/(\d)$/);
+                if (singlePassengerMatch && !returnDateMatch) {
+                  travelers = parseInt(singlePassengerMatch[1]) || 1;
+                }
+              }
               
               // Map airport codes to city names
               const cityMap: { [key: string]: string } = {
@@ -149,11 +159,13 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
                 returnDate,
                 price: event.data.price || iframePrice || '',
                 travelers,
-                class: event.data.class || 'Economy',
+                adults,
+                children,
+                class: cabinClass,
                 tripType,
               };
               
-              console.log('🛫 Extracted flight info from URL:', flightInfo);
+              console.log('🛫 Extracted flight info from URL:', JSON.stringify(flightInfo, null, 2));
               
               setBookingData(flightInfo);
               if (settings.bookingPopupEnabled) {
