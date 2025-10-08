@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sendToCustomCRM } from '@/lib/crm-integration';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,8 +21,16 @@ export async function POST(request: NextRequest) {
 
     console.log('📞 New Booking Request:', JSON.stringify(enrichedData, null, 2));
 
+    // Send to Custom CRM (automatically if CUSTOM_CRM_URL is configured)
+    const crmResult = await sendToCustomCRM(enrichedData);
+    if (crmResult.success) {
+      console.log('✅ Successfully sent to CRM');
+    } else {
+      console.warn('⚠️ CRM integration not configured or failed');
+    }
+
     // Option 1: Send to your CRM API
-    // Uncomment and configure for your CRM (Salesforce, HubSpot, Zoho, etc.)
+    // Additional CRM integrations (Salesforce, HubSpot, Zoho, etc.)
     /*
     const crmResponse = await fetch(process.env.CRM_API_URL!, {
       method: 'POST',
