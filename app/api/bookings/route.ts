@@ -16,138 +16,108 @@ export async function POST(request: NextRequest) {
       }, { status: 429 });
     }
 
-    const bookingData = await request.json();
+    const body = await request.json();
     
     // Validate required fields
-    if (!bookingData.customerName || !bookingData.customerPhone || !bookingData.customerEmail) {
+    if (!body.customerName || !body.customerEmail || !body.flightDetails?.from) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
     
-    // Basic email validation
+    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(bookingData.customerEmail)) {
-      return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
+    if (!emailRegex.test(body.customerEmail)) {
+      return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
-    // Add timestamp and source
-    const enrichedData = {
-      ...bookingData,
-      source: 'search_page',
-      ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-      userAgent: request.headers.get('user-agent') || 'unknown',
-      submittedAt: new Date().toISOString(),
+    console.log('📞 New Booking Request from IP:', ip);
+    console.log('📋 Customer:', body.customerName, body.customerEmail, body.customerPhone);
+    console.log('✈️ Flight:', body.flightDetails?.from, '→', body.flightDetails?.to);
+
+    // Format dates for CRM
+    const formatDateForCRM = (dateStr: string | undefined) => {
+      if (!dateStr) return null;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+      
+      try {
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const parts = dateStr.split(' ');
+        if (parts.length >= 2) {
+          const day = parts[0].padStart(2, '0');
+          const monthIndex = monthNames.findIndex(m => m === parts[1]);
+          if (monthIndex >= 0) {
+            const month = (monthIndex + 1).toString().padStart(2, '0');
+            const year = parts[2] || new Date().getFullYear().toString();
+            return `${year}-${month}-${day}`;
+          }
+        }
+      } catch (e) {
+        console.error('Date parsing error:', e);
+      }
+      return null;
     };
 
-    console.log('📞 New Booking Request:', JSON.stringify(enrichedData, null, 2));
+    // Forward to CRM with API key (secure - server-side only)
+    try {
+      const crmUrl = process.env.CUSTOM_CRM_URL || 'https://dashboard-alpha-one-85.vercel.app/api/webhooks/leads';
+      const apiKey = process.env.CRM_WEBHOOK_API_KEY || 'a71a000b53d3ed32854cf5086f773403fca323adcab0d226e9d9d8a80759442b';
+      
+      console.log('📤 Forwarding to CRM:', crmUrl);
+      
+      const crmResponse = await fetch(crmUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey, // API key hidden from client
+        },
+        body: JSON.stringify({
+          customerName: body.customerName,
+          email: body.customerEmail,
+          phone: body.customerPhone || '',
+          flightFrom: body.flightDetails.from,
+          flightTo: body.flightDetails.to,
+          departDate: formatDateForCRM(body.flightDetails.departureDate),
+          returnDate: formatDateForCRM(body.flightDetails.returnDate),
+          tripType: body.flightDetails.returnDate ? 'roundtrip' : 'oneway',
+          numberOfPassengers: body.flightDetails.travelers || 1,
+          source: 'landing',
+          notes: `Flight: ${body.flightDetails.fromCity || body.flightDetails.from} to ${body.flightDetails.toCity || body.flightDetails.to}${body.flightDetails.price ? `. Price: $${body.flightDetails.price}` : ''}. Class: ${body.flightDetails.class || 'Economy'}. Submitted from AirlinesMap search page.`,
+        }),
+      });
 
-    // Send to Custom CRM (automatically if CUSTOM_CRM_URL is configured)
-    console.log('🔄 Attempting to send to CRM...');
-    const crmResult = await sendToCustomCRM(enrichedData);
-    console.log('📊 CRM Result:', JSON.stringify(crmResult, null, 2));
-    
-    if (crmResult.success) {
-      console.log('✅ Successfully sent to CRM', crmResult.data);
-    } else {
-      console.error('❌ CRM integration failed:', crmResult.error || crmResult.message);
-    }
-
-    // Option 1: Send to your CRM API
-    // Additional CRM integrations (Salesforce, HubSpot, Zoho, etc.)
-    /*
-    const crmResponse = await fetch(process.env.CRM_API_URL!, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.CRM_API_KEY}`,
-      },
-      body: JSON.stringify({
-        name: bookingData.customerName,
-        email: bookingData.customerEmail,
-        phone: bookingData.customerPhone,
-        source: 'Website - Search Page',
-        flight_from: bookingData.flightDetails.from,
-        flight_to: bookingData.flightDetails.to,
-        flight_price: bookingData.flightDetails.price,
-        notes: `Flight: ${bookingData.flightDetails.fromCity} (${bookingData.flightDetails.from}) → ${bookingData.flightDetails.toCity} (${bookingData.flightDetails.to})\nPrice: $${bookingData.flightDetails.price}\nTravelers: ${bookingData.flightDetails.travelers}\nClass: ${bookingData.flightDetails.class}`,
-      }),
-    });
-
-    if (!crmResponse.ok) {
-      console.error('CRM API error:', await crmResponse.text());
-    }
-    */
-
-    // Option 2: Send email notification
-    // Uncomment and configure for email service
-    /*
-    await fetch(`${process.env.EMAIL_API_URL}/send`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.EMAIL_API_KEY}`,
-      },
-      body: JSON.stringify({
-        to: process.env.ADMIN_EMAIL,
-        subject: `New Flight Booking Request - ${bookingData.flightDetails.fromCity} to ${bookingData.flightDetails.toCity}`,
-        html: `
-          <h2>New Booking Request</h2>
-          <h3>Customer Details:</h3>
-          <ul>
-            <li><strong>Name:</strong> ${bookingData.customerName}</li>
-            <li><strong>Email:</strong> ${bookingData.customerEmail}</li>
-            <li><strong>Phone:</strong> ${bookingData.customerPhone}</li>
-          </ul>
-          <h3>Flight Details:</h3>
-          <ul>
-            <li><strong>Route:</strong> ${bookingData.flightDetails.fromCity} (${bookingData.flightDetails.from}) → ${bookingData.flightDetails.toCity} (${bookingData.flightDetails.to})</li>
-            <li><strong>Price:</strong> $${bookingData.flightDetails.price}</li>
-            <li><strong>Departure:</strong> ${bookingData.flightDetails.departureDate || 'N/A'}</li>
-            <li><strong>Return:</strong> ${bookingData.flightDetails.returnDate || 'N/A'}</li>
-            <li><strong>Travelers:</strong> ${bookingData.flightDetails.travelers}</li>
-            <li><strong>Class:</strong> ${bookingData.flightDetails.class}</li>
-            <li><strong>Trip Type:</strong> ${bookingData.flightDetails.tripType}</li>
-          </ul>
-          <p><strong>Submitted:</strong> ${enrichedData.submittedAt}</p>
-          <p><strong>IP:</strong> ${enrichedData.ip}</p>
-        `,
-      }),
-    });
-    */
-
-    // Option 3: Send to Webhook (Zapier, Make.com, n8n, etc.)
-    // Automatically sends if WEBHOOK_URL is set
-    if (process.env.WEBHOOK_URL) {
-      try {
-        await fetch(process.env.WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(enrichedData),
+      const crmResult = await crmResponse.json();
+      console.log('📡 CRM Response Status:', crmResponse.status);
+      console.log('📊 CRM Result:', JSON.stringify(crmResult, null, 2));
+      
+      if (crmResponse.ok) {
+        console.log('✅ Lead captured in CRM:', crmResult.leadId);
+        // Return success to frontend
+        return NextResponse.json({
+          success: true,
+          message: 'Booking request received successfully',
+          bookingId: `BK${Date.now()}`,
+          leadId: crmResult.leadId,
         });
-        console.log('✅ Webhook sent successfully');
-      } catch (webhookError) {
-        console.error('❌ Webhook error:', webhookError);
-        // Don't fail the request if webhook fails
+      } else {
+        console.error('❌ CRM error:', crmResult);
+        // Still return success to user, but log the error
+        return NextResponse.json({
+          success: true,
+          message: 'Booking request received successfully',
+          bookingId: `BK${Date.now()}`,
+          warning: 'CRM sync pending',
+        });
       }
-    }
-
-    // Option 4: Save to Database (if you have one)
-    // Uncomment and configure
-    /*
-    const db = await getDatabase(); // Your database connection
-    await db.collection('bookings').insertOne(enrichedData);
-    */
-
-    // Option 5: Send to Google Sheets
-    // See the webhook integration below
-
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Booking request received successfully',
-      bookingId: `BK${Date.now()}`, // Generate a simple booking ID
-    });
-
-  } catch (error) {
-    console.error('Error processing booking:', error);
+    } catch (crmError) {
+      console.error('❌ CRM connection error:', crmError);
+      // Don't fail the request, just log the error
+      return NextResponse.json({
+        success: true,
+        message: 'Booking request received successfully',
+        bookingId: `BK${Date.now()}`,
+        warning: 'CRM sync failed',
+      });
+    } catch (error) {
+    console.error('❌ Error processing booking:', error);
     return NextResponse.json({ 
       error: 'Failed to process booking request' 
     }, { status: 500 });
