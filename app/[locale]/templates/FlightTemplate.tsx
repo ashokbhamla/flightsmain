@@ -1518,8 +1518,8 @@ const FlightTemplate = memo(function FlightTemplate({
           arrivalCity: arrivalCityName || 'Various Destinations',
           pageUrl,
           monthlyPriceData: monthlyPriceData || [],
-          monthlyWeatherData: temperatureData || [], // Use temperature data from pageData
-          monthlyRainfallData: rainfallData || [], // Use rainfall data from pageData
+          monthlyWeatherData: weatherData || [], // Use temperature data from Real API
+          monthlyRainfallData: rainfallDataTransformed || [], // Use rainfall data from Real API
           weeklyPriceData: weeklyPriceData || []
         });
 
