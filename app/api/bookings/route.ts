@@ -116,7 +116,8 @@ export async function POST(request: NextRequest) {
         bookingId: `BK${Date.now()}`,
         warning: 'CRM sync failed',
       });
-    } catch (error) {
+    }
+  } catch (error) {
     console.error('❌ Error processing booking:', error);
     return NextResponse.json({ 
       error: 'Failed to process booking request' 
