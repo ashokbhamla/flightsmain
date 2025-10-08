@@ -66,7 +66,8 @@ export async function sendToCustomCRM(bookingData: BookingData) {
     // }
 
     console.log('📤 Sending to CRM:', crmUrl);
-    console.log('🔑 Using API Key:', apiKey ? 'Yes (configured)' : 'No');
+    console.log('🔑 API Key:', apiKey ? apiKey.substring(0, 10) + '...' : 'Not configured');
+    console.log('📋 Headers:', JSON.stringify(headers, null, 2));
     console.log('📦 Payload:', JSON.stringify(crmPayload, null, 2));
 
     const response = await fetch(crmUrl, {
