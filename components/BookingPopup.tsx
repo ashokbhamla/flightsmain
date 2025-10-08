@@ -112,21 +112,26 @@ export default function BookingPopup({ open, onClose, flightData, phoneNumber = 
         timestamp: new Date().toISOString(),
       };
 
-      console.log('Booking data:', bookingData);
+      console.log('📋 Booking data being sent:', JSON.stringify(bookingData, null, 2));
 
       // Send to backend API
+      console.log('📤 Sending to /api/bookings...');
       const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookingData),
       });
 
+      console.log('📡 Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to submit booking');
+        const errorText = await response.text();
+        console.error('❌ API Error:', response.status, errorText);
+        throw new Error(`Failed to submit booking: ${errorText}`);
       }
 
       const result = await response.json();
-      console.log('Booking submitted successfully:', result);
+      console.log('✅ Booking submitted successfully:', JSON.stringify(result, null, 2));
 
       setSubmitSuccess(true);
       
@@ -135,8 +140,9 @@ export default function BookingPopup({ open, onClose, flightData, phoneNumber = 
         onClose();
       }, 2000);
     } catch (error) {
-      console.error('Error submitting booking:', error);
-      alert('Failed to submit booking. Please try again or call us directly.');
+      console.error('❌ Error submitting booking:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to submit booking: ${errorMessage}\n\nPlease try again or call us directly at ${phoneNumber}`);
     } finally {
       setIsSubmitting(false);
     }
