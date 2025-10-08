@@ -114,15 +114,19 @@ export default function BookingPopup({ open, onClose, flightData, phoneNumber = 
 
       console.log('Booking data:', bookingData);
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Send to backend API
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bookingData),
+      });
 
-      // You can send this to your backend API
-      // await fetch('/api/bookings', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(bookingData),
-      // });
+      if (!response.ok) {
+        throw new Error('Failed to submit booking');
+      }
+
+      const result = await response.json();
+      console.log('Booking submitted successfully:', result);
 
       setSubmitSuccess(true);
       
