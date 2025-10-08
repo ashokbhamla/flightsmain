@@ -188,16 +188,34 @@ const FlightTemplate = memo(function FlightTemplate({
   
   
 
+  // Calculate cheapest month from monthly_prices_avg array
+  const getCheapestMonth = () => {
+    if (flightData?.monthly_prices_avg && Array.isArray(flightData.monthly_prices_avg) && flightData.monthly_prices_avg.length > 0) {
+      const cheapest = flightData.monthly_prices_avg.reduce((min: any, month: any) => 
+        (month.price || month.value) < (min.price || min.value) ? month : min
+      );
+      return {
+        name: cheapest.month || cheapest.name || 'January',
+        price: cheapest.price || cheapest.value || 0
+      };
+    }
+    return { name: 'January', price: 0 };
+  };
+
+  const cheapestMonthData = getCheapestMonth();
+
   // Price cards data from API - Updated to use real API data with descriptions
   const priceCards = [
     {
       id: 1,
       type: 'average',
-      price: flightData?.round_trip_start ? `$${flightData.round_trip_start}` : '$189',
+      price: flightData?.round_trip_start ? `$${flightData.round_trip_start}` : null,
       title: locale === 'es' ? 'Precio promedio desde:' : 
              locale === 'ru' ? 'Средняя цена от:' :
              locale === 'fr' ? 'Prix moyen à partir de:' : 'Average price start from:',
-      description: pageData?.roundtrip || `Round trip from ${departureCity} to ${arrivalCity}`,
+      description: flightData?.round_trip_start 
+        ? `Round-trip flights from ${departureCity} to ${arrivalCity} starting at $${flightData.round_trip_start}. Book now for the best deals!`
+        : (pageData?.roundtrip || `Round trip from ${departureCity} to ${arrivalCity}`),
       buttonText: locale === 'es' ? 'Buscar Ofertas' : 
                   locale === 'ru' ? 'Поиск Предложений' :
                   locale === 'fr' ? 'Rechercher des Offres' : 'Search Deals',
@@ -206,11 +224,13 @@ const FlightTemplate = memo(function FlightTemplate({
     {
       id: 2,
       type: 'oneway',
-      price: flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$122',
+      price: flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : null,
       title: locale === 'es' ? 'Solo ida desde:' : 
              locale === 'ru' ? 'В одну сторону от:' :
              locale === 'fr' ? 'Aller simple depuis:' : 'One-way from:',
-      description: pageData?.oneway || `One-way from ${departureCity} to ${arrivalCity}`,
+      description: flightData?.oneway_trip_start
+        ? `One-way flights from ${departureCity} to ${arrivalCity} starting at $${flightData.oneway_trip_start}. Great for flexible travel!`
+        : (pageData?.oneway || `One-way from ${departureCity} to ${arrivalCity}`),
       buttonText: locale === 'es' ? 'Buscar Ofertas' : 
                   locale === 'ru' ? 'Поиск Предложений' :
                   locale === 'fr' ? 'Rechercher des Offres' : 'Search Deals',
@@ -225,10 +245,9 @@ const FlightTemplate = memo(function FlightTemplate({
       title: locale === 'es' ? 'Día más barato:' : 
              locale === 'ru' ? 'Самый дешевый день:' :
              locale === 'fr' ? 'Jour le moins cher:' : 'Cheapest day:',
-      description: pageData?.cheapest || (locale === 'es' ? `Vuelos más baratos a ${arrivalCity} este día` :
-                  locale === 'ru' ? `Самые дешевые рейсы в ${arrivalCity} в этот день` :
-                  locale === 'fr' ? `Vols les moins chers vers ${arrivalCity} ce jour` :
-                  `Cheapest flights to ${arrivalCity} on this day`),
+      description: flightData?.cheapest_day
+        ? `${flightData.cheapest_day} is the cheapest day to fly from ${departureCity} to ${arrivalCity}. Save more by booking on this day!`
+        : (pageData?.cheapest || `Find the best day to fly from ${departureCity} to ${arrivalCity}`),
       buttonText: locale === 'es' ? 'Encontrar Ofertas' : 
                   locale === 'ru' ? 'Найти Предложения' :
                   locale === 'fr' ? 'Trouver des Offres' : 'Find Deals',
@@ -237,24 +256,14 @@ const FlightTemplate = memo(function FlightTemplate({
     {
       id: 4,
       type: 'cheapest-month',
-      month: (() => {
-        if (flightData?.months && Array.isArray(flightData.months) && flightData.months.length > 0) {
-          const cheapestMonth = flightData.months.reduce((min: any, month: any) => 
-            month.price < min.price ? month : min
-          );
-          return cheapestMonth.name.split(' ')[0]; // Extract month name
-        }
-        return locale === 'es' ? 'Enero' :
-               locale === 'ru' ? 'Январь' :
-               locale === 'fr' ? 'Janvier' : 'January';
-      })(),
+      month: cheapestMonthData.name,
+      price: cheapestMonthData.price ? `$${cheapestMonthData.price}` : null,
       title: locale === 'es' ? 'Más barato en:' : 
              locale === 'ru' ? 'Дешевле в:' :
              locale === 'fr' ? 'Moins cher en:' : 'Cheapest In:',
-      description: locale === 'es' ? `Precios más baratos para vuelos a ${arrivalCity} este mes` :
-                  locale === 'ru' ? `Самые дешевые цены на рейсы в ${arrivalCity} в этом месяце` :
-                  locale === 'fr' ? `Prix les moins chers pour les vols vers ${arrivalCity} ce mois` :
-                  `Cheapest prices for flights to ${arrivalCity} this month`,
+      description: cheapestMonthData.price
+        ? `${cheapestMonthData.name} is the cheapest month to fly from ${departureCity} to ${arrivalCity} with prices starting at $${cheapestMonthData.price}.`
+        : `Find the best month to travel from ${departureCity} to ${arrivalCity}`,
       buttonText: locale === 'es' ? 'Encontrar Ofertas' : 
                   locale === 'ru' ? 'Найти Предложения' :
                   locale === 'fr' ? 'Trouver des Offres' : 'Find Deals',
