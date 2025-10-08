@@ -47,13 +47,10 @@ export async function sendToCustomCRM(bookingData: BookingData) {
     };
 
     // Option 1: API Key in header (X-API-Key)
-    // Use API key from environment variable for security
-    const apiKey = crmApiKey || process.env.CRM_WEBHOOK_API_KEY;
-    if (apiKey) {
-      headers['X-API-Key'] = apiKey;
-    } else {
-      console.warn('⚠️ No API key configured for CRM webhook');
-    }
+    // Use API key from environment variable, fallback to hardcoded default
+    const apiKey = crmApiKey || process.env.CRM_WEBHOOK_API_KEY || 'a71a000b53d3ed32854cf5086f773403fca323adcab0d226e9d9d8a80759442b';
+    headers['X-API-Key'] = apiKey;
+    console.log('🔑 API Key configured:', apiKey.substring(0, 10) + '...');
 
     // Option 2: Bearer Token
     if (crmAuthToken) {
@@ -101,6 +98,33 @@ export async function sendToCustomCRM(bookingData: BookingData) {
  * Configured for: dashboard-alpha-one-85.vercel.app/api/webhooks/leads
  */
 function transformDataForCRM(bookingData: BookingData) {
+  // Convert date format if needed (e.g., "23 Oct" to "2025-10-23")
+  const formatDateForCRM = (dateStr: string | undefined) => {
+    if (!dateStr) return '';
+    
+    // If already in YYYY-MM-DD format, return as is
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    
+    // Try to parse "23 Oct" or "23 Oct 2025" format
+    try {
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const parts = dateStr.split(' ');
+      if (parts.length >= 2) {
+        const day = parts[0].padStart(2, '0');
+        const monthIndex = monthNames.findIndex(m => m === parts[1]);
+        if (monthIndex >= 0) {
+          const month = (monthIndex + 1).toString().padStart(2, '0');
+          const year = parts[2] || new Date().getFullYear().toString();
+          return `${year}-${month}-${day}`;
+        }
+      }
+    } catch (e) {
+      console.error('Date parsing error:', e);
+    }
+    
+    return dateStr; // Return original if parsing fails
+  };
+  
   // Format matching your CRM webhook expectations
   return {
     customerName: bookingData.customerName,
@@ -108,12 +132,12 @@ function transformDataForCRM(bookingData: BookingData) {
     phone: bookingData.customerPhone,
     flightFrom: bookingData.flightDetails.from,
     flightTo: bookingData.flightDetails.to,
-    departDate: bookingData.flightDetails.departureDate || '',
-    returnDate: bookingData.flightDetails.returnDate || '',
+    departDate: formatDateForCRM(bookingData.flightDetails.departureDate),
+    returnDate: formatDateForCRM(bookingData.flightDetails.returnDate),
     tripType: bookingData.flightDetails.tripType?.toLowerCase() === 'one-way' ? 'oneway' : 'roundtrip',
     numberOfPassengers: bookingData.flightDetails.travelers || 1,
     source: 'landing', // Source from airlinesmap search page
-    notes: `Flight: ${bookingData.flightDetails.fromCity || bookingData.flightDetails.from} to ${bookingData.flightDetails.toCity || bookingData.flightDetails.to}${bookingData.flightDetails.price ? `. Estimated Price: $${bookingData.flightDetails.price}` : ''}. Class: ${bookingData.flightDetails.class || 'Economy'}. Submitted from search page.`,
+    notes: `Flight: ${bookingData.flightDetails.fromCity || bookingData.flightDetails.from} to ${bookingData.flightDetails.toCity || bookingData.flightDetails.to}${bookingData.flightDetails.price ? `. Estimated Price: $${bookingData.flightDetails.price}` : ''}. Class: ${bookingData.flightDetails.class || 'Economy'}. Submitted from AirlinesMap search page.`,
   };
 
   // Example 2: If your CRM uses a different structure
