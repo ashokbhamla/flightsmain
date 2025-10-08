@@ -188,7 +188,7 @@ const FlightTemplate = memo(function FlightTemplate({
   
   
 
-  // Price cards data from API - Updated to use real API data
+  // Price cards data from API - Updated to use real API data with descriptions
   const priceCards = [
     {
       id: 1,
@@ -197,7 +197,7 @@ const FlightTemplate = memo(function FlightTemplate({
       title: locale === 'es' ? 'Precio promedio desde:' : 
              locale === 'ru' ? 'Средняя цена от:' :
              locale === 'fr' ? 'Prix moyen à partir de:' : 'Average price start from:',
-      description: `${departureCity} to ${arrivalCity}`,
+      description: pageData?.roundtrip || `Round trip from ${departureCity} to ${arrivalCity}`,
       buttonText: locale === 'es' ? 'Buscar Ofertas' : 
                   locale === 'ru' ? 'Поиск Предложений' :
                   locale === 'fr' ? 'Rechercher des Offres' : 'Search Deals',
@@ -210,7 +210,7 @@ const FlightTemplate = memo(function FlightTemplate({
       title: locale === 'es' ? 'Solo ida desde:' : 
              locale === 'ru' ? 'В одну сторону от:' :
              locale === 'fr' ? 'Aller simple depuis:' : 'One-way from:',
-      description: `${departureCity} to ${arrivalCity}`,
+      description: pageData?.oneway || `One-way from ${departureCity} to ${arrivalCity}`,
       buttonText: locale === 'es' ? 'Buscar Ofertas' : 
                   locale === 'ru' ? 'Поиск Предложений' :
                   locale === 'fr' ? 'Rechercher des Offres' : 'Search Deals',
@@ -225,10 +225,10 @@ const FlightTemplate = memo(function FlightTemplate({
       title: locale === 'es' ? 'Día más barato:' : 
              locale === 'ru' ? 'Самый дешевый день:' :
              locale === 'fr' ? 'Jour le moins cher:' : 'Cheapest day:',
-      description: locale === 'es' ? `Vuelos más baratos a ${arrivalCity} este día` :
+      description: pageData?.cheapest || (locale === 'es' ? `Vuelos más baratos a ${arrivalCity} este día` :
                   locale === 'ru' ? `Самые дешевые рейсы в ${arrivalCity} в этот день` :
                   locale === 'fr' ? `Vols les moins chers vers ${arrivalCity} ce jour` :
-                  `Cheapest flights to ${arrivalCity} on this day`,
+                  `Cheapest flights to ${arrivalCity} on this day`),
       buttonText: locale === 'es' ? 'Encontrar Ofertas' : 
                   locale === 'ru' ? 'Найти Предложения' :
                   locale === 'fr' ? 'Trouver des Offres' : 'Find Deals',
@@ -363,42 +363,55 @@ const FlightTemplate = memo(function FlightTemplate({
     }
   ];
 
-  // Use API data for graphs from monthly_fares_graph and weekly_fares_graph
-  const weeklyPriceData = pageData?.weekly_fares_graph?.data?.map((day: any) => ({
-    name: day.day || day.name,
-    value: day.avg_fare || day.value
-  })) || [];
-
-  const monthlyPriceData = pageData?.monthly_fares_graph?.data?.map((month: any) => ({
-    name: month.month || month.name,
-    value: month.avg_fare || month.value
-  })) || [];
-
-
-  // Get temperature data from content API
-  const temperatureData = pageData?.temperature || [];
-  const rainfallData = pageData?.rainfall || [];
-  
-  // Debug logging for temperature and rainfall data
-  // console.log('Content API temperature data:', temperatureData);
-  // console.log('Content API rainfall data:', rainfallData);
-  
-  // Transform temperature data from content API
-  const weatherData = Array.isArray(temperatureData) && temperatureData.length > 0 
-    ? temperatureData.map((item: any, index: number) => ({
-        name: item.name || item.month || item.label || `Month ${index + 1}`,
-        value: Number(item.value || item.temp || item.temperature || 0)
+  // Use API data for graphs from Real API (flightData)
+  // Weekly prices from Real API (weekly_prices_avg array - 7 days)
+  const weeklyPriceData = flightData?.weekly_prices_avg && Array.isArray(flightData.weekly_prices_avg)
+    ? flightData.weekly_prices_avg.map((item: any) => ({
+        name: item.day || item.name || '',
+        value: item.price || item.value || 0
       }))
-    : [];
+    : (pageData?.weekly_fares_graph?.data?.map((day: any) => ({
+        name: day.day || day.name,
+        value: day.avg_fare || day.value
+      })) || []);
 
-
-  // Transform rainfall data from content API
-  const rainfallDataTransformed = Array.isArray(rainfallData) && rainfallData.length > 0 
-    ? rainfallData.map((item: any, index: number) => ({
-        name: item.name || item.month || item.label || `Month ${index + 1}`,
-        value: Number(item.value || item.rainfall || item.precipitation || 0)
+  // Monthly prices from Real API (monthly_prices_avg array - 12 months)
+  const monthlyPriceData = flightData?.monthly_prices_avg && Array.isArray(flightData.monthly_prices_avg)
+    ? flightData.monthly_prices_avg.map((item: any) => ({
+        name: item.month || item.name || '',
+        value: item.price || item.value || 0
       }))
-    : [];
+    : (pageData?.monthly_fares_graph?.data?.map((month: any) => ({
+        name: month.month || month.name,
+        value: month.avg_fare || month.value
+      })) || []);
+
+
+  // Temperature data from Real API (monthly_temperature_avg array - 12 months)
+  const weatherData = flightData?.monthly_temperature_avg && Array.isArray(flightData.monthly_temperature_avg)
+    ? flightData.monthly_temperature_avg.map((item: any) => ({
+        name: item.month || item.name || '',
+        value: Number(item.temperature || item.temp || item.value || 0)
+      }))
+    : (Array.isArray(pageData?.temperature) && pageData.temperature.length > 0 
+        ? pageData.temperature.map((item: any, index: number) => ({
+            name: item.name || item.month || item.label || `Month ${index + 1}`,
+            value: Number(item.value || item.temp || item.temperature || 0)
+          }))
+        : []);
+
+  // Rainfall data from Real API (monthly_rainfall_avg array - 12 months)
+  const rainfallDataTransformed = flightData?.monthly_rainfall_avg && Array.isArray(flightData.monthly_rainfall_avg)
+    ? flightData.monthly_rainfall_avg.map((item: any) => ({
+        name: item.month || item.name || '',
+        value: Number(item.rainfall || item.precipitation || item.value || 0)
+      }))
+    : (Array.isArray(pageData?.rainfall) && pageData.rainfall.length > 0 
+        ? pageData.rainfall.map((item: any, index: number) => ({
+            name: item.name || item.month || item.label || `Month ${index + 1}`,
+            value: Number(item.value || item.rainfall || item.precipitation || 0)
+          }))
+        : []);
 
   return (
     <Box sx={{ width: '100%', maxWidth: '100%' }}>
