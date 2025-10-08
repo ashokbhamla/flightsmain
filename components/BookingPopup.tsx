@@ -92,55 +92,34 @@ export default function BookingPopup({ open, onClose, flightData, phoneNumber = 
     setIsSubmitting(true);
 
     try {
-      // Format date for CRM (convert "23 Oct" to "2025-10-23")
-      const formatDateForCRM = (dateStr: string | undefined) => {
-        if (!dateStr) return '';
-        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-        
-        try {
-          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          const parts = dateStr.split(' ');
-          if (parts.length >= 2) {
-            const day = parts[0].padStart(2, '0');
-            const monthIndex = monthNames.findIndex(m => m === parts[1]);
-            if (monthIndex >= 0) {
-              const month = (monthIndex + 1).toString().padStart(2, '0');
-              const year = parts[2] || new Date().getFullYear().toString();
-              return `${year}-${month}-${day}`;
-            }
-          }
-        } catch (e) {
-          console.error('Date parsing error:', e);
-        }
-        return dateStr;
-      };
-
-      // Prepare data in the exact format your CRM expects
-      const crmData = {
+      // Prepare booking data for backend API
+      const bookingData = {
         customerName,
-        email: customerEmail,
-        phone: customerPhone,
-        flightFrom: flightData?.from || '',
-        flightTo: flightData?.to || '',
-        departDate: formatDateForCRM(flightData?.departureDate),
-        returnDate: formatDateForCRM(flightData?.returnDate),
-        tripType: flightData?.tripType?.toLowerCase() === 'one-way' ? 'oneway' : 'roundtrip',
-        numberOfPassengers: flightData?.travelers || 1,
-        source: 'landing',
-        notes: `Flight: ${flightData?.fromCity || flightData?.from} to ${flightData?.toCity || flightData?.to}${flightData?.price ? `. Price: $${flightData?.price}` : ''}. Class: ${flightData?.class || 'Economy'}.`,
+        customerPhone,
+        customerEmail,
+        flightDetails: {
+          from: flightData?.from,
+          to: flightData?.to,
+          fromCity: flightData?.fromCity,
+          toCity: flightData?.toCity,
+          departureDate: flightData?.departureDate,
+          returnDate: flightData?.returnDate,
+          price: flightData?.price,
+          travelers: flightData?.travelers,
+          class: flightData?.class,
+          tripType: flightData?.tripType,
+        },
+        timestamp: new Date().toISOString(),
       };
 
-      console.log('📋 CRM data being sent:', JSON.stringify(crmData, null, 2));
+      console.log('📋 Booking data being sent:', JSON.stringify(bookingData, null, 2));
 
-      // Send directly to CRM webhook
-      console.log('📤 Sending to CRM webhook...');
-      const response = await fetch('https://dashboard-alpha-one-85.vercel.app/api/webhooks/leads', {
+      // Send to secure backend API (server-side will forward to CRM securely)
+      console.log('📤 Sending to /api/bookings...');
+      const response = await fetch('/api/bookings', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-API-Key': 'a71a000b53d3ed32854cf5086f773403fca323adcab0d226e9d9d8a80759442b',
-        },
-        body: JSON.stringify(crmData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bookingData),
       });
 
       console.log('📡 Response status:', response.status);

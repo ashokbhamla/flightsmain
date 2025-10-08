@@ -1,13 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendToCustomCRM } from '@/lib/crm-integration';
+import { isRateLimited, getRemainingRequests, getResetTime } from '@/lib/rate-limiter';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting - prevent spam (5 requests per IP per 15 minutes)
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    
+    if (isRateLimited(ip, 5, 15 * 60 * 1000)) {
+      const resetTime = getResetTime(ip);
+      console.warn(`⚠️ Rate limit exceeded for IP: ${ip}. Reset in ${resetTime}s`);
+      return NextResponse.json({ 
+        error: 'Too many requests. Please try again later.',
+        retryAfter: resetTime,
+      }, { status: 429 });
+    }
+
     const bookingData = await request.json();
     
     // Validate required fields
     if (!bookingData.customerName || !bookingData.customerPhone || !bookingData.customerEmail) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(bookingData.customerEmail)) {
+      return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
     }
 
     // Add timestamp and source
