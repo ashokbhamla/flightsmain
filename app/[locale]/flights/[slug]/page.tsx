@@ -293,7 +293,13 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
   let contentData = null;
   let flightData = null;
   
-  console.log('Route page API calls:', { departureIata, arrivalIata, locale });
+  console.log('🔍 Route page API calls:', { 
+    departureIata, 
+    arrivalIata, 
+    locale,
+    langId: getLanguageId(locale),
+    domainId: getDomainId()
+  });
   
   try {
     [contentData, flightData] = await Promise.all([
@@ -303,14 +309,30 @@ export default async function FlightBySlug({ params }: { params: { locale: strin
     // Pass the full flight data array for route pair pages
     actualFlightData = flightData;
     
-    console.log('Route page API results:', { 
+    console.log('📊 Route page API results:', { 
       hasContentData: !!contentData, 
       hasFlightData: !!flightData,
-      flightDataKeys: flightData ? Object.keys(flightData) : 'null',
-      onewayFlights: flightData?.oneway_flights?.length || 0
+      contentDataKeys: contentData ? Object.keys(contentData).join(', ') : 'null',
+      flightDataKeys: flightData ? Object.keys(flightData).join(', ') : 'null',
+      title: contentData?.title || 'no title',
+      description: contentData?.description || 'no description',
+      hasGraphData: {
+        weekly: !!flightData?.weekly_prices_avg,
+        monthly: !!flightData?.monthly_prices_avg,
+        temperature: !!flightData?.monthly_temperature_avg,
+        rainfall: !!flightData?.monthly_rainfall_avg
+      },
+      hasContentSections: {
+        stats: !!contentData?.stats,
+        city: !!contentData?.city,
+        places: !!contentData?.places,
+        hotels: !!contentData?.hotels,
+        airlines: !!contentData?.airlines,
+        faqs: contentData?.faqs?.length || 0
+      }
     });
   } catch (error: any) {
-    console.error('Error fetching flight data:', error);
+    console.error('❌ Error fetching flight data:', error);
   }
 
   // Normalize flight data for consistent display
