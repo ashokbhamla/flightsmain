@@ -172,12 +172,14 @@ export async function getCachedFlightContent(
   let data = await RedisCache.get(cacheKey);
   
   if (!data) {
-    // Call internal API endpoint instead of external API
-    const apiUrl = `/api/flight-content?arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
+    // Call external API directly
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE}/content/flights?arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
     const response = await fetch(apiUrl);
     
     if (response.ok) {
-      data = await response.json();
+      const rawData = await response.json();
+      // API returns an array, extract first object
+      data = Array.isArray(rawData) && rawData.length > 0 ? rawData[0] : rawData;
       
       if (data) {
         await RedisCache.set(cacheKey, data, CacheTTL.LONG);
@@ -199,12 +201,14 @@ export async function getCachedFlightData(
   let data = await RedisCache.get(cacheKey);
   
   if (!data) {
-    // Call internal API endpoint instead of external API
-    const apiUrl = `/api/flight-data?arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
+    // Call external API directly
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_REAL}/real/flights?arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
     const response = await fetch(apiUrl);
     
     if (response.ok) {
-      data = await response.json();
+      const rawData = await response.json();
+      // API returns an array, extract first object
+      data = Array.isArray(rawData) && rawData.length > 0 ? rawData[0] : rawData;
       
       if (data) {
         await RedisCache.set(cacheKey, data, CacheTTL.MEDIUM);

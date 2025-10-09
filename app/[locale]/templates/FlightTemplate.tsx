@@ -380,8 +380,8 @@ const FlightTemplate = memo(function FlightTemplate({
         value: item.price || item.value || 0
       }))
     : (pageData?.weekly_fares_graph?.data?.map((day: any) => ({
-        name: day.day || day.name,
-        value: day.avg_fare || day.value
+    name: day.day || day.name,
+    value: day.avg_fare || day.value
       })) || []);
 
   // Monthly prices from Real API (months array - 12 months)
@@ -391,8 +391,8 @@ const FlightTemplate = memo(function FlightTemplate({
         value: item.price || item.value || 0
       }))
     : (pageData?.monthly_fares_graph?.data?.map((month: any) => ({
-        name: month.month || month.name,
-        value: month.avg_fare || month.value
+    name: month.month || month.name,
+    value: month.avg_fare || month.value
       })) || []);
 
 
@@ -404,9 +404,9 @@ const FlightTemplate = memo(function FlightTemplate({
       }))
     : (Array.isArray(pageData?.temperature) && pageData.temperature.length > 0 
         ? pageData.temperature.map((item: any, index: number) => ({
-            name: item.name || item.month || item.label || `Month ${index + 1}`,
-            value: Number(item.value || item.temp || item.temperature || 0)
-          }))
+        name: item.name || item.month || item.label || `Month ${index + 1}`,
+        value: Number(item.value || item.temp || item.temperature || 0)
+      }))
         : []);
 
   // Rainfall data from Real API (rainfall array - 12 months)
@@ -417,9 +417,9 @@ const FlightTemplate = memo(function FlightTemplate({
       }))
     : (Array.isArray(pageData?.rainfall) && pageData.rainfall.length > 0 
         ? pageData.rainfall.map((item: any, index: number) => ({
-            name: item.name || item.month || item.label || `Month ${index + 1}`,
-            value: Number(item.value || item.rainfall || item.precipitation || 0)
-          }))
+        name: item.name || item.month || item.label || `Month ${index + 1}`,
+        value: Number(item.value || item.rainfall || item.precipitation || 0)
+      }))
         : []);
 
   return (
@@ -744,112 +744,112 @@ const FlightTemplate = memo(function FlightTemplate({
 
         {/* Price Trends & Analysis */}
         {(weeklyPriceData.length > 0 || monthlyPriceData.length > 0) && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 4,
-                color: '#1a1a1a'
-              }}
-            >
-              {content.priceTrendsTitle}
-            </Typography>
-            
-            <Grid container spacing={3}>
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: '1.8rem',
+              fontWeight: 600,
+              mb: 4,
+              color: '#1a1a1a'
+            }}
+          >
+            {content.priceTrendsTitle}
+          </Typography>
+          
+          <Grid container spacing={3}>
               {weeklyPriceData.length > 0 && (
-                <Grid item xs={12} md={6}>
-                  <ClientPriceGraph
-                    title={pageData?.cheapest_day ? 
-                      (locale === 'es' ? `Precio más barato el ${pageData.cheapest_day}` :
-                       locale === 'ru' ? `Самая дешевая цена в ${pageData.cheapest_day}` :
-                       locale === 'fr' ? `Prix le moins cher le ${pageData.cheapest_day}` :
-                       `Cheapest price on ${pageData.cheapest_day}`) : 
-                      content.weeklyTitle}
+            <Grid item xs={12} md={6}>
+              <ClientPriceGraph
+                title={pageData?.cheapest_day ? 
+                  (locale === 'es' ? `Precio más barato el ${pageData.cheapest_day}` :
+                   locale === 'ru' ? `Самая дешевая цена в ${pageData.cheapest_day}` :
+                   locale === 'fr' ? `Prix le moins cher le ${pageData.cheapest_day}` :
+                   `Cheapest price on ${pageData.cheapest_day}`) : 
+                  content.weeklyTitle}
                     description={replaceIataWithCityName(pageData?.weekly || content.weeklyDescription)}
-                    data={weeklyPriceData}
-                    yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
-                                locale === 'ru' ? 'Цена (USD)' :
-                                locale === 'fr' ? 'Prix (USD)' : 'Price (USD)'}
-                    showPrices={true}
-                    height={300}
-                  />
-                </Grid>
+                data={weeklyPriceData}
+                yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
+                            locale === 'ru' ? 'Цена (USD)' :
+                            locale === 'fr' ? 'Prix (USD)' : 'Price (USD)'}
+                showPrices={true}
+                height={300}
+              />
+            </Grid>
               )}
               {monthlyPriceData.length > 0 && (
-                <Grid item xs={12} md={6}>
-                  <ClientPriceGraph
-                    title={pageData?.cheapest_month ? 
-                      (locale === 'es' ? `Precio más barato en ${pageData.cheapest_month}` :
-                       locale === 'ru' ? `Самая дешевая цена в ${pageData.cheapest_month}` :
-                       locale === 'fr' ? `Prix le moins cher en ${pageData.cheapest_month}` :
-                       `Cheapest price in ${pageData.cheapest_month}`) : 
-                      content.monthlyTitle}
+            <Grid item xs={12} md={6}>
+              <ClientPriceGraph
+                title={pageData?.cheapest_month ? 
+                  (locale === 'es' ? `Precio más barato en ${pageData.cheapest_month}` :
+                   locale === 'ru' ? `Самая дешевая цена в ${pageData.cheapest_month}` :
+                   locale === 'fr' ? `Prix le moins cher en ${pageData.cheapest_month}` :
+                   `Cheapest price in ${pageData.cheapest_month}`) : 
+                  content.monthlyTitle}
                     description={replaceIataWithCityName(pageData?.monthly || content.monthlyDescription)}
-                    data={monthlyPriceData}
-                    yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
-                                locale === 'ru' ? 'Цена (USD)' :
-                                locale === 'fr' ? 'Prix (USD)' : 'Price (USD)'}
-                    showPrices={true}
-                    height={300}
-                  />
-                </Grid>
-              )}
+                data={monthlyPriceData}
+                yAxisLabel={locale === 'es' ? 'Precio (USD)' : 
+                            locale === 'ru' ? 'Цена (USD)' :
+                            locale === 'fr' ? 'Prix (USD)' : 'Price (USD)'}
+                showPrices={true}
+                height={300}
+              />
             </Grid>
-          </Box>
+              )}
+          </Grid>
+        </Box>
         )}
 
         {/* Weather & Climate */}
         {(weatherData.length > 0 || rainfallDataTransformed.length > 0) && (
-          <Box sx={{ mb: 6 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 4,
-                color: '#1a1a1a'
-              }}
-            >
-              {content.weatherTitle}
-            </Typography>
-            
-            <Grid container spacing={3}>
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: '1.8rem',
+              fontWeight: 600,
+              mb: 4,
+              color: '#1a1a1a'
+            }}
+          >
+            {content.weatherTitle}
+          </Typography>
+          
+          <Grid container spacing={3}>
               {weatherData.length > 0 && (
-                <Grid item xs={12} md={6}>
-                  <ClientPriceGraph
-                      title={locale === 'es' ? 'Temperatura' : 
-                             locale === 'ru' ? 'Температура' :
-                             locale === 'fr' ? 'Température' : 'Temperature'}
+            <Grid item xs={12} md={6}>
+              <ClientPriceGraph
+                  title={locale === 'es' ? 'Temperatura' : 
+                         locale === 'ru' ? 'Температура' :
+                         locale === 'fr' ? 'Température' : 'Temperature'}
                       description={replaceIataWithCityName(pageData?.temperature || content.weatherDescription)}
-                    data={weatherData}
-                    yAxisLabel={locale === 'es' ? 'Temperatura (°F)' : 
-                                locale === 'ru' ? 'Температура (°F)' :
-                                locale === 'fr' ? 'Température (°F)' : 'Temperature (°F)'}
-                    showPrices={false}
-                    height={300}
-                  />
-                </Grid>
+                data={weatherData}
+                yAxisLabel={locale === 'es' ? 'Temperatura (°F)' : 
+                            locale === 'ru' ? 'Температура (°F)' :
+                            locale === 'fr' ? 'Température (°F)' : 'Temperature (°F)'}
+                showPrices={false}
+                height={300}
+              />
+            </Grid>
               )}
               {rainfallDataTransformed.length > 0 && (
-                <Grid item xs={12} md={6}>
-                  <ClientPriceGraph
-                    title={locale === 'es' ? 'Precipitación' : 
-                           locale === 'ru' ? 'Осадки' :
-                           locale === 'fr' ? 'Précipitations' : 'Rainfall'}
+            <Grid item xs={12} md={6}>
+              <ClientPriceGraph
+                title={locale === 'es' ? 'Precipitación' : 
+                       locale === 'ru' ? 'Осадки' :
+                       locale === 'fr' ? 'Précipitations' : 'Rainfall'}
                     description={replaceIataWithCityName(pageData?.rainfall || content.rainfallDescription)}
-                    data={rainfallDataTransformed}
-                    yAxisLabel={locale === 'es' ? 'Precipitación (pulgadas)' : 
-                                locale === 'ru' ? 'Осадки (дюймы)' :
-                                locale === 'fr' ? 'Précipitations (pouces)' : 'Rainfall (inches)'}
-                    showPrices={false}
-                    height={300}
-                  />
-                </Grid>
-              )}
+                data={rainfallDataTransformed}
+                yAxisLabel={locale === 'es' ? 'Precipitación (pulgadas)' : 
+                            locale === 'ru' ? 'Осадки (дюймы)' :
+                            locale === 'fr' ? 'Précipitations (pouces)' : 'Rainfall (inches)'}
+                showPrices={false}
+                height={300}
+              />
             </Grid>
-          </Box>
+              )}
+          </Grid>
+        </Box>
         )}
 
         {/* Popular Destinations */}
