@@ -188,10 +188,10 @@ const FlightTemplate = memo(function FlightTemplate({
   
   
 
-  // Calculate cheapest month from monthly_prices_avg array
+  // Calculate cheapest month from months array
   const getCheapestMonth = () => {
-    if (flightData?.monthly_prices_avg && Array.isArray(flightData.monthly_prices_avg) && flightData.monthly_prices_avg.length > 0) {
-      const cheapest = flightData.monthly_prices_avg.reduce((min: any, month: any) => 
+    if (flightData?.months && Array.isArray(flightData.months) && flightData.months.length > 0) {
+      const cheapest = flightData.months.reduce((min: any, month: any) => 
         (month.price || month.value) < (min.price || min.value) ? month : min
       );
       return {
@@ -373,9 +373,9 @@ const FlightTemplate = memo(function FlightTemplate({
   ];
 
   // Use API data for graphs from Real API (flightData)
-  // Weekly prices from Real API (weekly_prices_avg array - 7 days)
-  const weeklyPriceData = flightData?.weekly_prices_avg && Array.isArray(flightData.weekly_prices_avg)
-    ? flightData.weekly_prices_avg.map((item: any) => ({
+  // Weekly prices from Real API (weeks array - 7 days)
+  const weeklyPriceData = flightData?.weeks && Array.isArray(flightData.weeks) && flightData.weeks.length > 0
+    ? flightData.weeks.map((item: any) => ({
         name: item.day || item.name || '',
         value: item.price || item.value || 0
       }))
@@ -384,9 +384,9 @@ const FlightTemplate = memo(function FlightTemplate({
         value: day.avg_fare || day.value
       })) || []);
 
-  // Monthly prices from Real API (monthly_prices_avg array - 12 months)
-  const monthlyPriceData = flightData?.monthly_prices_avg && Array.isArray(flightData.monthly_prices_avg)
-    ? flightData.monthly_prices_avg.map((item: any) => ({
+  // Monthly prices from Real API (months array - 12 months)
+  const monthlyPriceData = flightData?.months && Array.isArray(flightData.months)
+    ? flightData.months.map((item: any) => ({
         name: item.month || item.name || '',
         value: item.price || item.value || 0
       }))
@@ -396,9 +396,9 @@ const FlightTemplate = memo(function FlightTemplate({
       })) || []);
 
 
-  // Temperature data from Real API (monthly_temperature_avg array - 12 months)
-  const weatherData = flightData?.monthly_temperature_avg && Array.isArray(flightData.monthly_temperature_avg)
-    ? flightData.monthly_temperature_avg.map((item: any) => ({
+  // Temperature data from Real API (temperature array - 12 months)
+  const weatherData = flightData?.temperature && Array.isArray(flightData.temperature)
+    ? flightData.temperature.map((item: any) => ({
         name: item.month || item.name || '',
         value: Number(item.temperature || item.temp || item.value || 0)
       }))
@@ -409,9 +409,9 @@ const FlightTemplate = memo(function FlightTemplate({
           }))
         : []);
 
-  // Rainfall data from Real API (monthly_rainfall_avg array - 12 months)
-  const rainfallDataTransformed = flightData?.monthly_rainfall_avg && Array.isArray(flightData.monthly_rainfall_avg)
-    ? flightData.monthly_rainfall_avg.map((item: any) => ({
+  // Rainfall data from Real API (rainfall array - 12 months)
+  const rainfallDataTransformed = flightData?.rainfall && Array.isArray(flightData.rainfall)
+    ? flightData.rainfall.map((item: any) => ({
         name: item.month || item.name || '',
         value: Number(item.rainfall || item.precipitation || item.value || 0)
       }))

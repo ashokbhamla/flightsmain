@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
 
     const apiUrl = `${process.env.NEXT_PUBLIC_API_REAL}/real/flights?arrival_iata=${arrival_iata}&departure_iata=${departure_iata}&lang_id=${lang}&domain_id=${domain_id}`;
     
+    console.log('🔍 Fetching flight data from:', apiUrl);
+    
     const response = await fetch(apiUrl, {
       headers: {
         'Content-Type': 'application/json',
@@ -21,13 +23,17 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
+      console.error('❌ Flight data API error:', response.status);
       throw new Error(`API error ${response.status}: ${await response.text()}`);
     }
 
     const data = await response.json();
+    console.log('📦 Raw flight API response type:', Array.isArray(data) ? 'array' : 'object');
+    console.log('📦 Flight API data length:', Array.isArray(data) ? data.length : 'N/A');
     
     // API returns an array, extract first object if array
     const flightData = Array.isArray(data) && data.length > 0 ? data[0] : data;
+    console.log('✅ Extracted flight data keys:', flightData ? Object.keys(flightData).join(', ') : 'null');
     
     return NextResponse.json(flightData);
   } catch (error) {
