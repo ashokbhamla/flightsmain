@@ -92,7 +92,9 @@ function getCityName(iataCode: string): string {
     'COK': 'Kochi',
     'GOI': 'Goa',
     'IXZ': 'Port Blair',
-    'AAN': 'Al Ain'
+    'AAN': 'Al Ain',
+    'IAG': 'Niagara Falls',
+    'SFB': 'Orlando Sanford'
   };
   return cityMap[iataCode] || iataCode;
 }

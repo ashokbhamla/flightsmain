@@ -25,7 +25,11 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    
+    // API returns an array, extract first object
+    const contentData = Array.isArray(data) && data.length > 0 ? data[0] : data;
+    
+    return NextResponse.json(contentData);
   } catch (error) {
     console.error('Error in flight-content API route:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
