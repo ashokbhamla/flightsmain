@@ -30,6 +30,16 @@ export default function AirlineRouteContent({
 }: AirlineRouteContentProps) {
   const t = getTranslations(locale);
   
+  // DEBUG: Log contentData
+  if (typeof window !== 'undefined') {
+    console.log('🔍 AirlineRouteContent - contentData:', {
+      hasContentData: !!contentData,
+      title: contentData?.title,
+      metadescription: contentData?.metadescription,
+      description: contentData?.description
+    });
+  }
+  
   // Use translation hooks for all content
   const title = useTranslationWithFallback({
     locale,
