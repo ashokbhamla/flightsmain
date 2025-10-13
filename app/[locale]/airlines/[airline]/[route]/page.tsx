@@ -789,32 +789,32 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   {
     id: 1,
       type: 'round-trip',
-      price: flightData?.round_trip_start ? `$${flightData.round_trip_start}` : '$104',
-      description: contentData?.cheap_flights ? stripHtml(contentData.cheap_flights) : `Round-trip ${airlineName} flights from ${departureCity} (${departureIata}) to ${arrivalCity} (${arrivalIata})`,
+      price: contentData?.avragefares ? `$${contentData.avragefares * 2}` : (flightData?.round_trip_start ? `$${flightData.round_trip_start}` : '$104'),
+      description: contentData?.cheap_flights ? stripHtml(contentData.cheap_flights) : `Round-trip ${airlineName} flights from ${departureCity} (${departureIata}) to ${arrivalCity || 'Various Destinations'}`,
       buttonText: t.searchDeals,
       buttonColor: '#10b981'
   },
   {
     id: 2,
       type: 'one-way',
-      price: flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$72',
-      description: contentData?.direct_flights ? stripHtml(contentData.direct_flights) : `One-way ${airlineName} flight from ${departureCity} (${departureIata}) to ${arrivalCity} (${arrivalIata})`,
+      price: contentData?.avragefares ? `$${contentData.avragefares}` : (flightData?.oneway_trip_start ? `$${flightData.oneway_trip_start}` : '$72'),
+      description: contentData?.direct_flights ? stripHtml(contentData.direct_flights) : `One-way ${airlineName} flight from ${departureCity} (${departureIata}) to ${arrivalCity || 'Various Destinations'}`,
       buttonText: t.searchDeals,
       buttonColor: '#1e3a8a'
   },
   {
     id: 3,
       type: 'popular',
-      month: flightData?.popular_month || 'December',
-      description: `Cheapest month is ${flightData?.popular_month || 'December'} from ${departureCity} (${departureIata}). Maximum price drop flights to ${arrivalCity} (${arrivalIata}) in month of ${flightData?.popular_month || 'December'}.`,
+      month: contentData?.cheapest_month || flightData?.popular_month || 'December',
+      description: `Cheapest month is ${contentData?.cheapest_month || flightData?.popular_month || 'December'} from ${departureCity} (${departureIata}). Maximum price drop flights to ${arrivalCity || 'Various Destinations'} in month of ${contentData?.cheapest_month || flightData?.popular_month || 'December'}.`,
       buttonText: t.viewPopular,
       buttonColor: '#ff6b35'
   },
   {
     id: 4,
       type: 'cheapest',
-      month: flightData?.cheapest_day || 'Tuesday',
-      description: `Cheapest week day is ${flightData?.cheapest_day || 'Tuesday'} from ${departureCity} (${departureIata}). Maximum price drop flights to ${arrivalCity} (${arrivalIata}) on ${flightData?.cheapest_day || 'Tuesday'}.`,
+      month: contentData?.cheapest_day || flightData?.cheapest_day || 'Tuesday',
+      description: `Cheapest week day is ${contentData?.cheapest_day || flightData?.cheapest_day || 'Tuesday'} from ${departureCity} (${departureIata}). Maximum price drop flights to ${arrivalCity || 'Various Destinations'} on ${contentData?.cheapest_day || flightData?.cheapest_day || 'Tuesday'}.`,
       buttonText: t.findDeals,
       buttonColor: '#10b981'
     }
