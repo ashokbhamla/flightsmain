@@ -42,7 +42,7 @@ export default function AirlineRouteContent({
 
   const description = useHtmlTranslation({
     locale,
-    apiContent: contentData?.description,
+    apiContent: contentData?.metadescription || contentData?.description,
     fallbackKey: 'flightPage.description',
     defaultHtml: arrivalIata ? 
       `Plan your journey from ${departureCity} to ${arrivalCity} with ${airlineName}'s latest deals, travel tips, and flight information.` :
