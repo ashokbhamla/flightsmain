@@ -13,21 +13,26 @@ export async function getCachedAirlineContent(
   langId: number, 
   domainId: number
 ) {
+  // TEMPORARY: Disable Redis cache for testing
+  const DISABLE_CACHE = true;
+  
   const cacheKey = CacheKeys.airlineContent(airlineCode, arrivalIata, departureIata, langId, domainId);
   
   // Try to get from cache first
-  let data = await RedisCache.get(cacheKey);
+  let data = DISABLE_CACHE ? null : await RedisCache.get(cacheKey);
   
   if (!data) {
-    // Call internal API endpoint instead of external API
-    const apiUrl = `/api/airline-content?airline_code=${airlineCode}&arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
+    // Call external API directly (SSR-compatible)
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE}/content/airlines?airline_code=${airlineCode}&arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
     const response = await fetch(apiUrl);
     
     if (response.ok) {
-      data = await response.json();
+      const rawData = await response.json();
+      // Extract first object from array if it's an array
+      data = Array.isArray(rawData) && rawData.length > 0 ? rawData[0] : rawData;
       
       // Cache the result for 1 hour
-      if (data) {
+      if (data && !DISABLE_CACHE) {
         await RedisCache.set(cacheKey, data, CacheTTL.LONG);
       }
     }
@@ -75,19 +80,24 @@ export async function getCachedAirlineData(
   langId: number, 
   domainId: number
 ) {
+  // TEMPORARY: Disable Redis cache for testing
+  const DISABLE_CACHE = true;
+  
   const cacheKey = CacheKeys.airlineData(airlineCode, arrivalIata, departureIata, langId, domainId);
   
-  let data = await RedisCache.get(cacheKey);
+  let data = DISABLE_CACHE ? null : await RedisCache.get(cacheKey);
   
   if (!data) {
-    // Call internal API endpoint instead of external API
-    const apiUrl = `/api/airline-data?airline_code=${airlineCode}&arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
+    // Call external API directly (SSR-compatible)
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_REAL}/real/airlines?airline_code=${airlineCode}&arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
     const response = await fetch(apiUrl);
     
     if (response.ok) {
-      data = await response.json();
+      const rawData = await response.json();
+      // Extract first object from array if it's an array
+      data = Array.isArray(rawData) && rawData.length > 0 ? rawData[0] : rawData;
       
-      if (data) {
+      if (data && !DISABLE_CACHE) {
         await RedisCache.set(cacheKey, data, CacheTTL.MEDIUM);
       }
     }
@@ -101,19 +111,24 @@ export async function getCachedAirlineAirportData(
   departureIata: string, 
   domainId: number
 ) {
+  // TEMPORARY: Disable Redis cache for testing
+  const DISABLE_CACHE = true;
+  
   const cacheKey = CacheKeys.airlineAirportData(airlineCode, departureIata, domainId);
   
-  let data = await RedisCache.get(cacheKey);
+  let data = DISABLE_CACHE ? null : await RedisCache.get(cacheKey);
   
   if (!data) {
-    // Call internal API endpoint instead of external API
-    const apiUrl = `/api/airline-airport-data?airline_code=${airlineCode}&departure_iata=${departureIata}&domain_id=${domainId}`;
+    // Call external API directly (SSR-compatible) - needs lang_id parameter
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_REAL}/real/airlines?airline_code=${airlineCode}&departure_iata=${departureIata}&lang_id=1&domain_id=${domainId}`;
     const response = await fetch(apiUrl);
     
     if (response.ok) {
-      data = await response.json();
+      const rawData = await response.json();
+      // Extract first object from array if it's an array
+      data = Array.isArray(rawData) && rawData.length > 0 ? rawData[0] : rawData;
       
-      if (data) {
+      if (data && !DISABLE_CACHE) {
         await RedisCache.set(cacheKey, data, CacheTTL.MEDIUM);
       }
     }

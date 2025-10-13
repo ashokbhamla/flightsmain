@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_CONTENT}/hotels?airport_code=${airportCode}&lang=${lang}&domain_id=${domain}`;
+    const url = `${process.env.NEXT_PUBLIC_API_BASE}/hotels?airport_code=${airportCode}&lang=${lang}&domain_id=${domain}`;
     const response = await fetch(url, {
       cache: 'no-store'
     });

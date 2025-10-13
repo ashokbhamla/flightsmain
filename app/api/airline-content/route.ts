@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
-    const apiUrl = `${process.env.NEXT_PUBLIC_API_CONTENT}/content/airlines?airline_code=${airline_code}&arrival_iata=${arrival_iata}&departure_iata=${departure_iata}&lang_id=${lang}&domain_id=${domain_id}`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE}/content/airlines?airline_code=${airline_code}&arrival_iata=${arrival_iata}&departure_iata=${departure_iata}&lang_id=${lang}&domain_id=${domain_id}`;
     
     const response = await fetch(apiUrl, {
       headers: {
@@ -26,7 +26,11 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    
+    // Extract first object from array if it's an array
+    const extractedData = Array.isArray(data) && data.length > 0 ? data[0] : data;
+    
+    return NextResponse.json(extractedData);
   } catch (error) {
     console.error('Error in airline-content API route:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
