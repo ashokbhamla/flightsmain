@@ -801,7 +801,14 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         normalizedFlights.push({
           from: flightData.iata_from,
           to: flightData.iata_to,
+          city: flightData.city_name_en || flightData.airport?.city_name || getCityName(flightData.iata_to, cityData.arrival),
+          airport: flightData.airport?.display_name || `${flightData.city_name_en} (${flightData.iata_to})`,
+          flightsPerDay: flightData.flights_per_day || '1 flight',
+          flightsPerWeek: flightData.flights_per_week || '6',
           airline: airlineCode,
+          airlineCode: airlineCode.toUpperCase(),
+          airlineCountry: flightData.country_code || 'Unknown',
+          airlineUrl: flightData.airlineroutes?.[0]?.airline?.url || '#',
           price: `$${Math.round(basePrice * priceVariation)}`,
           duration: `${duration} min`,
           departureTime: departureTimes[i - 1],
@@ -2066,7 +2073,10 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Arrival Terminal Information
+              {locale === 'es' ? 'Información de la Terminal de Llegada' :
+               locale === 'ru' ? 'Информация о терминале прибытия' :
+               locale === 'fr' ? 'Informations sur le terminal d\'arrivée' :
+               'Arrival Terminal Information'}
             </Typography>
             <Typography 
               variant="body1" 
@@ -2093,7 +2103,10 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 color: '#1a1a1a'
               }}
             >
-              Terminal Contact Information
+              {locale === 'es' ? 'Información de Contacto de la Terminal' :
+               locale === 'ru' ? 'Контактная информация терминала' :
+               locale === 'fr' ? 'Informations de Contact du Terminal' :
+               'Terminal Contact Information'}
             </Typography>
             <Typography 
               variant="body1" 
