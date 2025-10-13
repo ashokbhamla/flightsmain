@@ -2689,8 +2689,9 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
             "position": index + 1,
             "item": {
               "@type": "Flight",
-              "name": `${airlineName} ${(flight as any).flight_number || `FL${index + 1}`}`,
-              "description": `${airlineName} flight from ${getCityName(flight.from, cityData.departure)} to ${getCityName(flight.to, cityData.arrival)}`,
+              "flightNumber": `${airlineCode.toUpperCase()}${(flight as any).flight_number || (100 + index)}`,
+              "name": `${airlineName} ${(flight as any).flight_number || `FL${index + 1}`}${(flight as any).day ? ` - ${(flight as any).day}` : ''}`,
+              "description": `${airlineName} flight from ${getCityName(flight.from, cityData.departure)} to ${getCityName(flight.to, cityData.arrival)}${(flight as any).day ? ` on ${(flight as any).day}s` : ''}. Duration: ${flight.duration || 'N/A'}, Price: $${flight.price}`,
               "provider": {
                 "@type": "Airline",
                 "name": airlineName,
@@ -2706,11 +2707,14 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                 "name": `${getCityName(flight.to, cityData.arrival)} Airport`,
                 "iataCode": flight.to
               },
+              "departureTime": (flight as any).departureTime || "09:00",
+              "arrivalTime": (flight as any).arrivalTime || "11:00",
               "offers": {
                 "@type": "Offer",
-                "price": flight.price?.replace('$', '') || "0",
+                "price": typeof flight.price === 'number' ? flight.price.toString() : (flight.price?.replace('$', '') || "0"),
                 "priceCurrency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
-                "availability": "https://schema.org/InStock"
+                "availability": "https://schema.org/InStock",
+                "validFrom": new Date().toISOString()
               }
             }
           }))
