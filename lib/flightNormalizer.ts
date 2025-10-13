@@ -13,6 +13,12 @@ export interface NormalizedFlight {
   airlineCode: string;
   airlineCountry: string;
   airlineUrl: string;
+  departureTime?: string;
+  arrivalTime?: string;
+  stops?: number;
+  fromCity?: string;
+  toCity?: string;
+  day?: string;
 }
 
 export function normalizeFlights(rawData: any[]): NormalizedFlight[] {
