@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const apiUrl = `${process.env.NEXT_PUBLIC_API_CONTENT}/content/airlines?airline_code=${airline_code}&departure_iata=${departure_iata}&lang_id=${lang}&domain_id=${domain_id}`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE}/content/airlines?airline_code=${airline_code}&departure_iata=${departure_iata}&lang_id=${lang}&domain_id=${domain_id}`;
     const response = await fetch(apiUrl);
     
     if (!response.ok) {
