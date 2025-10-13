@@ -42,9 +42,12 @@ export async function getCachedAirlineAirportContent(
   langId: number, 
   domainId: number
 ) {
+  // TEMPORARY: Disable Redis cache for testing
+  const DISABLE_CACHE = true;
+  
   const cacheKey = CacheKeys.airlineAirportContent(airlineCode, departureIata, langId, domainId);
   
-  let data = await RedisCache.get(cacheKey);
+  let data = DISABLE_CACHE ? null : await RedisCache.get(cacheKey);
   
   if (!data) {
     // Call internal API endpoint instead of external API
@@ -54,7 +57,7 @@ export async function getCachedAirlineAirportContent(
     if (response.ok) {
       data = await response.json();
       
-      if (data) {
+      if (data && !DISABLE_CACHE) {
         await RedisCache.set(cacheKey, data, CacheTTL.LONG);
       }
     }
