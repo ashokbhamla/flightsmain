@@ -2724,7 +2724,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
               "arrivalTime": (flight as any).arrivalTime || "11:00",
               "offers": {
                 "@type": "Offer",
-                "price": typeof flight.price === 'number' ? flight.price.toString() : (flight.price?.replace('$', '') || "0"),
+                "price": (flight as any).price ? String((flight as any).price).replace('$', '') : "0",
                 "priceCurrency": process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "USD",
                 "availability": "https://schema.org/InStock",
                 "validFrom": new Date().toISOString()
