@@ -782,8 +782,8 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   } else if (flightData && flightData.data && Array.isArray(flightData.data)) {
     // Handle case where data is nested under 'data' property
     normalizedFlights = normalizeFlights(flightData.data);
-  } else if (flightData && flightData.iata_from && flightData.iata_to && flightData.price) {
-    // Handle single route object from airport-only pages
+  } else if (flightData && !Array.isArray(flightData) && flightData.iata_from && flightData.iata_to && flightData.price) {
+    // Handle single route object from airport-only pages (legacy - when API returns single object)
     // Create flight cards for each day of the week that has flights
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const departureTimes = ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '08:00'];

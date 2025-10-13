@@ -125,8 +125,8 @@ export async function getCachedAirlineAirportData(
     
     if (response.ok) {
       const rawData = await response.json();
-      // Extract first object from array if it's an array
-      data = Array.isArray(rawData) && rawData.length > 0 ? rawData[0] : rawData;
+      // Keep full array for airline airport data (multiple routes)
+      data = rawData;
       
       if (data && !DISABLE_CACHE) {
         await RedisCache.set(cacheKey, data, CacheTTL.MEDIUM);
