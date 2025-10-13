@@ -240,6 +240,16 @@ export async function getCachedFlightData(
       // API returns an array, extract first object
       data = Array.isArray(rawData) && rawData.length > 0 ? rawData[0] : rawData;
       
+      // If no data for this language, fallback to English
+      if ((!data || (Array.isArray(rawData) && rawData.length === 0)) && langId !== 1) {
+        const fallbackUrl = `${process.env.NEXT_PUBLIC_API_REAL}/real/flights?arrival_iata=${arrivalIata}&departure_iata=${departureIata}&lang_id=1&domain_id=${domainId}`;
+        const fallbackResponse = await fetch(fallbackUrl);
+        if (fallbackResponse.ok) {
+          const fallbackData = await fallbackResponse.json();
+          data = Array.isArray(fallbackData) && fallbackData.length > 0 ? fallbackData[0] : fallbackData;
+        }
+      }
+      
       if (data) {
         await RedisCache.set(cacheKey, data, CacheTTL.MEDIUM);
       }
