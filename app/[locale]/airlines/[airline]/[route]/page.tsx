@@ -782,6 +782,20 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   } else if (flightData && flightData.data && Array.isArray(flightData.data)) {
     // Handle case where data is nested under 'data' property
     normalizedFlights = normalizeFlights(flightData.data);
+  } else if (flightData && flightData.iata_from && flightData.iata_to && flightData.price) {
+    // Handle single route object from airport-only pages
+    normalizedFlights = [{
+      from: flightData.iata_from,
+      to: flightData.iata_to,
+      airline: airlineCode,
+      price: parseFloat(flightData.price),
+      duration: flightData.common_duration ? `${flightData.common_duration} min` : '120 min',
+      departureTime: '09:00',
+      arrivalTime: '11:00',
+      stops: 0,
+      fromCity: getCityName(flightData.iata_from, cityData.departure),
+      toCity: flightData.city_name_en || flightData.airport?.city_name || getCityName(flightData.iata_to, cityData.arrival)
+    }];
   }
 
   // Generate flight deals from API data
