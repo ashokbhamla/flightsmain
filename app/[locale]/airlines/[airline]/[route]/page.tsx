@@ -784,18 +784,44 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
     normalizedFlights = normalizeFlights(flightData.data);
   } else if (flightData && flightData.iata_from && flightData.iata_to && flightData.price) {
     // Handle single route object from airport-only pages
-    normalizedFlights = [{
-      from: flightData.iata_from,
-      to: flightData.iata_to,
-      airline: airlineCode,
-      price: parseFloat(flightData.price),
-      duration: flightData.common_duration ? `${flightData.common_duration} min` : '120 min',
-      departureTime: '09:00',
-      arrivalTime: '11:00',
-      stops: 0,
-      fromCity: getCityName(flightData.iata_from, cityData.departure),
-      toCity: flightData.city_name_en || flightData.airport?.city_name || getCityName(flightData.iata_to, cityData.arrival)
-    }];
+    // Create flight cards for each day of the week that has flights
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const departureTimes = ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '08:00'];
+    
+    normalizedFlights = [];
+    
+    for (let i = 1; i <= 7; i++) {
+      if (flightData[`day${i}`] === 'yes') {
+        const dayName = days[i - 1];
+        const basePrice = parseFloat(flightData.price);
+        // Vary price slightly by day
+        const priceVariation = i === 5 ? 0.9 : (i === 1 ? 1.1 : 1.0); // Friday cheaper, Monday more expensive
+        const duration = flightData.common_duration || 120;
+        
+        normalizedFlights.push({
+          from: flightData.iata_from,
+          to: flightData.iata_to,
+          airline: airlineCode,
+          price: Math.round(basePrice * priceVariation),
+          duration: `${duration} min`,
+          departureTime: departureTimes[i - 1],
+          arrivalTime: calculateArrivalTime(departureTimes[i - 1], duration),
+          stops: 0,
+          fromCity: getCityName(flightData.iata_from, cityData.departure),
+          toCity: flightData.city_name_en || flightData.airport?.city_name || getCityName(flightData.iata_to, cityData.arrival),
+          day: dayName
+        });
+      }
+    }
+  }
+  
+  // Helper function to calculate arrival time
+  function calculateArrivalTime(departureTime: string, durationMinutes: number): string {
+    const [hours, minutes] = departureTime.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes + durationMinutes;
+    const arrivalHours = Math.floor(totalMinutes / 60) % 24;
+    const arrivalMinutes = totalMinutes % 60;
+    return `${arrivalHours.toString().padStart(2, '0')}:${arrivalMinutes.toString().padStart(2, '0')}`;
   }
 
   // Generate flight deals from API data
