@@ -50,12 +50,14 @@ export async function getCachedAirlineAirportContent(
   let data = DISABLE_CACHE ? null : await RedisCache.get(cacheKey);
   
   if (!data) {
-    // Call internal API endpoint instead of external API
-    const apiUrl = `/api/airline-airport-content?airline_code=${airlineCode}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
+    // Call external API directly (SSR-compatible)
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE}/content/airlines?airline_code=${airlineCode}&departure_iata=${departureIata}&lang_id=${langId}&domain_id=${domainId}`;
     const response = await fetch(apiUrl);
     
     if (response.ok) {
-      data = await response.json();
+      const rawData = await response.json();
+      // Extract first object from array if it's an array
+      data = Array.isArray(rawData) && rawData.length > 0 ? rawData[0] : rawData;
       
       if (data && !DISABLE_CACHE) {
         await RedisCache.set(cacheKey, data, CacheTTL.LONG);
