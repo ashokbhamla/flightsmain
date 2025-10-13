@@ -20,7 +20,11 @@ export async function GET(request: NextRequest) {
     }
     
     const data = await response.json();
-    return NextResponse.json(data);
+    
+    // Extract first object from array if it's an array
+    const extractedData = Array.isArray(data) && data.length > 0 ? data[0] : data;
+    
+    return NextResponse.json(extractedData);
   } catch (error) {
     console.error('Error fetching airline airport content:', error);
     return NextResponse.json({ error: 'Failed to fetch airline airport content' }, { status: 500 });
