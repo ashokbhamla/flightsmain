@@ -802,7 +802,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           from: flightData.iata_from,
           to: flightData.iata_to,
           airline: airlineCode,
-          price: Math.round(basePrice * priceVariation),
+          price: `$${Math.round(basePrice * priceVariation)}`,
           duration: `${duration} min`,
           departureTime: departureTimes[i - 1],
           arrivalTime: calculateArrivalTime(departureTimes[i - 1], duration),
