@@ -56,13 +56,11 @@ export default async function TermsAndConditionsPage({ params }: { params: { loc
   const pageData = await fetchPage('terms-and-conditions', locale === 'es' ? 2 : 1);
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '100%' }}>
+    <Box sx={{ width: '100%' }}>
       <Container 
+        maxWidth="lg"
         sx={{ 
-          py: { xs: 3, sm: 4, md: 6 },
-          px: { xs: 2, sm: 4, md: 6 },
-          width: '100%',
-          maxWidth: '100%'
+          py: 6
         }}
       >
         <Typography 
@@ -79,8 +77,8 @@ export default async function TermsAndConditionsPage({ params }: { params: { loc
         </Typography>
         
         <Box sx={{ 
-          maxWidth: { xs: '100%', sm: '80%', md: '70%' },
-          mx: { xs: 'auto', sm: 0 }
+          maxWidth: '900px',
+          mx: 'auto'
         }}>
           {pageData?.content?.heading && (
             <Typography 

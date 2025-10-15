@@ -55,52 +55,114 @@ export default async function AboutUsPage({ params }: { params: { locale: string
   const pageTranslations = getPageTranslations(locale, 'aboutUs');
   const pageData = await fetchPage('about-us', locale === 'es' ? 2 : 1);
 
+  // Clean up escaped newlines and other escape sequences
+  const cleanHtml = (html: string) => {
+    return html
+      .replace(/\\n/g, '\n')  // Replace escaped newlines with actual newlines
+      .replace(/\\t/g, '\t')  // Replace escaped tabs
+      .replace(/\\"/g, '"')   // Replace escaped quotes
+      .replace(/\\'/g, "'");  // Replace escaped single quotes
+  };
+
   return (
     <Box sx={{ width: '100%' }}>
-      <Container maxWidth="lg" sx={{ py: 6 }}>
-        <Typography 
-          variant="h1" 
-          sx={{ 
-            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-            fontWeight: 700,
-            textAlign: 'left',
-            mb: 4,
-            color: '#1a1a1a'
-          }}
-        >
-          {pageData?.title || pageTranslations.heading}
-        </Typography>
-        
-        <Box sx={{ 
-          maxWidth: { xs: '100%', sm: '80%', md: '70%' },
-          mx: { xs: 'auto', sm: 0 }
-        }}>
-          {pageData?.content?.heading && (
+      <Container 
+        maxWidth="lg"
+        sx={{ py: 6 }}
+      >
+        {/* Render the full HTML content from the API */}
+        {pageData?.content?.body ? (
+          <Box 
+            dangerouslySetInnerHTML={{ __html: cleanHtml(pageData.content.body) }}
+            sx={{ 
+              maxWidth: '900px',
+              mx: 'auto',
+              '& body': {
+                fontFamily: 'Arial, sans-serif',
+                lineHeight: 1.6,
+                color: '#333',
+                background: '#fff',
+                padding: 0,
+                maxWidth: '100%',
+                margin: 0
+              },
+              '& h1, & h2': {
+                color: '#1a1a1a'
+              },
+              '& h1': {
+                fontSize: { xs: '1.75rem', sm: '1.75rem', md: '1.75rem' },
+                marginBottom: '10px'
+              },
+              '& h2': {
+                fontSize: '1.25rem',
+                marginTop: '25px',
+                marginBottom: '10px'
+              },
+              '& p': {
+                marginBottom: '12px'
+              },
+              '& ul': {
+                margin: '10px 0 20px 20px'
+              },
+              '& strong': {
+                color: '#000'
+              },
+              '& .contact': {
+                marginTop: '30px',
+                padding: '15px',
+                background: '#f9f9f9',
+                border: '1px solid #ddd',
+                borderRadius: '6px'
+              }
+            }}
+          />
+        ) : (
+          <>
             <Typography 
-              variant="h2" 
+              variant="h1" 
               sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                fontWeight: 700,
+                textAlign: 'left',
+                mb: 4,
                 color: '#1a1a1a'
               }}
             >
-              {pageData.content.heading}
+              {pageData?.title || pageTranslations.heading}
             </Typography>
-          )}
-          
-          <Typography 
-            variant="body1"
-            sx={{ 
-              fontSize: '1.1rem',
-              lineHeight: 1.6,
-              color: '#666',
-              mb: 3
-            }}
-          >
-            {pageData?.content?.body || pageData?.description || 'Learn more about our company and mission.'}
-          </Typography>
-        </Box>
+            
+            <Box sx={{ 
+              maxWidth: { xs: '100%', sm: '80%', md: '70%' },
+              mx: { xs: 'auto', sm: 0 }
+            }}>
+              {pageData?.content?.heading && (
+                <Typography 
+                  variant="h2" 
+                  sx={{ 
+                    fontSize: '1.8rem',
+                    fontWeight: 600,
+                    mb: 3,
+                    color: '#1a1a1a'
+                  }}
+                >
+                  {pageData.content.heading}
+                </Typography>
+              )}
+              
+              <Typography 
+                variant="body1"
+                sx={{ 
+                  fontSize: '1.1rem',
+                  lineHeight: 1.6,
+                  color: '#666',
+                  mb: 3
+                }}
+              >
+                {pageData?.meta?.description || pageTranslations.description || 'Learn more about our company and mission.'}
+              </Typography>
+            </Box>
+          </>
+        )}
       </Container>
     </Box>
   );

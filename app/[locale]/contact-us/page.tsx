@@ -51,14 +51,28 @@ export async function generateMetadata({ params }: { params: { locale: string } 
 export default async function ContactUsPage({ params }: { params: { locale: string } }) {
   const pageData = await fetchPage('contact-us', params.locale === 'es' ? 2 : 1);
 
+  // Clean up escaped newlines and other escape sequences
+  const cleanHtml = (html: string) => {
+    return html
+      .replace(/\\n/g, '\n')  // Replace escaped newlines with actual newlines
+      .replace(/\\t/g, '\t')  // Replace escaped tabs
+      .replace(/\\"/g, '"')   // Replace escaped quotes
+      .replace(/\\'/g, "'");  // Replace escaped single quotes
+  };
+
   return (
     <Box sx={{ width: '100%' }}>
-      <Container maxWidth="lg" sx={{ py: 6 }}>
+      <Container 
+        maxWidth="lg"
+        sx={{ py: 6 }}
+      >
         {/* Render the full HTML content from the API */}
         {pageData?.content?.heading ? (
           <Box 
-            dangerouslySetInnerHTML={{ __html: pageData.content.heading }}
+            dangerouslySetInnerHTML={{ __html: cleanHtml(pageData.content.heading) }}
             sx={{ 
+              maxWidth: '900px',
+              mx: 'auto',
               '& h1': {
                 margin: 0,
                 fontSize: { xs: '1.75rem', sm: '2rem', md: '2rem' },
