@@ -47,7 +47,9 @@ async function fetchAirlineContent(slug: string, langId: 1 | 2) {
 
 // Helper function to get airline code from slug
 function getAirlineCodeFromSlug(slug: string): string {
+  // Comprehensive airline code mapping
   const airlineCodeMap: { [key: string]: string } = {
+    // Indian Airlines
     'indigo': '6e',
     'air-india': 'ai',
     'spicejet': 'sg',
@@ -57,10 +59,103 @@ function getAirlineCodeFromSlug(slug: string): string {
     'jet-airways': '9w',
     'kingfisher': 'it',
     'trujet': '2t',
-    'alliance-air': '9i'
+    'alliance-air': '9i',
+    
+    // US Airlines
+    'united': 'ua',
+    'united-airlines': 'ua',
+    'american': 'aa',
+    'american-airlines': 'aa',
+    'delta': 'dl',
+    'delta-airlines': 'dl',
+    'southwest': 'wn',
+    'southwest-airlines': 'wn',
+    'alaska': 'as',
+    'alaska-airlines': 'as',
+    'jetblue': 'b6',
+    'spirit': 'nk',
+    'frontier': 'f9',
+    
+    // European Airlines
+    'lufthansa': 'lh',
+    'british-airways': 'ba',
+    'air-france': 'af',
+    'klm': 'kl',
+    'ryanair': 'fr',
+    'easyjet': 'u2',
+    'iberia': 'ib',
+    'alitalia': 'az',
+    'swiss': 'lx',
+    'turkish-airlines': 'tk',
+    
+    // Middle East Airlines
+    'emirates': 'ek',
+    'qatar': 'qr',
+    'qatar-airways': 'qr',
+    'etihad': 'ey',
+    'etihad-airways': 'ey',
+    'saudi': 'sv',
+    
+    // Asian Airlines
+    'singapore': 'sq',
+    'singapore-airlines': 'sq',
+    'cathay': 'cx',
+    'cathay-pacific': 'cx',
+    'japan-airlines': 'jl',
+    'ana': 'nh',
+    'korean-air': 'ke',
+    'thai': 'tg',
+    'thai-airways': 'tg',
+    'malaysia': 'mh',
+    'china-eastern': 'mu',
+    'china-southern': 'cz',
+    
+    // Other Airlines
+    'qantas': 'qf',
+    'air-canada': 'ac',
+    'aeromexico': 'am',
+    'latam': 'la',
+    'copa': 'cm'
   };
   
-  return airlineCodeMap[slug.toLowerCase()] || slug.toUpperCase();
+  const lowerSlug = slug.toLowerCase();
+  
+  // Check direct mapping first
+  if (airlineCodeMap[lowerSlug]) {
+    return airlineCodeMap[lowerSlug];
+  }
+  
+  // Try to extract IATA code from complex slugs like "united-ua-ual-us"
+  // Pattern: airline-name-XX-XXX-XX where XX is likely the IATA code (2 letters)
+  const parts = slug.split('-');
+  
+  // Look for a 2-letter part (IATA code)
+  for (const part of parts) {
+    if (part.length === 2 && /^[a-zA-Z]{2}$/.test(part)) {
+      return part.toLowerCase();
+    }
+  }
+  
+  // Look for a 3-letter part (ICAO code) if no IATA found
+  for (const part of parts) {
+    if (part.length === 3 && /^[a-zA-Z]{3}$/.test(part)) {
+      return part.toLowerCase();
+    }
+  }
+  
+  // Try to match the first part of the slug with airline names
+  const firstPart = parts[0];
+  if (airlineCodeMap[firstPart]) {
+    return airlineCodeMap[firstPart];
+  }
+  
+  // Last resort: if slug is already 2-3 letters, use it as-is
+  if (slug.length === 2 || slug.length === 3) {
+    return slug.toLowerCase();
+  }
+  
+  // Ultimate fallback: use first part or entire slug
+  return (firstPart || slug).toLowerCase();
 }
 
 interface AirlinePageProps {
@@ -143,8 +238,29 @@ export default async function AirlinePage({ params }: AirlinePageProps) {
   }
 
   if (!airlineData) {
-    const airlineName = airline.replace(/-/g, ' ').toUpperCase();
-    const airlineCode = airline.split('-')[0]?.toUpperCase() || 'N/A';
+    // Extract proper airline code and name from slug
+    const extractedCode = getAirlineCodeFromSlug(airline);
+    const airlineCode = extractedCode.toUpperCase();
+    
+    // Try to get a nice airline name
+    const parts = airline.split('-');
+    let airlineName = '';
+    
+    // If we found a 2-letter code in the slug, use parts before it as the name
+    const twoLetterIndex = parts.findIndex(p => p.length === 2 && /^[a-zA-Z]{2}$/.test(p));
+    if (twoLetterIndex > 0) {
+      airlineName = parts.slice(0, twoLetterIndex).map(p => 
+        p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()
+      ).join(' ');
+    } else {
+      // Otherwise use the first part capitalized
+      airlineName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+    }
+    
+    // Add "Airlines" if not already present
+    if (!airlineName.toLowerCase().includes('airline')) {
+      airlineName += ' Airlines';
+    }
 
     const fallbackData = {
       airline_name: airlineName,
@@ -154,7 +270,7 @@ export default async function AirlinePage({ params }: AirlinePageProps) {
       fleet_size: 'Information not available',
       destinations: 'Multiple destinations served',
       founded: 'Information not available',
-      overview: `<p>Welcome to ${airlineName} airline. This airline serves passengers with various routes and services. Please note that detailed information may not be available due to API connectivity issues.</p>`,
+      overview: `<p>Welcome to ${airlineName} (${airlineCode}). This airline serves passengers with various routes and services. Please note that detailed information may not be available due to API connectivity issues.</p>`,
       popular_routes: 'Route information will be available soon. Please check back for updates on popular destinations served by this airline.'
     };
     airlineData = fallbackData;
