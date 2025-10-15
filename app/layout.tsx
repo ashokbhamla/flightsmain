@@ -55,6 +55,23 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
         <meta name="theme-color" content="#1e3a8a" />
         <meta name="msapplication-TileColor" content="#1e3a8a" />
+        
+        {/* Google Ads Conversion Tracking */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=AW-16765334947"
+        />
+        <script
+          id="google-ads-config"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'AW-16765334947');
+            `,
+          }}
+        />
       </head>
       <body className={inter.className}>
         {children}
