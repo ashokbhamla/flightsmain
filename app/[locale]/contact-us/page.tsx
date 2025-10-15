@@ -54,49 +54,68 @@ export default async function ContactUsPage({ params }: { params: { locale: stri
   return (
     <Box sx={{ width: '100%' }}>
       <Container maxWidth="lg" sx={{ py: 6 }}>
-        <Typography 
-          variant="h1" 
-          sx={{ 
-            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-            fontWeight: 700,
-            textAlign: 'left',
-            mb: 4,
-            color: '#1a1a1a'
-          }}
-        >
-          {pageData?.title || 'Contact Us'}
-        </Typography>
-        
-        <Box sx={{ 
-          maxWidth: { xs: '100%', sm: '80%', md: '70%' },
-          mx: { xs: 'auto', sm: 0 }
-        }}>
-          {pageData?.content?.heading && (
+        {/* Render the full HTML content from the API */}
+        {pageData?.content?.heading ? (
+          <Box 
+            dangerouslySetInnerHTML={{ __html: pageData.content.heading }}
+            sx={{ 
+              '& h1': {
+                margin: 0,
+                fontSize: { xs: '1.75rem', sm: '2rem', md: '2rem' },
+                lineHeight: 1.05
+              },
+              '& section': {
+                fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
+                color: '#0b1220',
+                background: '#ffffff',
+                borderRadius: '12px',
+                padding: '28px',
+                boxShadow: '0 8px 30px rgba(2,6,23,0.08)'
+              },
+              '& form': {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+              },
+              '& input, & textarea, & select': {
+                width: '100%',
+                boxSizing: 'border-box'
+              }
+            }}
+          />
+        ) : (
+          <>
             <Typography 
-              variant="h2" 
+              variant="h1" 
               sx={{ 
-                fontSize: '1.8rem',
-                fontWeight: 600,
-                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                fontWeight: 700,
+                textAlign: 'left',
+                mb: 4,
                 color: '#1a1a1a'
               }}
             >
-              {pageData.content.heading}
+              {pageData?.title || 'Contact Us'}
             </Typography>
-          )}
-          
-          <Typography 
-            variant="body1"
-            sx={{ 
-              fontSize: '1.1rem',
-              lineHeight: 1.6,
-              color: '#666',
-              mb: 3
-            }}
-          >
-                                    {pageData?.content?.body || pageData?.description || 'Contact us for any inquiries or support.'}
-          </Typography>
-        </Box>
+            
+            <Box sx={{ 
+              maxWidth: { xs: '100%', sm: '80%', md: '70%' },
+              mx: { xs: 'auto', sm: 0 }
+            }}>
+              <Typography 
+                variant="body1"
+                sx={{ 
+                  fontSize: '1.1rem',
+                  lineHeight: 1.6,
+                  color: '#666',
+                  mb: 3
+                }}
+              >
+                {pageData?.content?.body || pageData?.meta?.description || 'Contact us for any inquiries or support.'}
+              </Typography>
+            </Box>
+          </>
+        )}
       </Container>
     </Box>
   );
