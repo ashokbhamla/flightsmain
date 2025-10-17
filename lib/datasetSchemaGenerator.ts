@@ -228,7 +228,13 @@ function generateMonthlyDataItems(
     items.push({
       "@type": "Dataset",
       "name": `${monthName} ${currentYear} Flight Data`,
-      "description": `Flight data for ${monthName} ${currentYear}`,
+      "description": `Comprehensive flight pricing, rainfall, and temperature data for ${monthName} ${currentYear} including average prices in USD, monthly rainfall in inches, and temperature in Fahrenheit.`,
+      "creator": {
+        "@type": "Organization",
+        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
+        "url": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"
+      },
+      "license": process.env.NEXT_PUBLIC_DATASET_LICENSE || "https://creativecommons.org/licenses/by/4.0/",
       "variableMeasured": [
         { 
           "@type": "PropertyValue", 
@@ -268,7 +274,13 @@ function generateWeeklyDataItems(priceData: GraphData[], dayNames: string[]) {
     items.push({
       "@type": "Dataset",
       "name": `${dayName} Flight Data`,
-      "description": `Flight data for ${dayName}`,
+      "description": `Weekly flight pricing data for ${dayName} including average prices in USD to help travelers identify the best day of the week for booking flights.`,
+      "creator": {
+        "@type": "Organization",
+        "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
+        "url": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com"
+      },
+      "license": process.env.NEXT_PUBLIC_DATASET_LICENSE || "https://creativecommons.org/licenses/by/4.0/",
       "variableMeasured": [
         { 
           "@type": "PropertyValue", 
