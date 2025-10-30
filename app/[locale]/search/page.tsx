@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import HashSearchHandler from './components/HashSearchHandler';
+import FlightCards from './components/FlightCards';
 import { localeFromParam } from '@/lib/i18n';
 import { getPageTranslations } from '@/lib/translations';
 
@@ -32,22 +33,102 @@ interface SearchPageProps {
   };
 }
 
-export default function SearchPage({ params, searchParams }: SearchPageProps) {
+export default async function SearchPage({ params, searchParams }: SearchPageProps) {
   const { locale } = params;
   
-  // Extract search parameters from URL (fallback for query params)
-  const searchCode = searchParams[Object.keys(searchParams)[0]] as string;
+  // Support both legacy searchCode and explicit query params
+  // Legacy URL format: /en/search?JFK2310LHR241011
+  const searchCode = Object.keys(searchParams).length === 1 && !('from' in searchParams)
+    ? Object.keys(searchParams)[0]
+    : undefined;
+
+  // New query param format
+  const from = (searchParams.from as string) || undefined;
+  const to = (searchParams.to as string) || undefined;
+  const date = (searchParams.date as string) || undefined;
+  const returnDate = (searchParams.returnDate as string) || undefined;
+  const adults = searchParams.adults ? parseInt(searchParams.adults as string) : undefined;
+  const children = searchParams.children ? parseInt(searchParams.children as string) : undefined;
+  const infants = searchParams.infants ? parseInt(searchParams.infants as string) : undefined;
+  const curr = (searchParams.curr as string) || undefined;
+  const cabin = (searchParams.cabin as string) || undefined;
   
+  console.log('Search page - searchParams keys:', Object.keys(searchParams));
+  console.log('Search page - searchCode:', searchCode);
+  
+  // Try server-side Tequila fetch when explicit params present
+  let initialFlights: any[] | undefined = undefined;
+  try {
+    if (from && to && date) {
+      const TEQUILA_BASE_URL = 'https://api.tequila.kiwi.com/v2/search';
+      const qs = new URLSearchParams();
+      qs.set('fly_from', from);
+      qs.set('fly_to', to);
+      // date ISO to DD/MM/YYYY
+      const toKiwiDate = (iso: string) => {
+        const d = new Date(iso);
+        const dd = String(d.getUTCDate()).padStart(2, '0');
+        const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const yyyy = d.getUTCFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+      };
+      const dep = toKiwiDate(date);
+      qs.set('date_from', dep);
+      qs.set('date_to', dep);
+      if (returnDate) {
+        const ret = toKiwiDate(returnDate);
+        qs.set('return_from', ret);
+        qs.set('return_to', ret);
+      }
+      if (adults) qs.set('adults', String(adults));
+      if (children) qs.set('children', String(children));
+      if (curr) qs.set('curr', curr);
+      if (cabin) qs.set('selected_cabins', cabin.toUpperCase());
+      qs.set('limit', '30');
+      qs.set('sort', 'price');
+      qs.set('asc', '1');
+
+      const apiKey = process.env.TEQUILA_API_KEY as string | undefined;
+      if (apiKey) {
+        const res = await fetch(`${TEQUILA_BASE_URL}?${qs.toString()}`, {
+          headers: { apikey: apiKey, accept: 'application/json' },
+          cache: 'no-store',
+        });
+        if (res.ok) {
+          const json = await res.json();
+          initialFlights = Array.isArray(json?.data) ? json.data : [];
+        }
+      }
+    }
+  } catch {}
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
       <main className="pt-16">
         {/* Search Results Container */}
         <div className="container mx-auto px-4 py-8">
-          {/* Hash Search Handler with Triposia Widget */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          {/* Hash Search Handler with Triposia Widget (Hidden for Background) */}
+          <div className="hidden">
             <HashSearchHandler fallbackSearchCode={searchCode} locale={locale} />
           </div>
+          
+          {/* Flight Cards - Main Results */}
+          <FlightCards
+            searchCode={searchCode}
+            from={from}
+            to={to}
+            date={date}
+            returnDate={returnDate}
+            adults={adults}
+            children={children}
+            // @ts-ignore
+            infants={infants}
+            curr={curr}
+            cabin={cabin}
+            initialFlights={initialFlights as any}
+            locale={locale}
+          />
         </div>
       </main>
     </div>

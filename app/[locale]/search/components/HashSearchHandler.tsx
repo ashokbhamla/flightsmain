@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import TriposiaSearchWidget from './TriposiaSearchWidget';
+import TriposiaDirectContent from './TriposiaDirectContent';
+import TriposiaDataExtractor from './TriposiaDataExtractor';
 import FlightPopup from '@/components/FlightPopup';
 import BookingPopup from '@/components/BookingPopup';
 import { useTranslations } from '@/lib/translations';
@@ -9,9 +11,11 @@ import { useTranslations } from '@/lib/translations';
 interface HashSearchHandlerProps {
   fallbackSearchCode?: string;
   locale?: string;
+  useDirectContent?: boolean; // New prop to choose rendering mode
+  extractDataOnly?: boolean; // Extract JSON data from hidden iframe
 }
 
-export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }: HashSearchHandlerProps) {
+export default function HashSearchHandler({ fallbackSearchCode, locale = 'en', useDirectContent = false, extractDataOnly = false }: HashSearchHandlerProps) {
   const [searchCode, setSearchCode] = useState<string | undefined>(fallbackSearchCode);
   const [isClient, setIsClient] = useState(typeof window !== 'undefined');
   const [showPopup, setShowPopup] = useState(false);
@@ -510,11 +514,23 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en' }:
 
   return (
     <>
-      <TriposiaSearchWidget 
-        searchCode={searchCode} 
-        locale={locale}
-        overlayEnabled={settings.overlayEnabled}
-      />
+      {extractDataOnly ? (
+        <TriposiaDataExtractor 
+          searchCode={searchCode} 
+          locale={locale}
+        />
+      ) : useDirectContent ? (
+        <TriposiaDirectContent 
+          searchCode={searchCode} 
+          locale={locale}
+        />
+      ) : (
+        <TriposiaSearchWidget 
+          searchCode={searchCode} 
+          locale={locale}
+          overlayEnabled={settings.overlayEnabled}
+        />
+      )}
       {settings.flightPopupEnabled && (
         <FlightPopup
           open={showPopup}

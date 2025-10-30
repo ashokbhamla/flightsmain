@@ -18,14 +18,11 @@ import {
   getCachedCityData 
 } from '@/lib/cached-api';
 import dynamic from 'next/dynamic';
+import FlightSearchBox from '@/components/FlightSearchBox';
 import { normalizeFlights, NormalizedFlight } from '@/lib/flightNormalizer';
 import { getAirlineLogoUrl, getAirportImageUrl } from '@/lib/cdn';
 
-// Dynamic imports for client components with SSR enabled for SEO and performance optimization
-const FlightSearchBox = dynamic(() => import('@/components/FlightSearchBox'), { 
-  ssr: true,
-  loading: () => <div>Loading search...</div>
-});
+// Dynamic imports for other client components
 const ClientPriceGraph = dynamic(() => import('@/components/ClientPriceGraph'), { 
   ssr: true,
   loading: () => <div>Loading graph...</div>

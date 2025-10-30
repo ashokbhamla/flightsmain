@@ -303,6 +303,16 @@ export default function Footer({ data, locale }: { data: any; locale: Locale }) 
                      {footer.copyright}
                    </Typography>
             
+            {/* Disclaimer & TCPA Consent */}
+            <Box sx={{ maxWidth: 900 }}>
+              <Typography variant="caption" sx={{ color: '#9aa0a6', display: 'block', textAlign: { xs: 'center', sm: 'left' }, mb: 1.5 }}>
+                <strong>Disclaimer & TCPA Consent</strong> — By providing your phone number, you consent to receive calls and text messages (including automated or pre-recorded messages) from AirlinesMap.com, its affiliates, and partners at the number provided. Message and data rates may apply. You can opt out anytime by replying “STOP” or calling (888) 319-6206.
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#9aa0a6', display: 'block', textAlign: { xs: 'center', sm: 'left' } }}>
+                AirlinesMap.com is an independent travel information platform and is not affiliated with any airline. Flight data, fares, and schedules are provided by third-party sources and may change without notice. AirlinesMap.com does not guarantee accuracy or availability and does not handle bookings directly. Use of this site signifies your agreement to these terms.
+              </Typography>
+            </Box>
+
             {/* Social Media Icons */}
             <Box sx={{ 
               display: 'flex', 

@@ -287,41 +287,29 @@ const FlightSearchBox = memo<FlightSearchBoxProps>(({
 
       const fromCode = fromAirport.code;
       const toCode = toAirport.code;
-      const departureDateStr = formatDate(departureDate);
-      const returnDateStr = tripType === 0 ? formatDate(returnDate) : '';
-      const classCode = getClassCode(travelClass);
-      const totalPassengers = adults + children + infants;
-      
-      // Create search URL format:
-      // Round trip: DEL1709BOM19091 or DEL1709BOM1909b111
-      // One way: DEL2309BOM1 or DEL2309BOMb111
-      let searchCode = `${fromCode}${departureDateStr}${toCode}`;
-      
-      // Add return date only for round trip
-      if (tripType === 0 && returnDate) {
-        searchCode += returnDateStr;
-      }
-      
-      // Add total passengers
-      searchCode += totalPassengers.toString();
-      
-      // Add class code if not economy
-      if (classCode) {
-        searchCode += classCode;
-      }
-      
-      // Add passenger breakdown: adults, infants, children
-      if (adults > 0) searchCode += adults.toString();
-      if (infants > 0) searchCode += infants.toString();
-      if (children > 0) searchCode += children.toString();
+      const toIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const dateIso = toIso(departureDate);
+      const returnIso = tripType === 0 && returnDate ? toIso(returnDate) : '';
+      const cabin = ({
+        'economy': 'M',
+        'premium economy': 'W',
+        'business': 'C',
+        'first': 'F'
+      } as Record<string,string>)[travelClass.toLowerCase()] || 'M';
 
-      console.log('Search code generated:', searchCode);
-      console.log('Trip type:', tripType === 0 ? 'Round Trip' : 'One Way');
+      const params = new URLSearchParams();
+      params.set('from', fromCode);
+      params.set('to', toCode);
+      params.set('date', dateIso);
+      if (returnIso) params.set('returnDate', returnIso);
+      params.set('adults', String(adults));
+      params.set('children', String(children));
+      params.set('infants', String(infants));
+      params.set('curr', 'USD');
+      params.set('cabin', cabin);
 
-      // Navigate to search page with proper URL
       if (typeof window !== 'undefined') {
-        const currentLocale = window.location.pathname.split('/')[1] || 'en';
-        const searchUrl = `/${currentLocale}/search#/flights/${searchCode}`;
+        const searchUrl = `/search?${params.toString()}`;
         console.log('Navigating to:', searchUrl);
         window.location.href = searchUrl;
       }
