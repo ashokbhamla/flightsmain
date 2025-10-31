@@ -10,7 +10,7 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
   const date = (searchParams.date as string) || undefined;
   const returnDate = (searchParams.returnDate as string) || undefined;
   const adults = searchParams.adults ? parseInt(searchParams.adults as string) : undefined;
-  const children = searchParams.children ? parseInt(searchParams.children as string) : undefined;
+  const childPax = searchParams.children ? parseInt(searchParams.children as string) : undefined;
   const curr = (searchParams.curr as string) || undefined;
   const cabin = (searchParams.cabin as string) || undefined;
 
@@ -24,7 +24,7 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
             date={date}
             returnDate={returnDate}
             adults={adults}
-            children={children}
+            childPax={childPax}
             curr={curr}
             cabin={cabin}
           />

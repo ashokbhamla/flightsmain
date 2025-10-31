@@ -51,6 +51,34 @@ export default function BookingPage() {
     if (!flight) return;
     setSubmitting(true);
     try {
+      // 1) Send lead to CRM via secure API
+      try {
+        const classMap: any = { M: 'Economy', W: 'Premium Economy', C: 'Business', F: 'First' };
+        await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerName: `${contact.firstName || 'Customer'} ${contact.lastName || ''}`.trim(),
+            customerEmail: contact.email || 'unknown@example.com',
+            customerPhone: contact.phone || '',
+            flightDetails: {
+              from: flight.from,
+              to: flight.to,
+              departureDate: ctx?.date,
+              returnDate: ctx?.returnDate,
+              travelers: travelers.length || 1,
+              fromCity: flight.fromCity,
+              toCity: flight.toCity,
+              price: parseFloat((flight.price || '').replace(/[^0-9.]/g, '')) || undefined,
+              class: classMap[(ctx?.cabin || 'M').toUpperCase()] || 'Economy',
+            },
+          })
+        });
+      } catch (e) {
+        console.warn('CRM submit failed (non-blocking):', e);
+      }
+
+      // 2) Create local booking reference (stub) and navigate to ticket
       const res = await fetch('/api/bookings/initiate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

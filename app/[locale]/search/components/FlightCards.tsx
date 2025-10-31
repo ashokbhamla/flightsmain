@@ -64,7 +64,7 @@ interface FlightCardsProps {
   date?: string; // ISO yyyy-mm-dd
   returnDate?: string; // ISO yyyy-mm-dd
   adults?: number;
-  children?: number;
+  childPax?: number;
   infants?: number;
   curr?: string;
   cabin?: string; // M, W, C, F
@@ -72,7 +72,7 @@ interface FlightCardsProps {
   locale?: string;
 }
 
-export default function FlightCards({ searchCode, from, to, date, returnDate, adults, children, infants, curr, cabin, initialFlights, locale }: FlightCardsProps) {
+export default function FlightCards({ searchCode, from, to, date, returnDate, adults, childPax, infants, curr, cabin, initialFlights, locale }: FlightCardsProps) {
   const [flights, setFlights] = useState<FlightData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -211,7 +211,7 @@ export default function FlightCards({ searchCode, from, to, date, returnDate, ad
     let qReturnDate = paramsIn?.returnDate;
     let qAdults = paramsIn?.adults ?? 1;
     let qChildren = paramsIn?.children ?? 0;
-    let qCurr = paramsIn?.curr || 'USD';
+    const qCurr = paramsIn?.curr || 'USD';
     let qCabin = (paramsIn?.cabin || 'M').toUpperCase();
 
     if ((!qFrom || !qTo || !qDate) && codeFallback) {
@@ -518,7 +518,7 @@ export default function FlightCards({ searchCode, from, to, date, returnDate, ad
         setExtractionAttempts(0);
 
         // First try Tequila (Kiwi) API using direct params if provided
-        const tequila = await fetchTequilaFlights({ from, to, date, returnDate, adults, children, curr, cabin }, searchCode);
+        const tequila = await fetchTequilaFlights({ from, to, date, returnDate, adults, children: childPax, curr, cabin }, searchCode);
         console.log('FlightCards: Tequila results count =', tequila.length);
         if (tequila.length > 0) {
           setFlights(tequila);
@@ -602,7 +602,7 @@ export default function FlightCards({ searchCode, from, to, date, returnDate, ad
     };
 
     loadFlightData();
-  }, [searchCode, from, to, date, returnDate, adults, children, curr, cabin]);
+  }, [searchCode, from, to, date, returnDate, adults, childPax, curr, cabin]);
 
   const handleBookFlight = (flight: FlightData) => {
     // Open booking in new tab
@@ -687,7 +687,7 @@ export default function FlightCards({ searchCode, from, to, date, returnDate, ad
         <SearchResultsView 
           flights={flights} 
           onBook={handleBookFlight}
-          context={{ from, to, date, returnDate, adults, children, infants, curr, cabin }}
+          context={{ from, to, date, returnDate, adults, children: childPax, infants, curr, cabin }}
           locale={locale}
         />
       </Box>

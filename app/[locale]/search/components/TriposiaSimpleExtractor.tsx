@@ -190,7 +190,7 @@ export default function TriposiaSimpleExtractor({ searchCode, locale = 'en' }: T
 
       <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
         <p className="text-sm">
-          <strong>Note:</strong> This is sample flight data extracted from the search code "{searchCode}". 
+          <strong>Note:</strong> This is sample flight data extracted from the search code &quot;{searchCode}&quot;. 
           In a real implementation, this would be actual flight data from the Triposia API.
         </p>
       </div>

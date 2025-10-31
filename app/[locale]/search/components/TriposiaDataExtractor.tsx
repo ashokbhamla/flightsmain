@@ -76,7 +76,10 @@ export default function TriposiaDataExtractor({ searchCode, locale = 'en' }: Tri
             }
 
             // Extract all data attributes
-            (element as HTMLElement).dataset && Object.assign(flight, (element as HTMLElement).dataset);
+            const ds = (element as HTMLElement).dataset;
+            if (ds) {
+              Object.assign(flight, ds);
+            }
 
             if (flight.textContent && flight.textContent.length > 50) {
               flights.push(flight);

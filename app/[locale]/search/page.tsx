@@ -48,7 +48,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
   const date = (searchParams.date as string) || undefined;
   const returnDate = (searchParams.returnDate as string) || undefined;
   const adults = searchParams.adults ? parseInt(searchParams.adults as string) : undefined;
-  const children = searchParams.children ? parseInt(searchParams.children as string) : undefined;
+  const childPax = searchParams.children ? parseInt(searchParams.children as string) : undefined;
   const infants = searchParams.infants ? parseInt(searchParams.infants as string) : undefined;
   const curr = (searchParams.curr as string) || undefined;
   const cabin = (searchParams.cabin as string) || undefined;
@@ -121,8 +121,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
             date={date}
             returnDate={returnDate}
             adults={adults}
-            children={children}
-            // @ts-ignore
+            childPax={childPax}
             infants={infants}
             curr={curr}
             cabin={cabin}
