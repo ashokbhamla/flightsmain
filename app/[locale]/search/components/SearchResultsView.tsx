@@ -36,6 +36,23 @@ export interface SearchFlightItem {
   deepLink?: string;
   fromCity?: string;
   toCity?: string;
+  // Extended fields used in UI
+  departTime?: string;
+  arriveTime?: string;
+  totalLayover?: string;
+  cabinBagKg?: number;
+  holdBagKg?: number;
+  segments?: Array<{
+    from: string;
+    to: string;
+    fromCity?: string;
+    toCity?: string;
+    dep?: string;
+    arr?: string;
+    airlineCode?: string;
+    flightNo?: number;
+    returnIdx?: number;
+  }>;
 }
 
 interface Props {
