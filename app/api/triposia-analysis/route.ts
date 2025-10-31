@@ -29,7 +29,26 @@ export async function GET(request: NextRequest) {
     console.log('✅ Triposia content fetched for analysis, length:', html.length);
     
     // Try to extract JSON data from the HTML
-    const extractedData = {
+    type ExtractedData = {
+      searchCode: string | null;
+      htmlLength: number;
+      extractedAt: string;
+      analysis: {
+        hasScripts: number;
+        hasJsonData: boolean;
+        hasWidgetContent: boolean;
+        hasApplicationLoader: boolean;
+        hasDataLayer: boolean;
+        hasConfig: boolean;
+      };
+      potentialData: {
+        scripts: Array<{ length: number; hasJson: boolean; preview: string }>;
+        configData: RegExpMatchArray | null;
+        dataLayer: RegExpMatchArray | null;
+        jsonMatches?: string[];
+      };
+    };
+    const extractedData: ExtractedData = {
       searchCode,
       htmlLength: html.length,
       extractedAt: new Date().toISOString(),
