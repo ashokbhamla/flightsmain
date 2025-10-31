@@ -54,6 +54,7 @@ export default function BookingPage() {
       // 1) Send lead to CRM via secure API
       try {
         const classMap: any = { M: 'Economy', W: 'Premium Economy', C: 'Business', F: 'First' };
+        const totalTravelers = (ctx?.adults ?? 1) + (ctx?.children ?? 0) + (ctx?.infants ?? 0);
         await fetch('/api/bookings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -66,7 +67,7 @@ export default function BookingPage() {
               to: flight.to,
               departureDate: ctx?.date,
               returnDate: ctx?.returnDate,
-              travelers: travelers.length || 1,
+              travelers: totalTravelers || 1,
               fromCity: flight.fromCity,
               toCity: flight.toCity,
               price: parseFloat((flight.price || '').replace(/[^0-9.]/g, '')) || undefined,
