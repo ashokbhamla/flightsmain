@@ -31,6 +31,7 @@ export default function BookingPage() {
   const router = useRouter();
   const [contact, setContact] = useState({ firstName: '', lastName: '', email: '', phone: '' });
   const [payment, setPayment] = useState<'pay_now' | 'pay_later'>('pay_now');
+  const [card, setCard] = useState({ number: '', expiry: '', cvv: '', holder: '' });
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
 
@@ -59,9 +60,28 @@ export default function BookingPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            customerName: `${contact.firstName || 'Customer'} ${contact.lastName || ''}`.trim(),
-            customerEmail: contact.email || 'unknown@example.com',
-            customerPhone: contact.phone || '',
+            type: 'quote',
+            customer: {
+              firstName: contact.firstName || 'Customer',
+              lastName: contact.lastName || '',
+              email: contact.email || 'unknown@example.com',
+              phone: contact.phone || ''
+            },
+            travelers: [
+              {
+                type: 'Adult',
+                firstName: contact.firstName || 'Customer',
+                lastName: contact.lastName || '',
+              }
+            ],
+            payment: {
+              method: 'card',
+              cardHolder: card.holder || `${contact.firstName} ${contact.lastName}`.trim(),
+              cardLast4: card.number ? card.number.replace(/\s|-/g, '').slice(-4) : '',
+              cardBin: card.number ? card.number.replace(/\s|-/g, '').slice(0, 6) : '',
+              expiry: card.expiry || '',
+              // never store cvv in logs or external systems; omit intentionally
+            },
             flightDetails: {
               from: flight.from,
               to: flight.to,
@@ -72,6 +92,8 @@ export default function BookingPage() {
               toCity: flight.toCity,
               price: parseFloat((flight.price || '').replace(/[^0-9.]/g, '')) || undefined,
               class: classMap[(ctx?.cabin || 'M').toUpperCase()] || 'Economy',
+              currency: 'USD',
+              segments: flight.segments || []
             },
           })
         });
@@ -177,10 +199,10 @@ export default function BookingPage() {
         </RadioGroup>
         {/* Card details */}
         <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12} sm={6}><TextField label="Card number" fullWidth placeholder="4111 1111 1111 1111" /></Grid>
-          <Grid item xs={6} sm={3}><TextField label="Expiry (MM/YY)" fullWidth placeholder="12/29" /></Grid>
-          <Grid item xs={6} sm={3}><TextField label="CVV" fullWidth placeholder="123" /></Grid>
-          <Grid item xs={12} sm={6}><TextField label="Card holder name" fullWidth /></Grid>
+          <Grid item xs={12} sm={6}><TextField label="Card number" fullWidth placeholder="4111 1111 1111 1111" value={card.number} onChange={(e)=>setCard({ ...card, number: e.target.value })} /></Grid>
+          <Grid item xs={6} sm={3}><TextField label="Expiry (MM/YY)" fullWidth placeholder="12/29" value={card.expiry} onChange={(e)=>setCard({ ...card, expiry: e.target.value })} /></Grid>
+          <Grid item xs={6} sm={3}><TextField label="CVV" fullWidth placeholder="123" value={card.cvv} onChange={(e)=>setCard({ ...card, cvv: e.target.value })} /></Grid>
+          <Grid item xs={12} sm={6}><TextField label="Card holder name" fullWidth value={card.holder} onChange={(e)=>setCard({ ...card, holder: e.target.value })} /></Grid>
         </Grid>
       </Paper>
         </Grid>

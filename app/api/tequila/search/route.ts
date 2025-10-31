@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Ensure Node.js runtime so server env vars are available
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 const TEQUILA_BASE_URL = 'https://api.tequila.kiwi.com/v2/search';
 
 function toKiwiDate(dateIso: string): string {
@@ -25,7 +29,7 @@ export async function GET(request: NextRequest) {
     const cabin = (searchParams.get('cabin') || 'M').toUpperCase(); // M, W, C, F
     const limit = searchParams.get('limit') || '30';
 
-    const apiKey = process.env.TEQUILA_API_KEY;
+    const apiKey = process.env.TEQUILA_API_KEY || process.env.NEXT_PUBLIC_TEQUILA_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: 'Server missing TEQUILA_API_KEY' }, { status: 500 });
     }

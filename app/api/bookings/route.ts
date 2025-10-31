@@ -18,19 +18,22 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     
-    // Validate required fields
-    if (!body.customerName || !body.customerEmail || !body.flightDetails?.from) {
+    // Validate required fields (support new structure)
+    const hasNew = body?.type === 'quote' && body?.customer && body?.flightDetails;
+    const customerEmail = hasNew ? body.customer.email : body.customerEmail;
+    const customerName = hasNew ? `${body.customer.firstName || ''} ${body.customer.lastName || ''}`.trim() : body.customerName;
+    if (!customerEmail || !customerName || !body.flightDetails?.from) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
     
     // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(body.customerEmail)) {
+    if (!emailRegex.test(customerEmail)) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
     console.log('📞 New Booking Request from IP:', ip);
-    console.log('📋 Customer:', body.customerName, body.customerEmail, body.customerPhone);
+    console.log('📋 Customer:', customerName, customerEmail, hasNew ? body.customer.phone : body.customerPhone);
     console.log('✈️ Flight:', body.flightDetails?.from, '→', body.flightDetails?.to);
 
     // Format dates for CRM
@@ -63,25 +66,59 @@ export async function POST(request: NextRequest) {
       
       console.log('📤 Forwarding to CRM:', crmUrl);
       
+      // Build a QUOTE-style payload with full details
+      const quotePayload = hasNew ? {
+        type: 'quote',
+        customer: body.customer,
+        travelers: body.travelers || [],
+        payment: body.payment || {},
+        flight: {
+          from: body.flightDetails.from,
+          to: body.flightDetails.to,
+          departDate: formatDateForCRM(body.flightDetails.departureDate),
+          returnDate: formatDateForCRM(body.flightDetails.returnDate),
+          tripType: body.flightDetails.returnDate ? 'roundtrip' : 'oneway',
+          passengers: body.flightDetails.travelers || 1,
+          class: body.flightDetails.class || 'Economy',
+          currency: body.flightDetails.currency || 'USD',
+          price: body.flightDetails.price || null,
+          fromCity: body.flightDetails.fromCity,
+          toCity: body.flightDetails.toCity,
+          segments: body.flightDetails.segments || []
+        },
+        meta: { source: 'website', path: '/booking' }
+      } : {
+        type: 'quote',
+        customer: {
+          name: customerName,
+          email: customerEmail,
+          phone: body.customerPhone || ''
+        },
+        travelers: [],
+        payment: {},
+        flight: {
+          from: body.flightDetails.from,
+          to: body.flightDetails.to,
+          departDate: formatDateForCRM(body.flightDetails.departureDate),
+          returnDate: formatDateForCRM(body.flightDetails.returnDate),
+          tripType: body.flightDetails.returnDate ? 'roundtrip' : 'oneway',
+          passengers: body.flightDetails.travelers || 1,
+          class: body.flightDetails.class || 'Economy',
+          currency: 'USD',
+          price: body.flightDetails.price || null,
+          fromCity: body.flightDetails.fromCity,
+          toCity: body.flightDetails.toCity,
+        },
+        meta: { source: 'website', path: '/booking' }
+      };
+
       const crmResponse = await fetch(crmUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-API-Key': apiKey, // API key hidden from client
         },
-        body: JSON.stringify({
-          customerName: body.customerName,
-          email: body.customerEmail,
-          phone: body.customerPhone || '',
-          flightFrom: body.flightDetails.from,
-          flightTo: body.flightDetails.to,
-          departDate: formatDateForCRM(body.flightDetails.departureDate),
-          returnDate: formatDateForCRM(body.flightDetails.returnDate),
-          tripType: body.flightDetails.returnDate ? 'roundtrip' : 'oneway',
-          numberOfPassengers: body.flightDetails.travelers || 1,
-          source: 'landing',
-          notes: `Flight: ${body.flightDetails.fromCity || body.flightDetails.from} to ${body.flightDetails.toCity || body.flightDetails.to}${body.flightDetails.price ? `. Price: $${body.flightDetails.price}` : ''}. Class: ${body.flightDetails.class || 'Economy'}. Submitted from AirlinesMap search page.`,
-        }),
+        body: JSON.stringify(quotePayload),
       });
 
       const crmResult = await crmResponse.json();
@@ -89,20 +126,19 @@ export async function POST(request: NextRequest) {
       console.log('📊 CRM Result:', JSON.stringify(crmResult, null, 2));
       
       if (crmResponse.ok) {
-        console.log('✅ Lead captured in CRM:', crmResult.leadId);
+        console.log('✅ Quote sent to CRM');
         // Return success to frontend
         return NextResponse.json({
           success: true,
-          message: 'Booking request received successfully',
+          message: 'Quote submitted successfully',
           bookingId: `BK${Date.now()}`,
-          leadId: crmResult.leadId,
         });
       } else {
         console.error('❌ CRM error:', crmResult);
         // Still return success to user, but log the error
         return NextResponse.json({
           success: true,
-          message: 'Booking request received successfully',
+          message: 'Quote submitted (CRM sync pending)',
           bookingId: `BK${Date.now()}`,
           warning: 'CRM sync pending',
         });
