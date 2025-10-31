@@ -81,7 +81,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
         qs.set('return_to', ret);
       }
       if (adults) qs.set('adults', String(adults));
-      if (children) qs.set('children', String(children));
+      if (childPax) qs.set('children', String(childPax));
       if (curr) qs.set('curr', curr);
       if (cabin) qs.set('selected_cabins', cabin.toUpperCase());
       qs.set('limit', '30');
