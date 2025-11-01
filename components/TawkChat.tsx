@@ -16,7 +16,7 @@ export default function TawkChat() {
         strategy="afterInteractive"
         src="https://embed.tawk.to/686fd734affcbd1910f861e6/1ivqe1a5q"
         charSet="UTF-8"
-        crossOrigin="*"
+        crossOrigin="anonymous"
       />
     </>
   );
