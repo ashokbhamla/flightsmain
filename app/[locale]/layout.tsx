@@ -17,6 +17,7 @@ import { orgSchema, websiteSchema, localBusinessSchema } from '@/lib/schema';
 import ClientThemeProvider from '@/components/ClientThemeProvider';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import CallBanner from '@/components/CallBanner';
+import TawkChat from '@/components/TawkChat';
 // Removed unused imports for performance
 import { envConfig } from '@/lib/envConfig';
 import { getTranslations } from '@/lib/translations';
@@ -135,6 +136,7 @@ export default async function RootLayout({
           {children}
           <Footer data={footer} locale={locale} />
           <SchemaOrg data={[orgSchema(header), websiteSchema(header), localBusinessSchema()].filter(Boolean)} />
+          <TawkChat />
         </ClientThemeProvider>
       </body>
     </html>
