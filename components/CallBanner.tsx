@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Box, Button, Typography } from '@mui/material';
+import PhoneInTalkRoundedIcon from '@mui/icons-material/PhoneInTalkRounded';
 
 export default function CallBanner() {
   const phone = '(888) 319-6206';
@@ -36,9 +37,11 @@ export default function CallBanner() {
         backgroundPosition: 'center',
         px: { xs: 2, md: 6 },
         py: { xs: 3, md: 5 },
+        // Keep banner visible at top on mobile for stronger intent
+        positionSticky: 'top',
       }}
     >
-      <Box sx={{ maxWidth: 1280, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 }}>
+      <Box sx={{ maxWidth: 1280, mx: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2 }}>
         <Box sx={{ lineHeight: 1 }}>
           <Typography
             component="div"
@@ -61,30 +64,32 @@ export default function CallBanner() {
           >
             FURTHER REDUCTIONS • AIRLINES RESERVATION
           </Typography>
-          <Typography sx={{ mt: 1, color: 'rgba(255,255,255,.85)', fontSize: { xs: '.8rem', md: '.95rem' } }}>
-            Call now for exclusive fares. Offer valid on select itineraries while supplies last.
+          <Typography sx={{ mt: 1, color: 'rgba(255,255,255,.85)', fontSize: { xs: '.85rem', md: '.95rem' } }}>
+            Tap to call our agents for exclusive fares. 24/7 assistance.
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Button
-            onClick={handleClick}
-            href={telHref}
-            size="large"
-            variant="contained"
-            sx={{
-              fontWeight: 900,
-              px: { xs: 2.5, md: 3.5 },
-              py: { xs: 1.25, md: 1.5 },
-              fontSize: { xs: '.95rem', md: '1.05rem' },
-              background: 'linear-gradient(135deg,#22c55e 0%,#16a34a 100%)',
-              '&:hover': { background: 'linear-gradient(135deg,#16a34a 0%,#15803d 100%)' },
-              boxShadow: '0 10px 24px rgba(34,197,94,.4)'
-            }}
-            aria-label={`Call ${phone}`}
-          >
-            Call {phone}
-          </Button>
-        </Box>
+        <Button
+          onClick={handleClick}
+          href={telHref}
+          size="large"
+          variant="contained"
+          sx={{
+            fontWeight: 900,
+            px: { xs: 2.5, md: 3.5 },
+            py: { xs: 1.25, md: 1.5 },
+            fontSize: { xs: '.95rem', md: '1.05rem' },
+            background: 'linear-gradient(135deg,#22c55e 0%,#16a34a 100%)',
+            '&:hover': { background: 'linear-gradient(135deg,#16a34a 0%,#15803d 100%)' },
+            boxShadow: '0 10px 24px rgba(34,197,94,.4)',
+            borderRadius: 2,
+            minWidth: { xs: 260, md: 320 },
+            width: { xs: '100%', sm: 'auto' }
+          }}
+          startIcon={<PhoneInTalkRoundedIcon />}
+          aria-label={`Call ${phone}`}
+        >
+          Call {phone}
+        </Button>
       </Box>
     </Box>
   );
