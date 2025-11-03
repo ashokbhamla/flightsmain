@@ -19,10 +19,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Validate required fields (support new structure)
-    const hasNew = body?.type === 'quote' && body?.customer && body?.flightDetails;
+    const hasNew = body?.type === 'quote' && body?.customer && (body?.flightDetails || body?.hotelDetails);
     const customerEmail = hasNew ? body.customer.email : body.customerEmail;
     const customerName = hasNew ? `${body.customer.firstName || ''} ${body.customer.lastName || ''}`.trim() : body.customerName;
-    if (!customerEmail || !customerName || !body.flightDetails?.from) {
+    const isHotel = Boolean(body?.hotelDetails);
+    if (!customerEmail || !customerName || (!isHotel && !body.flightDetails?.from)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
     
@@ -34,7 +35,11 @@ export async function POST(request: NextRequest) {
 
     console.log('📞 New Booking Request from IP:', ip);
     console.log('📋 Customer:', customerName, customerEmail, hasNew ? body.customer.phone : body.customerPhone);
-    console.log('✈️ Flight:', body.flightDetails?.from, '→', body.flightDetails?.to);
+    if (isHotel) {
+      console.log('🏨 Hotel:', body.hotelDetails?.name, body.hotelDetails?.hotelId);
+    } else {
+      console.log('✈️ Flight:', body.flightDetails?.from, '→', body.flightDetails?.to);
+    }
 
     // Format dates for CRM
     const formatDateForCRM = (dateStr: string | undefined) => {
@@ -67,7 +72,7 @@ export async function POST(request: NextRequest) {
       console.log('📤 Forwarding to CRM:', crmUrl);
       
       // Build a QUOTE-style payload with full details
-      const quotePayload = hasNew ? {
+      const quotePayload = hasNew && !isHotel ? {
         type: 'quote',
         customer: body.customer,
         travelers: body.travelers || [],
@@ -87,6 +92,22 @@ export async function POST(request: NextRequest) {
           segments: body.flightDetails.segments || []
         },
         meta: { source: 'website', path: '/booking' }
+      } : hasNew && isHotel ? {
+        type: 'quote',
+        customer: body.customer,
+        travelers: [],
+        payment: body.payment || {},
+        hotel: {
+          hotelId: body.hotelDetails?.hotelId,
+          name: body.hotelDetails?.name,
+          currency: body.hotelDetails?.currency || 'USD',
+          price: body.hotelDetails?.price || null,
+          checkIn: body.hotelDetails?.checkIn,
+          checkOut: body.hotelDetails?.checkOut,
+          airport: body.hotelDetails?.airport,
+          imageURL: body.hotelDetails?.imageURL,
+        },
+        meta: { source: 'website', path: '/hotel-quote' }
       } : {
         type: 'quote',
         customer: {

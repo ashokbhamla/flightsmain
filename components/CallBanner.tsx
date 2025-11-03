@@ -3,8 +3,11 @@
 import React from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import PhoneInTalkRoundedIcon from '@mui/icons-material/PhoneInTalkRounded';
+import { usePathname } from 'next/navigation';
 
 export default function CallBanner() {
+  const pathname = usePathname();
+  const isHotels = typeof pathname === 'string' && (pathname.includes('/airport-hotels') || pathname.includes('/hotel-quote'));
   const phone = '(888) 319-6206';
   const telHref = 'tel:+18883196206';
 
@@ -31,8 +34,9 @@ export default function CallBanner() {
         overflow: 'hidden',
         color: 'white',
         // Hero-like background with subtle texture
-        backgroundImage:
-          'linear-gradient( to bottom, rgba(15,23,42,.85), rgba(15,23,42,.85) ), url(https://images.unsplash.com/photo-1536922246289-88c42f957773?q=80&w=1600&auto=format&fit=crop)',
+        backgroundImage: isHotels
+          ? 'linear-gradient( to bottom, rgba(15,23,42,.85), rgba(15,23,42,.85) ), url(https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1600&auto=format&fit=crop)'
+          : 'linear-gradient( to bottom, rgba(15,23,42,.85), rgba(15,23,42,.85) ), url(https://images.unsplash.com/photo-1536922246289-88c42f957773?q=80&w=1600&auto=format&fit=crop)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         px: { xs: 2, md: 6 },
@@ -51,7 +55,11 @@ export default function CallBanner() {
               fontSize: { xs: '1.8rem', sm: '2.6rem', md: '3.2rem' },
             }}
           >
-            UP TO <Box component="span" sx={{ color: '#22c55e' }}>10% OFF</Box>
+            {isHotels ? (
+              <>UP TO <Box component="span" sx={{ color: '#22c55e' }}>30% OFF</Box></>
+            ) : (
+              <>UP TO <Box component="span" sx={{ color: '#22c55e' }}>10% OFF</Box></>
+            )}
           </Typography>
           <Typography
             component="div"
@@ -62,10 +70,10 @@ export default function CallBanner() {
               fontSize: { xs: '1rem', sm: '1.3rem', md: '1.6rem' },
             }}
           >
-            FURTHER REDUCTIONS • AIRLINES RESERVATION
+            {isHotels ? 'UNPUBLISHED HOTEL PRICES • GROUP HOTEL DISCOUNTS' : 'FURTHER REDUCTIONS • AIRLINES RESERVATION'}
           </Typography>
           <Typography sx={{ mt: 1, color: 'rgba(255,255,255,.85)', fontSize: { xs: '.85rem', md: '.95rem' } }}>
-            Tap to call our agents for exclusive fares. 24/7 assistance.
+            {isHotels ? 'Tap to call our agents for exclusive hotel deals. 24/7 assistance.' : 'Tap to call our agents for exclusive fares. 24/7 assistance.'}
           </Typography>
         </Box>
         <Button
