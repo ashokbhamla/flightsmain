@@ -9,7 +9,7 @@ export default function CallBanner() {
   useEffect(() => {
     try {
       const p = typeof window !== 'undefined' ? window.location.pathname : '';
-      setIsHotels(Boolean(p && (p.includes('/airport-hotels') || p.includes('/hotel-quote'))));
+      setIsHotels(Boolean(p && (p.includes('/airport-hotels') || p.includes('/hotel-quote') || p.includes('/hotels') || p.includes('/hotel/'))));
     } catch {}
   }, []);
   const phone = '(888) 319-6206';

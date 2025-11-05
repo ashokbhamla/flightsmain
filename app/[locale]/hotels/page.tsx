@@ -28,18 +28,18 @@ export const metadata: Metadata = {
 };
 
 const popularAirports = [
-  { code: 'lax', name: 'Los Angeles International Airport', city: 'Los Angeles, CA' },
-  { code: 'jfk', name: 'John F. Kennedy International Airport', city: 'New York, NY' },
-  { code: 'atl', name: 'Hartsfield-Jackson Atlanta International Airport', city: 'Atlanta, GA' },
-  { code: 'ord', name: 'O\'Hare International Airport', city: 'Chicago, IL' },
-  { code: 'dfw', name: 'Dallas/Fort Worth International Airport', city: 'Dallas, TX' },
-  { code: 'den', name: 'Denver International Airport', city: 'Denver, CO' },
-  { code: 'sfo', name: 'San Francisco International Airport', city: 'San Francisco, CA' },
-  { code: 'las', name: 'McCarran International Airport', city: 'Las Vegas, NV' },
-  { code: 'mco', name: 'Orlando International Airport', city: 'Orlando, FL' },
-  { code: 'mia', name: 'Miami International Airport', city: 'Miami, FL' },
-  { code: 'sea', name: 'Seattle-Tacoma International Airport', city: 'Seattle, WA' },
-  { code: 'bwi', name: 'Baltimore/Washington International Airport', city: 'Baltimore, MD' }
+  { code: 'LAX', name: 'Los Angeles International Airport', city: 'Los Angeles, CA' },
+  { code: 'JFK', name: 'John F. Kennedy International Airport', city: 'New York, NY' },
+  { code: 'ATL', name: 'Hartsfield-Jackson Atlanta International Airport', city: 'Atlanta, GA' },
+  { code: 'ORD', name: "O'Hare International Airport", city: 'Chicago, IL' },
+  { code: 'DFW', name: 'Dallas/Fort Worth International Airport', city: 'Dallas, TX' },
+  { code: 'DEN', name: 'Denver International Airport', city: 'Denver, CO' },
+  { code: 'SFO', name: 'San Francisco International Airport', city: 'San Francisco, CA' },
+  { code: 'LAS', name: 'Harry Reid International Airport', city: 'Las Vegas, NV' },
+  { code: 'MCO', name: 'Orlando International Airport', city: 'Orlando, FL' },
+  { code: 'MIA', name: 'Miami International Airport', city: 'Miami, FL' },
+  { code: 'SEA', name: 'Seattle-Tacoma International Airport', city: 'Seattle, WA' },
+  { code: 'BWI', name: 'Baltimore/Washington International Thurgood Marshall Airport', city: 'Baltimore, MD' }
 ];
 
 export default function HotelsPage({ params }: { params: { locale: string } }) {
@@ -101,30 +101,36 @@ export default function HotelsPage({ params }: { params: { locale: string } }) {
                 height: '100%',
                 borderRadius: 2,
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                overflow: 'hidden',
                 transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
                 }
               }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://source.unsplash.com/600x360/?city,${encodeURIComponent(airport.city.split(',')[0])}`}
+                  alt={`${airport.city} hotels`}
+                  style={{ width: '100%', height: 180, objectFit: 'cover' }}
+                />
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: '#333', mb: 1 }}>
-                    {airport.name}
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#111827', mb: 0.5 }}>
+                    Hotels in {airport.city.split(',')[0]}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#666', mb: 3 }}>
-                    {airport.city}
+                  <Typography variant="body2" sx={{ color: '#6b7280', mb: 2 }}>
+                    Near {airport.name}
                   </Typography>
                   <Button
                     variant="contained"
                     fullWidth
-                    href={`/hotels/${airport.code}-hotels`}
+                    href={`/${locale}/airport-hotels/${airport.code}`}
                     sx={{
                       backgroundColor: '#1e3a8a',
-                      '&:hover': {
-                        backgroundColor: '#1536a3'
-                      },
+                      '&:hover': { backgroundColor: '#1536a3' },
                       borderRadius: 2,
-                      py: 1.5
+                      py: 1.25,
+                      fontWeight: 800
                     }}
                   >
                     View Hotels
