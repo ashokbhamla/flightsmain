@@ -27,6 +27,8 @@ interface AiCityContent {
   popular_hotels_blurbs?: Array<{ hotel_name: string; text: string }>;
   faqs?: Array<{ q: string; a: string }>;
   seo_keywords?: string[];
+  title?: string;
+  meta_description?: string;
 }
 
 interface CityStats {
@@ -182,7 +184,7 @@ export default async function AirportHotelsPage({ params }: { params: { locale: 
   const agodaMap = data ? await fetchAgodaPrices((data.hotels || []).map(h => h.hotel_id), checkIn, checkOut) : {};
   const city = data?.city || code.toUpperCase();
   const airport = data?.airport_iata || code.toUpperCase();
-  const pageTitle = (data?.ai_city_content as any)?.title || (data as any)?.title || `${airport} Airport Hotels in ${city} | Up to 30% Off`;
+  const pageTitle = data?.ai_city_content?.title || data?.title || `${airport} Airport Hotels in ${city} | Up to 30% Off`;
 
   return (
     <Box sx={{ minHeight: '70vh', backgroundColor: '#f8fafc' }}>
