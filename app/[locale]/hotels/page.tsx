@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { Typography, Box, Container, Grid, Card, CardContent, Button } from '@mui/material';
 import { localeFromParam } from '@/lib/i18n';
-import FlightSearchBox from '@/components/FlightSearchBox';
 
 export const metadata: Metadata = {
   title: 'Hotels Near US Airports - Find Airport Hotels in America',
@@ -55,7 +54,7 @@ export default function HotelsPage({ params }: { params: { locale: string } }) {
         overflow: 'hidden'
       }}>
         <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'left', mb: 4 }}>
+          <Box sx={{ textAlign: 'left', mb: 0 }}>
             <Typography 
               variant="h1" 
               sx={{ 
@@ -79,7 +78,6 @@ export default function HotelsPage({ params }: { params: { locale: string } }) {
               Find the best hotels near major US airports with great amenities and competitive rates
             </Typography>
           </Box>
-          <FlightSearchBox />
         </Container>
       </Box>
 
