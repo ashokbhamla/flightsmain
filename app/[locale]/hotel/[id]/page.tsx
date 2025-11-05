@@ -1,4 +1,18 @@
 import { Box, Container, Grid, Paper, Typography, Chip, Divider, Button } from '@mui/material';
+import WifiIcon from '@mui/icons-material/Wifi';
+import LocalAirportIcon from '@mui/icons-material/LocalAirport';
+import AcUnitIcon from '@mui/icons-material/AcUnit';
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
+import RoomServiceIcon from '@mui/icons-material/RoomService';
+import LocalParkingIcon from '@mui/icons-material/LocalParking';
+import PoolIcon from '@mui/icons-material/Pool';
+import SpaIcon from '@mui/icons-material/Spa';
+import RestaurantIcon from '@mui/icons-material/Restaurant';
+import LocalBarIcon from '@mui/icons-material/LocalBar';
+import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
+import LocalCafeIcon from '@mui/icons-material/LocalCafe';
+import HotTubIcon from '@mui/icons-material/HotTub';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import type { Metadata } from 'next';
 import HotelImageSlider from '@/components/HotelImageSlider';
 
@@ -137,7 +151,17 @@ export default async function HotelDetailPage({ params, searchParams }: { params
     geo: (typeof hotel.latitude === 'number' && typeof hotel.longitude === 'number') ? { '@type': 'GeoCoordinates', latitude: hotel.latitude, longitude: hotel.longitude } : undefined,
     starRating: typeof (agoda?.starRating ?? hotel.star_rating) === 'number' ? { '@type': 'Rating', ratingValue: (agoda?.starRating ?? hotel.star_rating), bestRating: 5 } : undefined,
     amenityFeature: Array.isArray(hotel.ai_content?.amenities) ? hotel.ai_content!.amenities!.map(a => ({ '@type': 'LocationFeatureSpecification', name: a })) : undefined,
-    offers: agoda?.dailyRate ? { '@type': 'Offer', price: agoda.dailyRate, priceCurrency: 'USD', availability: 'https://schema.org/InStock' } : undefined,
+    makesOffer: agoda?.dailyRate ? [{
+      '@type': 'Offer',
+      price: agoda.dailyRate,
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+      url: hotel.url || undefined,
+      itemOffered: {
+        '@type': 'HotelRoom',
+        name: `${hotel.hotel_name} Room`,
+      },
+    }] : undefined,
   } : null;
 
   const jsonLdFaq = Array.isArray(hotel?.ai_content?.faqs) && hotel!.ai_content!.faqs!.length > 0 ? {
@@ -185,6 +209,41 @@ export default async function HotelDetailPage({ params, searchParams }: { params
                 <Typography color="text.secondary">{hotel.ai_content.description}</Typography>
               )}
             </Paper>
+
+            {/* Highlights */}
+            {Array.isArray(hotel?.ai_content?.amenities) && hotel!.ai_content!.amenities!.length > 0 && (
+              <Paper sx={{ p: 2, mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>Highlights</Typography>
+                <Grid container spacing={2}>
+                  {hotel!.ai_content!.amenities!.slice(0, 8).map((a, i) => {
+                    const label = a.toLowerCase();
+                    const Icon = label.includes('wifi') ? WifiIcon
+                      : label.includes('airport') || label.includes('transfer') ? LocalAirportIcon
+                      : label.includes('air') && label.includes('conditioning') ? AcUnitIcon
+                      : label.includes('housekeeping') ? CleaningServicesIcon
+                      : label.includes('room service') ? RoomServiceIcon
+                      : label.includes('parking') ? LocalParkingIcon
+                      : label.includes('pool') ? PoolIcon
+                      : label.includes('spa') ? SpaIcon
+                      : label.includes('restaurant') ? RestaurantIcon
+                      : label.includes('bar') ? LocalBarIcon
+                      : label.includes('family') ? FamilyRestroomIcon
+                      : label.includes('coffee') || label.includes('breakfast') ? LocalCafeIcon
+                      : label.includes('hot tub') ? HotTubIcon
+                      : label.includes('fitness') || label.includes('gym') ? FitnessCenterIcon
+                      : null;
+                    return (
+                      <Grid item xs={6} sm={4} key={i}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {Icon ? <Icon fontSize="small" /> : <Chip size="small" label={''} sx={{ visibility: 'hidden' }} />}
+                          <Typography variant="body2">{a}</Typography>
+                        </Box>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              </Paper>
+            )}
 
             {Array.isArray(hotel?.ai_content?.amenities) && hotel!.ai_content!.amenities!.length > 0 && (
               <Paper sx={{ p: 2, mb: 2 }}>

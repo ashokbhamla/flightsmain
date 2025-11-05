@@ -2,6 +2,14 @@ import { Box, Container, Grid, Card, CardContent, CardActions, Typography, Butto
 import type { Metadata } from 'next';
 import HotelImageSlider from '@/components/HotelImageSlider';
 
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')</n+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -283,7 +291,7 @@ export default async function AirportHotelsPage({ params }: { params: { locale: 
                   <CardContent sx={{ flexGrow: 1 }}>
                     <HotelImageSlider images={gallery} alt={h.hotel_name} height={220} />
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-                      <a href={`/${locale || 'en'}/hotel/${h.hotel_id}?iata=${encodeURIComponent(code)}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                      <a href={`/${locale || 'en'}/hotel/${slugify(`${h.hotel_name} ${h.city || data.city}`)}/${h.hotel_id}?iata=${encodeURIComponent(code)}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                         {h.hotel_name}
                       </a>
                     </Typography>
@@ -339,9 +347,9 @@ export default async function AirportHotelsPage({ params }: { params: { locale: 
                       variant="outlined"
                       color="primary"
                       sx={{ flex: 1, fontWeight: 800 }}
-                      href={`/${locale || 'en'}/hotel-quote?hid=${encodeURIComponent(String(h.hotel_id))}&name=${encodeURIComponent(h.hotel_name)}&price=${encodeURIComponent(String(a?.dailyRate || ''))}&currency=${encodeURIComponent(a?.currency || 'USD')}&checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&iata=${encodeURIComponent(code)}&img=${encodeURIComponent(a?.imageURL || '')}`}
+                      href={`/${locale || 'en'}/hotel/${slugify(`${h.hotel_name} ${h.city || data.city}`)}/${h.hotel_id}?iata=${encodeURIComponent(code)}`}
                     >
-                      Get Quote
+                      Details
                     </Button>
                   </CardActions>
                 </Card>
@@ -435,8 +443,8 @@ export default async function AirportHotelsPage({ params }: { params: { locale: 
                           )}
                         </CardContent>
                         <CardActions sx={{ p: 2, pt: 0 }}>
-                          <Button variant="outlined" size="small" sx={{ fontWeight: 700 }} href={`/${locale || 'en'}/hotel-quote?hid=${encodeURIComponent(String(p.hotel_id))}&name=${encodeURIComponent(p.hotel_name)}&currency=USD&iata=${encodeURIComponent(code)}`}>
-                            Get Quote
+                          <Button variant="outlined" size="small" sx={{ fontWeight: 700 }} href={`/${locale || 'en'}/hotel/${slugify(`${p.hotel_name} ${data.city}`)}/${p.hotel_id}?iata=${encodeURIComponent(code)}`}>
+                            Details
                           </Button>
                           <Button variant="contained" size="small" color="success" sx={{ fontWeight: 700 }} href={'tel:+18883196206'}>
                             Call Now
