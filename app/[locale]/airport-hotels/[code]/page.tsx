@@ -283,7 +283,9 @@ export default async function AirportHotelsPage({ params }: { params: { locale: 
                   <CardContent sx={{ flexGrow: 1 }}>
                     <HotelImageSlider images={gallery} alt={h.hotel_name} height={220} />
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-                      {h.hotel_name}
+                      <a href={`/${locale || 'en'}/hotel/${h.hotel_id}?iata=${encodeURIComponent(code)}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                        {h.hotel_name}
+                      </a>
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
                       {typeof (a?.starRating ?? h.star_rating) === 'number' && (
