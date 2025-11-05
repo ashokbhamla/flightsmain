@@ -1,4 +1,4 @@
-import Page from '@/app/[locale]/hotel/[id]/page';
+import Page from '@/app/[locale]/hotel/[slug]/[id]/page';
 export default Page as any;
 
 
