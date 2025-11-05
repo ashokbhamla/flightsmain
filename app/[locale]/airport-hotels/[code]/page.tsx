@@ -247,7 +247,7 @@ export default async function AirportHotelsPage({ params }: { params: { locale: 
           />
         )}
         <Box sx={{ mb: 3, textAlign: 'center' }}>
-          <Typography component="h2" variant="h4" sx={{ fontWeight: 800 }}>
+          <Typography component="h1" variant="h4" sx={{ fontWeight: 800 }}>
             {pageTitle}
           </Typography>
           {data && (
