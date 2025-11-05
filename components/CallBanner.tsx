@@ -1,13 +1,17 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import PhoneInTalkRoundedIcon from '@mui/icons-material/PhoneInTalkRounded';
-import { usePathname } from 'next/navigation';
 
 export default function CallBanner() {
-  const pathname = usePathname();
-  const isHotels = typeof pathname === 'string' && (pathname.includes('/airport-hotels') || pathname.includes('/hotel-quote'));
+  const [isHotels, setIsHotels] = useState(false);
+  useEffect(() => {
+    try {
+      const p = typeof window !== 'undefined' ? window.location.pathname : '';
+      setIsHotels(Boolean(p && (p.includes('/airport-hotels') || p.includes('/hotel-quote'))));
+    } catch {}
+  }, []);
   const phone = '(888) 319-6206';
   const telHref = 'tel:+18883196206';
 
@@ -70,10 +74,10 @@ export default function CallBanner() {
               fontSize: { xs: '1rem', sm: '1.3rem', md: '1.6rem' },
             }}
           >
-            {isHotels ? 'UNPUBLISHED HOTEL PRICES • GROUP HOTEL DISCOUNTS' : 'FURTHER REDUCTIONS • AIRLINES RESERVATION'}
+            {isHotels ? 'ROMANTIC HOTELS • GROUP HOTEL BOOKING 30% OFF' : 'FURTHER REDUCTIONS • AIRLINES RESERVATION'}
           </Typography>
           <Typography sx={{ mt: 1, color: 'rgba(255,255,255,.85)', fontSize: { xs: '.85rem', md: '.95rem' } }}>
-            {isHotels ? 'Tap to call our agents for exclusive hotel deals. 24/7 assistance.' : 'Tap to call our agents for exclusive fares. 24/7 assistance.'}
+            {isHotels ? 'Tap to call our agents for exclusive romantic & group hotel deals. 24/7 assistance.' : 'Tap to call our agents for exclusive fares. 24/7 assistance.'}
           </Typography>
         </Box>
         <Button
