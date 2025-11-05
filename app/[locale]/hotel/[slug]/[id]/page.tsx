@@ -254,6 +254,54 @@ export default async function HotelDetailPage({ params, searchParams }: { params
               </Paper>
             )}
 
+            {/* Time & season sections */}
+            {(hotel?.ai_content?.best_months || hotel?.ai_content?.cheapest_time || hotel?.ai_content?.peak_season) && (
+              <Paper sx={{ p: 2, mb: 2 }}>
+                <Grid container spacing={2}>
+                  {hotel?.ai_content?.best_months && (
+                    <Grid item xs={12} md={4}>
+                      <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5 }}>Best months</Typography>
+                      <Typography color="text.secondary">{hotel.ai_content!.best_months}</Typography>
+                    </Grid>
+                  )}
+                  {hotel?.ai_content?.cheapest_time && (
+                    <Grid item xs={12} md={4}>
+                      <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5 }}>Cheapest time</Typography>
+                      <Typography color="text.secondary">{hotel.ai_content!.cheapest_time}</Typography>
+                    </Grid>
+                  )}
+                  {hotel?.ai_content?.peak_season && (
+                    <Grid item xs={12} md={4}>
+                      <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5 }}>Peak season</Typography>
+                      <Typography color="text.secondary">{hotel.ai_content!.peak_season}</Typography>
+                    </Grid>
+                  )}
+                </Grid>
+              </Paper>
+            )}
+
+            {/* Transportation */}
+            {hotel?.ai_content?.transportation && (
+              <Paper sx={{ p: 2, mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>Transportation</Typography>
+                <Box sx={{ display: 'grid', gap: 0.5 }}>
+                  {hotel.ai_content.transportation.distance_from_airport_text && (
+                    <Typography color="text.secondary">{hotel.ai_content.transportation.distance_from_airport_text}</Typography>
+                  )}
+                  {hotel.ai_content.transportation.travel_time_text && (
+                    <Typography color="text.secondary">{hotel.ai_content.transportation.travel_time_text}</Typography>
+                  )}
+                </Box>
+                {Array.isArray(hotel.ai_content.transportation.options) && hotel.ai_content.transportation.options.length > 0 && (
+                  <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {hotel.ai_content.transportation.options.map((o, i) => (
+                      <Chip key={i} variant="outlined" label={o} />
+                    ))}
+                  </Box>
+                )}
+              </Paper>
+            )}
+
             {Array.isArray(hotel?.ai_content?.places_to_visit) && hotel!.ai_content!.places_to_visit!.length > 0 && (
               <Paper sx={{ p: 2, mb: 2 }}>
                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>Nearby places</Typography>
@@ -262,6 +310,25 @@ export default async function HotelDetailPage({ params, searchParams }: { params
                     <Typography key={i} color="text.secondary">• {p.name}{p.type ? ` (${p.type})` : ''}{p.note ? ` — ${p.note}` : ''}</Typography>
                   ))}
                 </Box>
+              </Paper>
+            )}
+
+            {/* Reviews */}
+            {Array.isArray(hotel?.ai_content?.reviews) && hotel!.ai_content!.reviews!.length > 0 && (
+              <Paper sx={{ p: 2, mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>Reviews</Typography>
+                <Grid container spacing={1.5}>
+                  {hotel!.ai_content!.reviews!.slice(0, 8).map((r, i) => (
+                    <Grid key={i} item xs={12} sm={6}>
+                      <Paper variant="outlined" sx={{ p: 1.5 }}>
+                        <Typography sx={{ fontWeight: 700, mb: 0.5 }}>{r.title || 'Review'}</Typography>
+                        {typeof r.rating === 'number' && (<Chip size="small" color="primary" label={r.rating.toFixed(1)} sx={{ mr: 1 }} />)}
+                        {r.theme && (<Chip size="small" label={r.theme} />)}
+                        {r.snippet && (<Typography color="text.secondary" sx={{ mt: 0.5 }}>{r.snippet}</Typography>)}
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
               </Paper>
             )}
 
@@ -296,6 +363,24 @@ export default async function HotelDetailPage({ params, searchParams }: { params
               <Button fullWidth variant="contained" color="success" href={'tel:+18883196206'} sx={{ fontWeight: 800, mb: 1 }}>Call (888) 319-6206</Button>
               <Button fullWidth variant="outlined" href={`/${params.locale || 'en'}/hotel-quote?hid=${encodeURIComponent(String(id))}&name=${encodeURIComponent(hotel?.hotel_name || '')}&price=${encodeURIComponent(String(agoda?.dailyRate || ''))}&currency=USD&checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&iata=${encodeURIComponent(iata)}&img=${encodeURIComponent(agoda?.imageURL || '')}`} sx={{ fontWeight: 800 }}>Get Quote</Button>
             </Paper>
+
+            {/* Map */}
+            {(typeof hotel?.latitude === 'number' && typeof hotel?.longitude === 'number') && (
+              <Paper sx={{ p: 0, mt: 2, overflow: 'hidden' }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, p: 2, pb: 0 }}>Location map</Typography>
+                {(() => {
+                  const lat = hotel!.latitude as number;
+                  const lon = hotel!.longitude as number;
+                  const bbox = `${(lon - 0.05).toFixed(6)}%2C${(lat - 0.05).toFixed(6)}%2C${(lon + 0.05).toFixed(6)}%2C${(lat + 0.05).toFixed(6)}`;
+                  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lon}`;
+                  return (
+                    <Box sx={{ width: '100%', height: 280 }}>
+                      <iframe title="map" src={src} style={{ border: 0, width: '100%', height: '100%' }} />
+                    </Box>
+                  );
+                })()}
+              </Paper>
+            )}
           </Grid>
         </Grid>
       </Container>
