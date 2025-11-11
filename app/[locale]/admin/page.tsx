@@ -52,7 +52,9 @@ export default function AdminPage() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/admin/settings');
+      const response = await fetch('/api/admin/settings', {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data = await response.json();
         setSettings({ ...defaultSettings, ...data });
@@ -73,6 +75,7 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ username, password }),
       });
 
@@ -92,7 +95,7 @@ export default function AdminPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/admin/logout', { method: 'POST' });
+      await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
       setIsAuthenticated(false);
       setUsername('');
       setPassword('');
@@ -109,6 +112,7 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(settings),
       });
 

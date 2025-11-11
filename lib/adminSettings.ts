@@ -9,6 +9,7 @@ export interface AdminSettings {
 }
 
 const REDIS_KEY = 'admin:settings';
+const GLOBAL_KEY = '__ADMIN_SETTINGS__';
 
 const DEFAULT_SETTINGS: AdminSettings = {
   flightPopupEnabled: true,
@@ -18,8 +19,6 @@ const DEFAULT_SETTINGS: AdminSettings = {
   leadPageEnabled: false,
 };
 
-let inMemoryCache: AdminSettings | null = null;
-
 function mergeWithDefaults(partial?: Partial<AdminSettings>): AdminSettings {
   return {
     ...DEFAULT_SETTINGS,
@@ -28,8 +27,8 @@ function mergeWithDefaults(partial?: Partial<AdminSettings>): AdminSettings {
 }
 
 export async function getAdminSettings(): Promise<AdminSettings> {
-  if (inMemoryCache) {
-    return inMemoryCache;
+  if ((globalThis as any)[GLOBAL_KEY]) {
+    return mergeWithDefaults((globalThis as any)[GLOBAL_KEY]);
   }
 
   try {
@@ -40,15 +39,16 @@ export async function getAdminSettings(): Promise<AdminSettings> {
     const stored = await redisClient.get(REDIS_KEY);
     if (stored) {
       const parsed = JSON.parse(stored) as Partial<AdminSettings>;
-      inMemoryCache = mergeWithDefaults(parsed);
-      return inMemoryCache;
+      const merged = mergeWithDefaults(parsed);
+      (globalThis as any)[GLOBAL_KEY] = merged;
+      return merged;
     }
   } catch (error) {
     console.error('Failed to load admin settings from Redis:', error);
   }
 
-  inMemoryCache = DEFAULT_SETTINGS;
-  return inMemoryCache;
+  (globalThis as any)[GLOBAL_KEY] = DEFAULT_SETTINGS;
+  return DEFAULT_SETTINGS;
 }
 
 export async function updateAdminSettings(partial: Partial<AdminSettings>): Promise<AdminSettings> {
@@ -61,7 +61,7 @@ export async function updateAdminSettings(partial: Partial<AdminSettings>): Prom
     return { ...acc, [key]: value };
   }, current);
 
-  inMemoryCache = updated;
+  (globalThis as any)[GLOBAL_KEY] = updated;
 
   try {
     if (!redisClient.isOpen) {
