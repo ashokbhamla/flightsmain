@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   Box,
   Container,
@@ -24,6 +24,17 @@ interface LeadPageContentProps {
 }
 
 export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPageContentProps) {
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    document.body.classList.add('lead-page-active');
+    return () => {
+      document.body.classList.remove('lead-page-active');
+    };
+  }, []);
+
   const normalizedPhone = useMemo(() => {
     if (!phoneNumber) {
       return '(888) 319-6206';
@@ -31,51 +42,91 @@ export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPa
     const trimmed = phoneNumber.trim();
     const digitsOnly = trimmed.replace(/[^\d+]/g, '');
     if (!digitsOnly) {
-      return '+1 (877) 290-1852';
+      return '(888) 319-6206';
     }
-    return digitsOnly.startsWith('+') ? digitsOnly : `+${digitsOnly}`;
+    return trimmed;
   }, [phoneNumber]);
 
   const telHref = useMemo(() => {
-    const clean = normalizedPhone.replace(/\s+/g, '');
-    return `tel:${clean}`;
+    const digits = normalizedPhone.replace(/\D/g, '');
+    if (!digits) {
+      return 'tel:+18883196206';
+    }
+    if (digits.length === 11 && digits.startsWith('1')) {
+      return `tel:+${digits}`;
+    }
+    if (digits.length === 10) {
+      return `tel:+1${digits}`;
+    }
+    return `tel:+${digits}`;
   }, [normalizedPhone]);
 
   const entries = [
     {
-      title: 'Call Expedia | 24/7 Customer Support | Call Now',
+      title: 'Delta Airlines Refund & Ticket Change Desk',
       description:
-        'Easy flight ticket booking, ticket changes, and cancellations over the call. Talk to an expert travel agent right away.',
-      tags: ['Book Flights', 'Ticket Changes', 'Cancellations'],
+        'Talk to a certified Delta specialist for refunds, rebooking, and same-day travel support. We fix companion tickets and irregular ops fast.',
+      tags: ['24/7 Agents', 'Same-Day Changes', 'SkyMiles Support'],
+      displayUrl: 'www.delta.com › customer-support',
+      cta: 'Call Delta Desk',
     },
     {
-      title: 'Expedia Flight Booking Desk | Call Now',
+      title: 'American Airlines Booking & Support Hotline',
       description:
-        'Book your flight, change itineraries, or get assistance with cancellations instantly from our dedicated desk.',
-      tags: ['Book Flights', 'Manage Trips', 'Refund Assistance'],
+        'Book new trips, unlock AAdvantage upgrades, or change an existing ticket with an American Airlines expert in minutes.',
+      tags: ['AAdvantage', 'Web-Only Fares', 'Trip Credits'],
+      displayUrl: 'www.aa.com › help-center',
+      cta: 'Call American Desk',
     },
     {
-      title: 'Call Expedia | 24/7 Customer Support | Call Now',
+      title: 'United Airlines Flight Change Center',
       description:
-        '24/7 award-winning support for new bookings and existing reservations. Skip hold times and speak with a specialist.',
-      tags: ['24/7 Support', 'Live Agents', 'Best Deals'],
+        'Need to move a United flight? We handle Basic Economy upgrades, award itinerary changes, and travel waivers 24/7.',
+      tags: ['MileagePlus', 'Travel Waiver Help', 'Rebooking'],
+      displayUrl: 'www.united.com › manage-reservation',
+      cta: 'Call United Desk',
     },
     {
-      title: 'Call 1800 Expedia | Customer Support Number | Flight Ticket On Call',
+      title: 'Southwest Airlines Same-Day Change Desk',
       description:
-        'Fast and reliable assistance for urgent travel. Secure exclusive deals by speaking to our travel experts.',
-      tags: ['Exclusive Deals', 'Instant Quotes', 'Priority Service'],
+        'Switch Wanna Get Away fares, standby earlier flights, or cancel for credits with Rapid Rewards specialists on the line.',
+      tags: ['No Change Fees', 'Rapid Rewards', 'Standby Help'],
+      displayUrl: 'www.southwest.com › change-flight',
+      cta: 'Call Southwest Desk',
+    },
+    {
+      title: 'Qatar Airways Premium Service Line',
+      description:
+        'Manage multi-city journeys, refund claims, and Qsuite upgrades with Qatar Airways concierge agents.',
+      tags: ['Business Class', 'Upgrade Requests', 'Refund Desk'],
+      displayUrl: 'www.qatarairways.com › contact',
+      cta: 'Call Qatar Desk',
+    },
+    {
+      title: 'British Airways Refund & Travel Credit Team',
+      description:
+        'Resolve British Airways cancellation vouchers, Avios bookings, and schedule changes with dedicated BA support.',
+      tags: ['Avios Support', 'Travel Credits', 'Refund Experts'],
+      displayUrl: 'www.britishairways.com › customer-service',
+      cta: 'Call British Desk',
     },
   ];
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f1f5f9', py: { xs: 6, md: 8 } }}>
-      <Container maxWidth="md">
-        <Paper
+    <>
+      <style jsx global>{`
+        body.lead-page-active header.MuiAppBar-root,
+        body.lead-page-active [data-call-banner] {
+          display: none !important;
+        }
+      `}</style>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#f1f5f9', py: { xs: 6, md: 8 } }}>
+        <Container maxWidth="md">
+          <Paper
           elevation={6}
           sx={{
             p: { xs: 3, md: 5 },
-            borderRadius: 4,
+            borderRadius: '4px',
             background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)',
             color: 'white',
             textAlign: 'center',
@@ -122,7 +173,7 @@ export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPa
           sx={{
             p: { xs: 2.5, md: 3 },
             mb: { xs: 3, md: 4 },
-            borderRadius: 3,
+            borderRadius: '4px',
             border: '1px solid',
             borderColor: 'rgba(15,23,42,0.1)',
             bgcolor: 'white',
@@ -151,19 +202,44 @@ export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPa
           {entries.map((entry, index) => (
             <Paper
               key={`${entry.title}-${index}`}
+              component="a"
+              href={telHref}
               elevation={0}
               sx={{
                 p: { xs: 2.5, md: 3 },
-                borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'rgba(15,23,42,0.12)',
+                borderRadius: '4px',
+                border: '1px solid #d9e2f1',
                 bgcolor: 'white',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 2,
+                boxShadow: '0 3px 12px rgba(15, 23, 42, 0.08)',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                '&:hover': {
+                  boxShadow: '0 12px 24px rgba(15, 23, 42, 0.18)',
+                  transform: 'translateY(-2px)',
+                },
               }}
             >
               <Box>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ color: '#475569', mb: 1 }}>
+                  <Chip
+                    label="Ad"
+                    size="small"
+                    sx={{
+                      bgcolor: '#e2e8f0',
+                      color: '#0f172a',
+                      fontWeight: 600,
+                      height: 20,
+                      '& .MuiChip-label': { px: 1 },
+                    }}
+                  />
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {entry.displayUrl}
+                  </Typography>
+                </Stack>
                 <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', mb: 0.5 }}>
                   {entry.title}
                 </Typography>
@@ -199,25 +275,38 @@ export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPa
                   <PhoneIcon fontSize="small" />
                   {normalizedPhone}
                 </Typography>
-                <Button
-                  component="a"
-                  href={telHref}
-                  variant="contained"
-                  endIcon={<ArrowForwardIcon />}
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
                   sx={{
                     alignSelf: { xs: 'stretch', sm: 'auto' },
+                    backgroundColor: '#1e3a8a',
+                    color: '#ffffff',
+                    borderRadius: '999px',
+                    px: 2.5,
+                    py: 1,
                     fontWeight: 600,
+                    justifyContent: 'center',
                     textTransform: 'none',
+                    transition: 'background-color 0.15s ease',
+                    '&:hover': {
+                      backgroundColor: '#172554',
+                    },
                   }}
                 >
-                  Call Now
-                </Button>
+                  <Typography component="span" sx={{ fontWeight: 600 }}>
+                    {entry.cta || 'Call Now'}
+                  </Typography>
+                  <ArrowForwardIcon fontSize="small" />
+                </Stack>
               </Stack>
             </Paper>
           ))}
         </Stack>
       </Container>
     </Box>
+    </>
   );
 }
 

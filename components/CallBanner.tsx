@@ -33,6 +33,7 @@ export default function CallBanner() {
 
   return (
     <Box
+      data-call-banner
       sx={{
         position: 'relative',
         overflow: 'hidden',
