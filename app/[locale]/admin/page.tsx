@@ -24,19 +24,23 @@ interface Settings {
   bookingPopupEnabled: boolean;
   overlayEnabled: boolean;
   phoneNumber: string;
+  leadPageEnabled: boolean;
 }
+
+const defaultSettings: Settings = {
+  flightPopupEnabled: true,
+  bookingPopupEnabled: true,
+  overlayEnabled: true,
+  phoneNumber: '(888) 319-6206',
+  leadPageEnabled: false,
+};
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
-  const [settings, setSettings] = useState<Settings>({
-    flightPopupEnabled: true,
-    bookingPopupEnabled: true,
-    overlayEnabled: true,
-    phoneNumber: '+1 (855) 921-4888',
-  });
+  const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [saveMessage, setSaveMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,7 +55,7 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/settings');
       if (response.ok) {
         const data = await response.json();
-        setSettings(data);
+        setSettings({ ...defaultSettings, ...data });
       } else {
         setIsAuthenticated(false);
       }
@@ -202,6 +206,32 @@ export default function AdminPage() {
         <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
           Popup Controls
         </Typography>
+
+        <Card sx={{ mb: 3, backgroundColor: '#f5f5f5' }}>
+          <CardContent>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={settings.leadPageEnabled}
+                  onChange={(e) =>
+                    setSettings({ ...settings, leadPageEnabled: e.target.checked })
+                  }
+                  color="primary"
+                />
+              }
+              label={
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Lead Capture Homepage
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Replaces the standard homepage with the high-converting lead page
+                  </Typography>
+                </Box>
+              }
+            />
+          </CardContent>
+        </Card>
 
         <Card sx={{ mb: 3, backgroundColor: '#f5f5f5' }}>
           <CardContent>

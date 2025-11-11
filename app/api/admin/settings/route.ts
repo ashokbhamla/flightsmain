@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// In-memory storage (in production, use a database)
-const settings = {
-  flightPopupEnabled: true,
-  bookingPopupEnabled: true,
-  overlayEnabled: true,
-  phoneNumber: '+1 (855) 921-4888',
-};
+import { getAdminSettings, updateAdminSettings } from '@/lib/adminSettings';
 
 // Simple authentication check
 function isAuthenticated(request: NextRequest): boolean {
@@ -17,6 +10,7 @@ function isAuthenticated(request: NextRequest): boolean {
 // GET - Fetch current settings
 export async function GET(request: NextRequest) {
   const isPublic = request.nextUrl.searchParams.get('public') === 'true';
+  const settings = getAdminSettings();
   
   if (!isPublic && !isAuthenticated(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -33,20 +27,23 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    
-    // Update settings
-    if (typeof body.flightPopupEnabled === 'boolean') {
-      settings.flightPopupEnabled = body.flightPopupEnabled;
-    }
-    if (typeof body.bookingPopupEnabled === 'boolean') {
-      settings.bookingPopupEnabled = body.bookingPopupEnabled;
-    }
-    if (typeof body.overlayEnabled === 'boolean') {
-      settings.overlayEnabled = body.overlayEnabled;
-    }
-    if (typeof body.phoneNumber === 'string') {
-      settings.phoneNumber = body.phoneNumber;
-    }
+    const settings = updateAdminSettings({
+      flightPopupEnabled: typeof body.flightPopupEnabled === 'boolean'
+        ? body.flightPopupEnabled
+        : undefined,
+      bookingPopupEnabled: typeof body.bookingPopupEnabled === 'boolean'
+        ? body.bookingPopupEnabled
+        : undefined,
+      overlayEnabled: typeof body.overlayEnabled === 'boolean'
+        ? body.overlayEnabled
+        : undefined,
+      phoneNumber: typeof body.phoneNumber === 'string'
+        ? body.phoneNumber
+        : undefined,
+      leadPageEnabled: typeof body.leadPageEnabled === 'boolean'
+        ? body.leadPageEnabled
+        : undefined,
+    });
 
     return NextResponse.json({ success: true, settings });
   } catch (error) {

@@ -27,7 +27,8 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en', u
     flightPopupEnabled: true,
     bookingPopupEnabled: true,
     overlayEnabled: true,
-    phoneNumber: '+1 (855) 921-4888',
+    phoneNumber: '(888) 319-6206',
+    leadPageEnabled: false,
   });
   const translations = useTranslations(locale as any);
 
@@ -38,7 +39,7 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en', u
         const response = await fetch('/api/admin/settings?public=true');
         if (response.ok) {
           const data = await response.json();
-          setSettings(data);
+          setSettings((prev) => ({ ...prev, ...data }));
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
