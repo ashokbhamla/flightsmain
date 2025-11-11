@@ -76,48 +76,48 @@ export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPa
     {
       title: 'Delta Airlines Refund & Ticket Change Desk',
       description:
-        'Talk to a certified Delta specialist for refunds, rebooking, and same-day travel support. We fix companion tickets and irregular ops fast.',
-      tags: ['24/7 Agents', 'Same-Day Changes', 'SkyMiles Support'],
+        'Talk to a certified Delta specialist for refunds, rebooking, new reservations, and same-day travel support. We fix companion tickets and irregular ops fast.',
+      tags: ['24/7 Agents', 'New Reservations', 'SkyMiles Support'],
       displayUrl: 'www.delta.com › customer-support',
       cta: 'Call Delta Desk',
     },
     {
       title: 'American Airlines Booking & Support Hotline',
       description:
-        'Book new trips, unlock AAdvantage upgrades, or change an existing ticket with an American Airlines expert in minutes.',
-      tags: ['AAdvantage', 'Web-Only Fares', 'Trip Credits'],
+        'Book new trips, unlock AAdvantage upgrades, change tickets, or request refunds with an American Airlines expert in minutes.',
+      tags: ['New Reservations', 'AAdvantage', 'Support Desk'],
       displayUrl: 'www.aa.com › help-center',
       cta: 'Call American Desk',
     },
     {
       title: 'United Airlines Flight Change Center',
       description:
-        'Need to move a United flight? We handle Basic Economy upgrades, award itinerary changes, and travel waivers 24/7.',
-      tags: ['MileagePlus', 'Travel Waiver Help', 'Rebooking'],
+        'Need to move or book a United flight? We handle new reservations, award itinerary changes, upgrades, and travel waivers 24/7.',
+      tags: ['MileagePlus', 'New Bookings', 'Travel Waivers'],
       displayUrl: 'www.united.com › manage-reservation',
       cta: 'Call United Desk',
     },
     {
       title: 'Southwest Airlines Same-Day Change Desk',
       description:
-        'Switch Wanna Get Away fares, standby earlier flights, or cancel for credits with Rapid Rewards specialists on the line.',
-      tags: ['No Change Fees', 'Rapid Rewards', 'Standby Help'],
+        'Switch Wanna Get Away fares, book new flights, standby earlier departures, or cancel for credits with Rapid Rewards specialists.',
+      tags: ['No Change Fees', 'Rapid Rewards', 'New Reservations'],
       displayUrl: 'www.southwest.com › change-flight',
       cta: 'Call Southwest Desk',
     },
     {
       title: 'Qatar Airways Premium Service Line',
       description:
-        'Manage multi-city journeys, refund claims, and Qsuite upgrades with Qatar Airways concierge agents.',
-      tags: ['Business Class', 'Upgrade Requests', 'Refund Desk'],
+        'Manage multi-city journeys, new Qsuite reservations, refund claims, and upgrade requests with Qatar Airways concierge agents.',
+      tags: ['Business Class', 'New Reservations', 'Refund Desk'],
       displayUrl: 'www.qatarairways.com › contact',
       cta: 'Call Qatar Desk',
     },
     {
       title: 'British Airways Refund & Travel Credit Team',
       description:
-        'Resolve British Airways cancellation vouchers, Avios bookings, and schedule changes with dedicated BA support.',
-      tags: ['Avios Support', 'Travel Credits', 'Refund Experts'],
+        'Resolve British Airways cancellations, book new flights, manage Avios bookings, and handle travel credits with dedicated BA support.',
+      tags: ['Avios Support', 'New Bookings', 'Refund Experts'],
       displayUrl: 'www.britishairways.com › customer-service',
       cta: 'Call British Desk',
     },
