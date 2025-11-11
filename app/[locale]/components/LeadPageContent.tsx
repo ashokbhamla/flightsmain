@@ -23,7 +23,7 @@ interface LeadPageContentProps {
   phoneNumber: string;
 }
 
-export default function LeadPageContent({ phoneNumber }: LeadPageContentProps) {
+export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPageContentProps) {
   const normalizedPhone = useMemo(() => {
     if (!phoneNumber) {
       return '(888) 319-6206';

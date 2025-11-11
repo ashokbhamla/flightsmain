@@ -18,7 +18,7 @@ export default async function HomePage({ params }: HomePageProps) {
   // Get user location from server-side headers
   const headersList = await headers();
   const userLocation = getLocationWithFallbacks(headersList);
-  const adminSettings = getAdminSettings();
+  const adminSettings = await getAdminSettings();
 
   if (adminSettings.leadPageEnabled) {
     return (

@@ -10,7 +10,7 @@ function isAuthenticated(request: NextRequest): boolean {
 // GET - Fetch current settings
 export async function GET(request: NextRequest) {
   const isPublic = request.nextUrl.searchParams.get('public') === 'true';
-  const settings = getAdminSettings();
+  const settings = await getAdminSettings();
   
   if (!isPublic && !isAuthenticated(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const settings = updateAdminSettings({
+    const settings = await updateAdminSettings({
       flightPopupEnabled: typeof body.flightPopupEnabled === 'boolean'
         ? body.flightPopupEnabled
         : undefined,
