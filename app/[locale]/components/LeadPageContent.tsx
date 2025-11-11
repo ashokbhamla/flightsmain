@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState, FormEvent } from 'react';
 import {
   Box,
   Container,
@@ -24,6 +24,9 @@ interface LeadPageContentProps {
 }
 
 export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPageContentProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [submittedQuery, setSubmittedQuery] = useState<string | null>(null);
+
   useEffect(() => {
     if (typeof document === 'undefined') {
       return;
@@ -61,7 +64,15 @@ export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPa
     return `tel:+${digits}`;
   }, [normalizedPhone]);
 
-  const entries = [
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed = searchTerm.trim();
+    if (trimmed) {
+      setSubmittedQuery(trimmed);
+    }
+  };
+
+  const baseEntries = [
     {
       title: 'Delta Airlines Refund & Ticket Change Desk',
       description:
@@ -111,6 +122,22 @@ export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPa
       cta: 'Call British Desk',
     },
   ];
+
+  const dynamicEntry = useMemo(() => {
+    if (!submittedQuery) return null;
+    return {
+      title: `Flight Support for “${submittedQuery}”`,
+      description:
+        `Speak to a specialist about ${submittedQuery}. We handle bookings, changes, refunds, and urgent travel needs instantly.`,
+      tags: ['24/7 Travel Desk', submittedQuery, 'Live Agent'],
+      displayUrl: 'www.airlinesmap.com › live-agent',
+      cta: 'Call For Assistance',
+    };
+  }, [submittedQuery]);
+
+  const entries = useMemo(() => {
+    return dynamicEntry ? [dynamicEntry, ...baseEntries] : baseEntries;
+  }, [dynamicEntry]);
 
   return (
     <>
@@ -179,23 +206,38 @@ export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPa
             bgcolor: 'white',
           }}
         >
-          <TextField
-            fullWidth
-            placeholder="Book your flight"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="primary" />
-                </InputAdornment>
-              ),
-              sx: {
-                borderRadius: 2,
-                '& fieldset': { border: 'none' },
-                bgcolor: '#f8fafc',
-                py: 0.5,
-              },
-            }}
-          />
+          <Box
+            component="form"
+            onSubmit={handleSearchSubmit}
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+          >
+            <TextField
+              fullWidth
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search airlines, refunds, or flight help"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="primary" />
+                  </InputAdornment>
+                ),
+                sx: {
+                  borderRadius: 2,
+                  '& fieldset': { border: 'none' },
+                  bgcolor: '#f8fafc',
+                  py: 0.5,
+                },
+              }}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{ fontWeight: 600, px: 3, textTransform: 'none' }}
+            >
+              Search
+            </Button>
+          </Box>
         </Paper>
 
         <Stack spacing={{ xs: 2.5, md: 3 }}>
