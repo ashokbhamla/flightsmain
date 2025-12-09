@@ -1,4 +1,6 @@
-import { Typography, Box, Container } from '@mui/material';
+import { Typography, Box, Container, Paper, Button, Grid } from '@mui/material';
+import PhoneIcon from '@mui/icons-material/Phone';
+import EmailIcon from '@mui/icons-material/Email';
 import { fetchPage } from '@/lib/api';
 import { Metadata } from 'next';
 import { localeFromParam } from '@/lib/i18n';
@@ -127,6 +129,76 @@ export default async function ContactUsPage({ params }: { params: { locale: stri
               >
                 {pageData?.content?.body || pageData?.meta?.description || 'Contact us for any inquiries or support.'}
               </Typography>
+            </Box>
+
+            {/* Contact Information Section */}
+            <Box sx={{ mt: 4, mb: 4 }}>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <Paper 
+                    elevation={2}
+                    sx={{ 
+                      p: 3,
+                      textAlign: 'center',
+                      backgroundColor: '#f8fafc',
+                      borderRadius: '12px'
+                    }}
+                  >
+                    <PhoneIcon sx={{ fontSize: 48, color: '#10b981', mb: 2 }} />
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                      Customer Support
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: '#666', mb: 2 }}>
+                      Available 24/7 for your travel needs
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      href="tel:+18883511711"
+                      startIcon={<PhoneIcon />}
+                      sx={{
+                        fontWeight: 700,
+                        px: 3,
+                        py: 1.5,
+                        fontSize: '1.1rem'
+                      }}
+                    >
+                      Call (888) 351-1711
+                    </Button>
+                    <Typography variant="body2" sx={{ mt: 2, color: '#666' }}>
+                      <strong>Phone:</strong> <a href="tel:+18883511711" style={{ color: '#10b981', textDecoration: 'none' }}>+1-888-351-1711</a>
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Paper 
+                    elevation={2}
+                    sx={{ 
+                      p: 3,
+                      textAlign: 'center',
+                      backgroundColor: '#f8fafc',
+                      borderRadius: '12px'
+                    }}
+                  >
+                    <EmailIcon sx={{ fontSize: 48, color: '#10b981', mb: 2 }} />
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                      Email Support
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: '#666', mb: 2 }}>
+                      Send us an email anytime
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#666' }}>
+                      <strong>Email:</strong>{' '}
+                      <a 
+                        href={`mailto:${process.env.NEXT_PUBLIC_COMPANY_EMAIL || 'support@airlinesmap.com'}`}
+                        style={{ color: '#10b981', textDecoration: 'none' }}
+                      >
+                        {process.env.NEXT_PUBLIC_COMPANY_EMAIL || 'support@airlinesmap.com'}
+                      </a>
+                    </Typography>
+                  </Paper>
+                </Grid>
+              </Grid>
             </Box>
           </>
         )}
