@@ -44,6 +44,9 @@ export default function SmartCallBanner() {
 
   return (
     <Box
+      component="a"
+      href={telHref}
+      onClick={handleClick}
       sx={{
         width: '100%',
         minHeight: { xs: '100vh', md: '90vh' },
@@ -55,6 +58,12 @@ export default function SmartCallBanner() {
         py: { xs: 4, md: 6 },
         px: { xs: 2, md: 0 },
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+        cursor: 'pointer',
+        textDecoration: 'none',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          boxShadow: '0 8px 30px rgba(0, 0, 0, 0.25)',
+        },
       }}
     >
       {/* Plane Background Image - Using SVG/Unicode */}
@@ -116,7 +125,16 @@ export default function SmartCallBanner() {
         }}
       />
 
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, width: '100%' }}>
+      <Container 
+        maxWidth="lg" 
+        sx={{ 
+          position: 'relative', 
+          zIndex: 1, 
+          width: '100%',
+          pointerEvents: 'none',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <Grid container spacing={4} alignItems="center">
           {/* Left side - Content */}
           <Grid item xs={12} md={7}>
@@ -241,7 +259,14 @@ export default function SmartCallBanner() {
               </Box>
 
               {/* Highlighted Call to Action */}
-              <Box sx={{ position: 'relative', mb: 3 }}>
+              <Box 
+                sx={{ 
+                  position: 'relative', 
+                  mb: 3,
+                  pointerEvents: 'none',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Box
                   sx={{
                     position: 'absolute',
@@ -262,7 +287,10 @@ export default function SmartCallBanner() {
                   }}
                 />
                 <Button
-                  onClick={handleClick}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleClick();
+                  }}
                   href={telHref}
                   variant="contained"
                   size="large"
@@ -280,6 +308,7 @@ export default function SmartCallBanner() {
                     boxShadow: '0 12px 40px rgba(34, 197, 94, 0.6), 0 0 30px rgba(34, 197, 94, 0.4)',
                     textTransform: 'none',
                     border: '3px solid rgba(255, 255, 255, 0.3)',
+                    pointerEvents: 'auto',
                     '&:hover': {
                       backgroundColor: '#16a34a',
                       boxShadow: '0 16px 50px rgba(34, 197, 94, 0.7), 0 0 40px rgba(34, 197, 94, 0.5)',
