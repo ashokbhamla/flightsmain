@@ -20,6 +20,7 @@ import {
   Star
 } from '@mui/icons-material';
 import FlightSearchBox from '../../../components/FlightSearchBox';
+import SmartCallBanner from '@/components/SmartCallBanner';
 import { Locale } from '@/lib/i18n';
 import { UserLocation } from '@/lib/geoip';
 import { getHomepageCards } from '@/lib/api';
@@ -257,6 +258,9 @@ export default function HomePageContent({ locale, userLocation }: HomePageConten
 
   return (
     <Box>
+      {/* Smart Call Banner */}
+      <SmartCallBanner />
+
       {/* Hero Section with Flight Search - Matching Image Design */}
       <Box sx={{ 
         background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
