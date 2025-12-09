@@ -263,6 +263,7 @@ export default function SmartCallBanner() {
                   position: 'relative', 
                   mb: 3,
                   pointerEvents: 'none',
+                  width: { xs: '100%', md: 'auto' },
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
@@ -273,7 +274,7 @@ export default function SmartCallBanner() {
                     left: '-10px',
                     right: '-10px',
                     bottom: '-10px',
-                    background: 'linear-gradient(45deg, #22c55e, #10b981, #22c55e)',
+                    background: 'linear-gradient(45deg, #ef4444, #dc2626, #ef4444)',
                     borderRadius: '20px',
                     opacity: 0.3,
                     filter: 'blur(20px)',
@@ -293,31 +294,33 @@ export default function SmartCallBanner() {
                   href={telHref}
                   variant="contained"
                   size="large"
-                  startIcon={<PhoneIcon sx={{ fontSize: 36 }} />}
+                  fullWidth={{ xs: true, md: false }}
+                  startIcon={<PhoneIcon sx={{ fontSize: { xs: 28, md: 36 } }} />}
                   sx={{
                     position: 'relative',
                     zIndex: 1,
-                    backgroundColor: '#22c55e',
+                    backgroundColor: '#ef4444',
                     color: 'white',
                     fontWeight: 900,
-                    fontSize: { xs: '1.4rem', md: '1.8rem' },
-                    px: { xs: 6, md: 8 },
+                    fontSize: { xs: '1.3rem', md: '1.8rem' },
+                    px: { xs: 4, md: 8 },
                     py: { xs: 2.5, md: 3 },
                     borderRadius: '18px',
-                    boxShadow: '0 12px 40px rgba(34, 197, 94, 0.6), 0 0 30px rgba(34, 197, 94, 0.4)',
+                    boxShadow: '0 12px 40px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.4)',
                     textTransform: 'none',
                     border: '3px solid rgba(255, 255, 255, 0.3)',
                     pointerEvents: 'auto',
+                    width: { xs: '100%', md: 'auto' },
                     '&:hover': {
-                      backgroundColor: '#16a34a',
-                      boxShadow: '0 16px 50px rgba(34, 197, 94, 0.7), 0 0 40px rgba(34, 197, 94, 0.5)',
+                      backgroundColor: '#dc2626',
+                      boxShadow: '0 16px 50px rgba(239, 68, 68, 0.7), 0 0 40px rgba(239, 68, 68, 0.5)',
                       transform: 'translateY(-4px) scale(1.02)',
                     },
                     transition: 'all 0.3s ease',
                     animation: 'glow 2s ease-in-out infinite',
                     '@keyframes glow': {
-                      '0%, 100%': { boxShadow: '0 12px 40px rgba(34, 197, 94, 0.6), 0 0 30px rgba(34, 197, 94, 0.4)' },
-                      '50%': { boxShadow: '0 12px 50px rgba(34, 197, 94, 0.8), 0 0 40px rgba(34, 197, 94, 0.6)' },
+                      '0%, 100%': { boxShadow: '0 12px 40px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.4)' },
+                      '50%': { boxShadow: '0 12px 50px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.6)' },
                     },
                   }}
                 >
