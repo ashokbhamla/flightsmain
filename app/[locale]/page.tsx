@@ -2,9 +2,7 @@ import { headers } from 'next/headers';
 import { localeFromParam } from '@/lib/i18n';
 import { getLocationWithFallbacks } from '@/lib/server-geoip';
 import HomePageContent from './components/HomePageContent';
-import LeadPageContent from './components/LeadPageContent';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { getAdminSettings } from '@/lib/adminSettings';
 
 interface HomePageProps {
   params: {
