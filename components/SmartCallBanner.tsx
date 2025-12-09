@@ -176,7 +176,7 @@ export default function SmartCallBanner() {
                   textShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
                 }}
               >
-                Need Help? Call Us Now!
+                Air Tickets Booking Help?
               </Typography>
 
               <Typography
@@ -237,7 +237,6 @@ export default function SmartCallBanner() {
                   {[
                     { name: 'Sarah M.', rating: 5, comment: 'Quick and helpful!' },
                     { name: 'John D.', rating: 5, comment: 'Best service ever!' },
-                    { name: 'Emily R.', rating: 5, comment: 'Saved me time!' },
                   ].map((review, idx) => (
                     <Grid item xs={12} sm={4} key={idx}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
