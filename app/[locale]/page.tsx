@@ -18,19 +18,8 @@ export default async function HomePage({ params }: HomePageProps) {
   // Get user location from server-side headers
   const headersList = await headers();
   const userLocation = getLocationWithFallbacks(headersList);
-  const adminSettings = await getAdminSettings();
 
-  if (adminSettings.leadPageEnabled) {
-    return (
-      <ErrorBoundary>
-        <LeadPageContent 
-          locale={locale}
-          phoneNumber={adminSettings.phoneNumber}
-        />
-      </ErrorBoundary>
-    );
-  }
-
+  // Always show the original home page
   return (
     <ErrorBoundary>
       <HomePageContent 
