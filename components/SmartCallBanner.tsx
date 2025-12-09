@@ -294,7 +294,7 @@ export default function SmartCallBanner() {
                   href={telHref}
                   variant="contained"
                   size="large"
-                  fullWidth={{ xs: true, md: false }}
+                  fullWidth
                   startIcon={<PhoneIcon sx={{ fontSize: { xs: 40, md: 48 } }} />}
                   sx={{
                     position: 'relative',
