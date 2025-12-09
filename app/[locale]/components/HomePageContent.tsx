@@ -31,62 +31,44 @@ interface HomePageContentProps {
 }
 
 export default function HomePageContent({ locale, userLocation }: HomePageContentProps) {
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [cardsData, setCardsData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  // Initialize with empty data to avoid loading state
+  const [cardsData, setCardsData] = useState<any>({
+    popular_routes: [],
+    customer_reviews: [],
+    hotels: []
+  });
 
-  const fetchCardsData = useCallback(async () => {
-    try {
-      setLoading(true);
-      
-      // Use parallel loading for better performance
-      const [cardsData, layoutData] = await Promise.allSettled([
-        getHomepageCards(
-          userLocation?.countryCode || 'US',
-          userLocation?.country || 'United States',
-          locale,
-          '1' // domain_id
-        ),
-        // Preload layout data in parallel
-        fetch(`/api/layout?lang=${locale === 'ru' ? 2 : 1}`, {
-          cache: 'force-cache',
-          next: { revalidate: 3600 }
-        }).then(res => res.ok ? res.json() : null).catch(() => null)
-      ]);
-      
-      // Use cards data or fallback
-      const data = cardsData.status === 'fulfilled' ? cardsData.value : {
-        popular_routes: [],
-        customer_reviews: [],
-        hotels: []
-      };
-      
-      setCardsData(data);
-    } catch (error) {
-      console.error('Error fetching homepage cards:', error);
-      // Set fallback data to prevent infinite loading
-      setCardsData({
-        popular_routes: [],
-        customer_reviews: [],
-        hotels: []
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [userLocation?.countryCode, userLocation?.country, locale]);
-
+  // Load data in background without blocking render
   useEffect(() => {
-    setIsHydrated(true);
-    fetchCardsData();
-  }, [fetchCardsData]);
+    const fetchCardsData = async () => {
+      try {
+        // Use parallel loading for better performance
+        const [cardsDataResult] = await Promise.allSettled([
+          getHomepageCards(
+            userLocation?.countryCode || 'US',
+            userLocation?.country || 'United States',
+            locale,
+            '1' // domain_id
+          ),
+          // Preload layout data in parallel
+          fetch(`/api/layout?lang=${locale === 'ru' ? 2 : 1}`, {
+            cache: 'force-cache',
+            next: { revalidate: 3600 }
+          }).then(res => res.ok ? res.json() : null).catch(() => null)
+        ]);
+        
+        // Update with API data if available
+        if (cardsDataResult.status === 'fulfilled' && cardsDataResult.value) {
+          setCardsData(cardsDataResult.value);
+        }
+      } catch (error) {
+        console.error('Error fetching homepage cards:', error);
+        // Keep default empty data on error
+      }
+    };
 
-  if (!isHydrated || loading) {
-    return (
-      <Box sx={{ textAlign: 'center', py: 8 }}>
-        <Typography variant="h6">Loading...</Typography>
-      </Box>
-    );
-  }
+    fetchCardsData();
+  }, [userLocation?.countryCode, userLocation?.country, locale]);
 
   const handleFlightSearch = (searchData: any) => {
     console.log('Flight search:', searchData);

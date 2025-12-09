@@ -16,7 +16,6 @@ import { Locale, localeFromParam } from '@/lib/i18n';
 import { orgSchema, websiteSchema, localBusinessSchema } from '@/lib/schema';
 import ClientThemeProvider from '@/components/ClientThemeProvider';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
-import CallBanner from '@/components/CallBanner';
 import TawkChat from '@/components/TawkChat';
 // Removed unused imports for performance
 import { envConfig } from '@/lib/envConfig';
@@ -132,7 +131,6 @@ export default async function RootLayout({
           <AboveTheFoldOptimizer />
           <ServiceWorker />
           <Header locale={locale} />
-          <CallBanner />
           {children}
           <Footer data={footer} locale={locale} />
           <SchemaOrg data={[orgSchema(header), websiteSchema(header), localBusinessSchema()].filter(Boolean)} />
