@@ -295,22 +295,23 @@ export default function SmartCallBanner() {
                   variant="contained"
                   size="large"
                   fullWidth={{ xs: true, md: false }}
-                  startIcon={<PhoneIcon sx={{ fontSize: { xs: 28, md: 36 } }} />}
+                  startIcon={<PhoneIcon sx={{ fontSize: { xs: 40, md: 48 } }} />}
                   sx={{
                     position: 'relative',
                     zIndex: 1,
                     backgroundColor: '#ef4444',
                     color: 'white',
                     fontWeight: 900,
-                    fontSize: { xs: '1.3rem', md: '1.8rem' },
-                    px: { xs: 4, md: 8 },
-                    py: { xs: 2.5, md: 3 },
-                    borderRadius: '18px',
+                    fontSize: { xs: '1.6rem', md: '2.2rem' },
+                    px: { xs: 5, md: 10 },
+                    py: { xs: 3.5, md: 4 },
+                    borderRadius: '20px',
                     boxShadow: '0 12px 40px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.4)',
                     textTransform: 'none',
-                    border: '3px solid rgba(255, 255, 255, 0.3)',
+                    border: '4px solid rgba(255, 255, 255, 0.3)',
                     pointerEvents: 'auto',
                     width: { xs: '100%', md: 'auto' },
+                    minHeight: { xs: '64px', md: '80px' },
                     '&:hover': {
                       backgroundColor: '#dc2626',
                       boxShadow: '0 16px 50px rgba(239, 68, 68, 0.7), 0 0 40px rgba(239, 68, 68, 0.5)',
