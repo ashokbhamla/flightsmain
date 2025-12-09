@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       header: {
         logo: '/logo.png',
         navigation: [],
-        phone: '+1-888-319-6206'
+        phone: '+1-888-351-1711'
       },
       footer: {
         description: 'Find the best flight deals worldwide',

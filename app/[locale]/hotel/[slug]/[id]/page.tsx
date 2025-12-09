@@ -360,7 +360,7 @@ export default async function HotelDetailPage({ params, searchParams }: { params
                 <Typography color="text.secondary">Price not available</Typography>
               )}
               <Divider sx={{ my: 2 }} />
-              <Button fullWidth variant="contained" color="success" href={'tel:+18883196206'} sx={{ fontWeight: 800, mb: 1 }}>Call (888) 319-6206</Button>
+              <Button fullWidth variant="contained" color="success" href={'tel:+18883511711'} sx={{ fontWeight: 800, mb: 1 }}>Call (888) 351-1711</Button>
               <Button fullWidth variant="outlined" href={`/${params.locale || 'en'}/hotel-quote?hid=${encodeURIComponent(String(id))}&name=${encodeURIComponent(hotel?.hotel_name || '')}&price=${encodeURIComponent(String(agoda?.dailyRate || ''))}&currency=USD&checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&iata=${encodeURIComponent(iata)}&img=${encodeURIComponent(agoda?.imageURL || '')}`} sx={{ fontWeight: 800 }}>Get Quote</Button>
             </Paper>
 

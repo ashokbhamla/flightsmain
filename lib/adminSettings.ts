@@ -15,7 +15,7 @@ const DEFAULT_SETTINGS: AdminSettings = {
   flightPopupEnabled: true,
   bookingPopupEnabled: true,
   overlayEnabled: true,
-  phoneNumber: '(888) 319-6206',
+  phoneNumber: '(888) 351-1711',
   leadPageEnabled: false,
 };
 

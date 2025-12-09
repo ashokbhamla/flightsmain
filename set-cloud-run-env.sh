@@ -46,7 +46,7 @@ gcloud run services update $SERVICE_NAME \
     --set-env-vars="NEXT_PUBLIC_DOMAIN=https://airlinesmap-274751619849.us-east5.run.app" \
     --set-env-vars="NEXT_PUBLIC_COMPANY_NAME=airlinesmap.com" \
     --set-env-vars="NEXT_PUBLIC_COMPANY_EMAIL=support@airlinesmap.com" \
-    --set-env-vars="NEXT_PUBLIC_COMPANY_PHONE=+1-888-319-6206" \
+    --set-env-vars="NEXT_PUBLIC_COMPANY_PHONE=+1-888-351-1711" \
     --set-env-vars="NEXT_PUBLIC_COMPANY_ADDRESS=8th the green suite b, Dover, DE 19901, US" \
     --set-env-vars="NEXT_PUBLIC_COMPANY_LOGO=https://airlinesmap-274751619849.us-east5.run.app/logo.png" \
     --set-env-vars="NEXT_PUBLIC_API_CONTENT=https://api.triposia.com" \
@@ -74,7 +74,7 @@ gcloud run services update $SERVICE_NAME \
     --set-env-vars="NEXT_PUBLIC_INSTAGRAM_URL=https://instagram.com/airlinesmap" \
     --set-env-vars="NEXT_PUBLIC_LINKEDIN_URL=https://linkedin.com/company/airlinesmap" \
     --set-env-vars="NEXT_PUBLIC_YOUTUBE_URL=https://youtube.com/airlinesmap" \
-    --set-env-vars="NEXT_PUBLIC_POPUP_PHONE_NUMBER=+1-888-319-6206" \
+    --set-env-vars="NEXT_PUBLIC_POPUP_PHONE_NUMBER=+1-888-351-1711" \
     --set-env-vars="NEXT_PUBLIC_POPUP_PROMO_CODE=SAVE30" \
     --set-env-vars="NEXT_PUBLIC_POPUP_EMAIL=deals@airlinesmap.com" \
     --set-env-vars="NEXT_PUBLIC_CDN_BASE=https://storage.googleapis.com/web-unified-atom-469911-j9" \

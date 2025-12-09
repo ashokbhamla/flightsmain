@@ -41,7 +41,7 @@ interface BookingPopupProps {
   phoneNumber?: string;
 }
 
-export default function BookingPopup({ open, onClose, flightData, phoneNumber = '+1 (855) 921-4888' }: BookingPopupProps) {
+export default function BookingPopup({ open, onClose, flightData, phoneNumber = '+1-888-351-1711' }: BookingPopupProps) {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');

@@ -5,8 +5,8 @@ import { Box, Button, Typography } from '@mui/material';
 import PhoneInTalkRoundedIcon from '@mui/icons-material/PhoneInTalkRounded';
 
 export default function CallBanner() {
-  const phone = '(888) 319-6206';
-  const telHref = 'tel:+18883196206';
+  const phone = '(888) 351-1711';
+  const telHref = 'tel:+18883511711';
 
   const handleClick = () => {
     try {

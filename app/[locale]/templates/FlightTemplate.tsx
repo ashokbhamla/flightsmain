@@ -1912,7 +1912,7 @@ const FlightTemplate = memo(function FlightTemplate({
                 "postalCode": process.env.NEXT_PUBLIC_ZIP || "19901",
                 "addressCountry": process.env.NEXT_PUBLIC_COUNTRY || "US"
               },
-              "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-302-123-4567",
+              "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-351-1711",
               "email": process.env.NEXT_PUBLIC_EMAIL || "info@airlinesmap.com",
               "sameAs": [
                 process.env.NEXT_PUBLIC_FACEBOOK || "https://facebook.com/airlinesmap",

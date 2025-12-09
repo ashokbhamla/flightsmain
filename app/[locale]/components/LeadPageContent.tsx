@@ -40,12 +40,12 @@ export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPa
 
   const normalizedPhone = useMemo(() => {
     if (!phoneNumber) {
-      return '(888) 319-6206';
+      return '(888) 351-1711';
     }
     const trimmed = phoneNumber.trim();
     const digitsOnly = trimmed.replace(/[^\d+]/g, '');
     if (!digitsOnly) {
-      return '(888) 319-6206';
+      return '(888) 351-1711';
     }
     return trimmed;
   }, [phoneNumber]);
@@ -53,7 +53,7 @@ export default function LeadPageContent({ phoneNumber, locale: _locale }: LeadPa
   const telHref = useMemo(() => {
     const digits = normalizedPhone.replace(/\D/g, '');
     if (!digits) {
-      return 'tel:+18883196206';
+      return 'tel:+18883511711';
     }
     if (digits.length === 11 && digits.startsWith('1')) {
       return `tel:+${digits}`;

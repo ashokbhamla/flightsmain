@@ -109,7 +109,7 @@ const useDirectContent = process.env.NEXT_PUBLIC_USE_DIRECT_CONTENT === 'true';
   bookingPopupEnabled: true,
   overlayEnabled: true,
   useDirectContent: false,  // <-- Add this
-  phoneNumber: '+1 (855) 921-4888',
+  phoneNumber: '+1-888-351-1711',
 }
 
 // Then fetch and use it:

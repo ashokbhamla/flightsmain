@@ -994,7 +994,7 @@ export default async function FlightDestinationPage({ params }: { params: { loca
         "contactPoint": {
           "@type": "ContactPoint",
           "contactType": "customer service",
-          "telephone": process.env.NEXT_PUBLIC_PHONE_NUMBER || "+1-888-319-6206",
+          "telephone": process.env.NEXT_PUBLIC_PHONE_NUMBER || "+1-888-351-1711",
           "knowsLanguage": [
             {
               "@type": "Language",

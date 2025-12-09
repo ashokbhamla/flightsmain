@@ -34,7 +34,7 @@ export default function GoogleAnalytics() {
             gtag('config', '${ADS_ID}');
             // Phone call conversion
             gtag('config', '${ADS_ID}/${ADS_PHONE_LABEL}', {
-              'phone_conversion_number': '(888) 319-6206'
+              'phone_conversion_number': '(888) 351-1711'
             });
           `,
         }}

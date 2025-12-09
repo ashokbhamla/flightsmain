@@ -27,7 +27,7 @@ export default function HashSearchHandler({ fallbackSearchCode, locale = 'en', u
     flightPopupEnabled: true,
     bookingPopupEnabled: true,
     overlayEnabled: true,
-    phoneNumber: '(888) 319-6206',
+    phoneNumber: '(888) 351-1711',
     leadPageEnabled: false,
   });
   const translations = useTranslations(locale as any);

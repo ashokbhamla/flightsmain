@@ -737,7 +737,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
   if (airlineContactInfo) {
     airlineDetails = {
       ...airlineDetails,
-      phone: airlineContactInfo.phone || airlineDetails?.phone || '+1-888-319-6206',
+      phone: airlineContactInfo.phone || airlineDetails?.phone || '+1-888-351-1711',
       url: airlineContactInfo.website || airlineDetails?.url || `https://www.${airlineCode.toLowerCase()}.com`,
       address: airlineContactInfo.address || airlineDetails?.address || '',
       city: airlineContactInfo.city || airlineDetails?.city || '',
@@ -2209,13 +2209,13 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   {t.contactInfo?.baggageInformation || 'Baggage Information'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
-                  {t.contactInfo?.phone || 'Phone'}: {airlineDetails?.phone || '+1-888-319-6206'}
+                  {t.contactInfo?.phone || 'Phone'}: {airlineDetails?.phone || '+1-888-351-1711'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568', mb: 1 }}>
                   {t.contactInfo?.email || 'Email'}: {airlineDetails?.baggage_email || `baggage@${airlineCode.toLowerCase()}.com`}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568' }}>
-                  {t.contactInfo?.lostFound || 'Lost & Found'}: {airlineDetails?.phone || '+1-888-319-6206'}
+                  {t.contactInfo?.lostFound || 'Lost & Found'}: {airlineDetails?.phone || '+1-888-351-1711'}
                 </Typography>
               </Box>
             </Grid>
@@ -2252,7 +2252,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
                   {airlineDetails?.country || 'India'}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#4a5568' }}>
-                  Phone: {airlineDetails?.phone || '+1-888-319-6206'}
+                  Phone: {airlineDetails?.phone || '+1-888-351-1711'}
                 </Typography>
               </Box>
             </Grid>
@@ -2333,7 +2333,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         "logo": process.env.NEXT_PUBLIC_COMPANY_LOGO || "https://airlinesmap.com/logo.png",
         "description": process.env.NEXT_PUBLIC_COMPANY_DESCRIPTION || "Find the best flight deals, hotels, and travel packages",
         "foundingDate": process.env.NEXT_PUBLIC_COMPANY_FOUNDING_DATE || "2018",
-        "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-319-6206",
+        "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-351-1711",
         "email": process.env.NEXT_PUBLIC_EMAIL || "support@airlinesmap.com",
         "sameAs": [
           process.env.NEXT_PUBLIC_FACEBOOK_URL || "https://facebook.com/airlinesmap",
@@ -2366,7 +2366,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           "postalCode": process.env.NEXT_PUBLIC_ZIP || "19901",
           "addressCountry": process.env.NEXT_PUBLIC_COUNTRY || "US"
         },
-        "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-319-6206",
+        "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-351-1711",
         "email": process.env.NEXT_PUBLIC_EMAIL || "support@airlinesmap.com"
       }} />
 
@@ -2897,7 +2897,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         "foundingDate": process.env.NEXT_PUBLIC_COMPANY_FOUNDING_DATE || "2020",
         "contactPoint": {
           "@type": "ContactPoint",
-          "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-319-6206",
+          "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-351-1711",
           "contactType": "customer service"
         },
         "knowsLanguage": [
@@ -3013,7 +3013,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
           "postalCode": process.env.NEXT_PUBLIC_ZIP || "19901",
           "addressCountry": process.env.NEXT_PUBLIC_COUNTRY || "US"
         },
-        "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-319-6206",
+        "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-351-1711",
         "email": process.env.NEXT_PUBLIC_EMAIL || "support@airlinesmap.com",
         "areaServed": {
           "@type": "Country",
@@ -3205,7 +3205,7 @@ export default async function AirlineRoutePage({ params }: { params: { locale: s
         "name": process.env.NEXT_PUBLIC_COMPANY_NAME || "AirlinesMap",
         "description": process.env.NEXT_PUBLIC_COMPANY_DESCRIPTION || "Compare airlines and find the best flight deals",
         "url": process.env.NEXT_PUBLIC_SITE_URL || "https://airlinesmap.com",
-        "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-319-6206",
+        "telephone": process.env.NEXT_PUBLIC_PHONE || "+1-888-351-1711",
         "email": process.env.NEXT_PUBLIC_EMAIL || "support@airlinesmap.com",
         "address": {
           "@type": "PostalAddress",

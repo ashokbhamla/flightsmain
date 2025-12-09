@@ -7,7 +7,7 @@ export const sampleData = {
       name: 'Travel Portal Inc.',
       url: 'https://travelportal.com',
       contactEmail: 'info@travelportal.com',
-      phone: '+1-888-319-6206',
+      phone: '+1-888-351-1711',
       address: '123 Travel Street, Tourism City, TC 12345'
     },
     socialMediaLinks: {
@@ -116,7 +116,7 @@ export const spanishData = {
       name: 'Portal de Viajes Inc.',
       url: 'https://portaldeviajes.com',
       contactEmail: 'info@portaldeviajes.com',
-      phone: '+1-888-319-6206',
+      phone: '+1-888-351-1711',
       address: '123 Calle de Viajes, Ciudad Turismo, TC 12345'
     },
     socialMediaLinks: {

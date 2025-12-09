@@ -21,7 +21,7 @@ A Material-UI based popup dialog that collects customer information for flight b
 - `open: boolean` - Controls popup visibility
 - `onClose: () => void` - Callback when popup is closed
 - `flightData: object` - Flight information to display
-- `phoneNumber: string` - Customer service phone number (default: +1 (855) 921-4888)
+- `phoneNumber: string` - Customer service phone number (default: +1-888-351-1711)
 
 ### 2. Updated HashSearchHandler Component
 Modified to handle booking button clicks and display the BookingPopup.
