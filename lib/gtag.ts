@@ -1,6 +1,6 @@
 // Google Analytics utility functions
 
-export const GA_TRACKING_ID = 'G-38CR0JRFNT';
+export const GA_TRACKING_ID = 'AW-17749159006';
 
 // https://developers.google.com/analytics/devguides/collection/gtagjs/pages
 export const pageview = (url: string) => {

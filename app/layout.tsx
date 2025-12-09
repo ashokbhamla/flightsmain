@@ -56,10 +56,10 @@ export default function RootLayout({
         <meta name="theme-color" content="#1e3a8a" />
         <meta name="msapplication-TileColor" content="#1e3a8a" />
         
-        {/* Google Ads Conversion Tracking */}
+        {/* Google tag (gtag.js) */}
         <script
           async
-          src="https://www.googletagmanager.com/gtag/js?id=AW-16765334947"
+          src="https://www.googletagmanager.com/gtag/js?id=AW-17749159006"
         />
         <script
           id="google-ads-config"
@@ -68,7 +68,7 @@ export default function RootLayout({
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'AW-16765334947');
+              gtag('config', 'AW-17749159006');
             `,
           }}
         />

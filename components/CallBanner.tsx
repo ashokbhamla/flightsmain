@@ -15,7 +15,7 @@ export default function CallBanner() {
       const w: any = window as any;
       if (w.gtag) {
         w.gtag('event', 'conversion', {
-          send_to: 'AW-16765334947/QHicCJr_1rYbEKPrqro-',
+          send_to: 'AW-17749159006',
           value: 1,
           currency: 'USD',
           phone_conversion_number: phone,
